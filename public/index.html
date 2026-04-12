@@ -23,18 +23,28 @@
             padding-bottom: 80px;
         }
         
-        /* 티커바 - 사도됨 종목만 */
+        /* 티커바 - 흘러가는 효과 */
         .ticker-bar {
             background: #1e293b;
             padding: 10px 0;
-            overflow-x: auto;
+            overflow: hidden;
             white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
         }
-        .ticker-bar::-webkit-scrollbar { display: none; }
+        .ticker-track {
+            display: inline-block;
+            animation: ticker-scroll 25s linear infinite;
+            white-space: nowrap;
+        }
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+        @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
         .ticker-item {
             display: inline-block;
-            padding: 4px 16px;
+            padding: 4px 20px;
             font-size: 13px;
             color: #94a3b8;
             border-right: 1px solid #334155;
@@ -46,6 +56,8 @@
             color: #64748b;
             padding: 10px 20px;
             font-size: 13px;
+            display: block;
+            text-align: center;
         }
         
         .container { max-width: 480px; margin: 0 auto; padding: 20px 16px; }
@@ -56,22 +68,76 @@
             padding: 30px 0;
         }
         .header-icon {
-            width: 100px;
-            height: 100px;
+            width: 160px;
+            height: 160px;
             background: #fff;
             border-radius: 50%;
-            margin: 0 auto 16px;
+            margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            overflow: hidden;
+            overflow: visible;
+            position: relative;
         }
         .header-icon img {
-            width: 80px;
-            height: 80px;
+            width: 140px;
+            height: 140px;
             object-fit: contain;
         }
+        
+        /* 더듬이 애니메이션 */
+        .antenna {
+            position: absolute;
+            width: 4px;
+            height: 24px;
+            background: #1e293b;
+            border-radius: 2px;
+            top: -5px;
+            animation: wiggle 0.6s ease-in-out infinite;
+        }
+        .antenna.left {
+            left: 50px;
+            transform-origin: bottom center;
+        }
+        .antenna.right {
+            right: 50px;
+            transform-origin: bottom center;
+            animation-delay: 0.3s;
+        }
+        .antenna::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -4px;
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+        .antenna.right::after {
+            background: #3b82f6;
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+        
+        .scanning-text {
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #64748b;
+            white-space: nowrap;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
         .header h1 {
             font-size: 32px;
             color: #1e293b;
@@ -368,9 +434,9 @@
     </style>
 </head>
 <body>
-    <!-- 티커바: 사도됨 종목 -->
+    <!-- 티커바: 사도됨 종목 (흘러가는 효과) -->
     <div class="ticker-bar" id="tickerBar">
-        <span class="ticker-empty">로딩 중...</span>
+        <span class="ticker-empty">📡 시그널 스캔중...</span>
     </div>
     
     <!-- 페이지 1: 알림 설정 -->
@@ -378,7 +444,10 @@
         <div class="container">
             <div class="header">
                 <div class="header-icon">
+                    <div class="antenna left"></div>
+                    <div class="antenna right"></div>
                     <img src="/icon-192.png" alt="사여?!">
+                    <span class="scanning-text">📡 시그널 감지중...</span>
                 </div>
                 <h1>사여?!</h1>
                 <p>개미의 매수 타이밍 알림</p>
@@ -750,19 +819,22 @@
             ];
             
             if (all.length === 0) {
-                document.getElementById('tickerBar').innerHTML = '<span class="ticker-empty">현재 매수 조건 충족 종목 없음</span>';
+                document.getElementById('tickerBar').innerHTML = '<span class="ticker-empty">📡 매수 조건 충족 종목 스캔중...</span>';
                 return;
             }
             
-            let html = '';
+            let items = '';
             all.forEach(s => {
                 const isEtf = stockData.kr_etf.includes(s);
                 const label = isEtf ? 'NAV' : 'PEG';
                 const value = isEtf ? (s.nav_discount ? s.nav_discount.toFixed(1) + '%' : '-') : (s.peg_forward || '-');
-                html += `<span class="ticker-item"><span class="name">${s.name}</span><span class="value">${label} ${value}</span></span>`;
+                items += `<span class="ticker-item"><span class="name">${s.name}</span><span class="value">${label} ${value}</span></span>`;
             });
             
-            document.getElementById('tickerBar').innerHTML = html;
+            // 무한 스크롤 효과 (복제)
+            document.getElementById('tickerBar').innerHTML = `
+                <div class="ticker-track">${items}${items}</div>
+            `;
         }
         
         function loadData() {
