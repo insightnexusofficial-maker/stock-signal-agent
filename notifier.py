@@ -27,16 +27,21 @@ def check_and_notify():
         return
     
     data = doc.to_dict()
-    all_stocks = data.get("kr", []) + data.get("us", [])
+    
+    # 모든 종목 합치기
+    all_items = []
+    all_items.extend([(s, "stock", 35) for s in data.get("kr_stock", [])])
+    all_items.extend([(s, "etf", 30) for s in data.get("kr_etf", [])])
+    all_items.extend([(s, "stock", 35) for s in data.get("us_stock", [])])
     
     new_state = {}
     alerts = []
     
-    for stock in all_stocks:
-        code = stock.get("code")
-        name = stock.get("name")
-        rsi = stock.get("rsi")
-        step1 = stock.get("step1")
+    for item, item_type, rsi_threshold in all_items:
+        code = item.get("code")
+        name = item.get("name")
+        rsi = item.get("rsi")
+        step1 = item.get("step1")
         
         if not rsi or not code:
             continue
@@ -44,12 +49,13 @@ def check_and_notify():
         prev_rsi = prev_state.get(code, 50)
         new_state[code] = rsi
         
-        # STEP1 통과 + RSI 35 하회 후 상향 돌파
-        if step1 and prev_rsi < 35 and rsi >= 35:
+        # STEP1 통과 + RSI 임계값 하회 후 상향 돌파
+        if step1 and prev_rsi < rsi_threshold and rsi >= rsi_threshold:
             alerts.append({
                 "name": name,
                 "code": code,
-                "rsi": rsi
+                "rsi": rsi,
+                "type": item_type
             })
             print(f"🚨 시그널: {name} RSI {prev_rsi} → {rsi}")
     
@@ -76,10 +82,12 @@ def send_push_notifications(alerts):
         return
     
     for alert in alerts:
+        type_label = "ETF" if alert["type"] == "etf" else "주식"
+        
         message = messaging.MulticastMessage(
             notification=messaging.Notification(
                 title=f"🚨 {alert['name']} 매수 시그널!",
-                body=f"RSI {alert['rsi']} 돌파! STEP1+STEP2 충족"
+                body=f"[{type_label}] RSI {alert['rsi']} 돌파! 시그널 조건 충족"
             ),
             tokens=tokens
         )
