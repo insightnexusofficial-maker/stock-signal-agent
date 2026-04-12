@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#3b82f6">
     <link rel="manifest" href="/manifest.json">
@@ -13,18 +13,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
-            authDomain: "stock-sayo.firebaseapp.com",
-            projectId: "stock-sayo"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const messaging = firebase.messaging();
-        
-        const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
-    </script>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -444,6 +432,22 @@
     </div>
     
     <script>
+        // Firebase 초기화
+        const firebaseConfig = {
+            apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
+            authDomain: "stock-sayo.firebaseapp.com",
+            projectId: "stock-sayo",
+            storageBucket: "stock-sayo.firebasestorage.app",
+            messagingSenderId: "964666304071",
+            appId: "1:964666304071:web:0c806002d44229f71e3362"
+        };
+        firebase.initializeApp(firebaseConfig);
+        
+        const db = firebase.firestore();
+        let messaging = null;
+        
+        const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
+        
         let stockData = { kr: [], us: [] };
         let currentMarket = 'kr';
         
@@ -452,12 +456,12 @@
             navigator.serviceWorker.register('/firebase-messaging-sw.js')
                 .then(reg => {
                     console.log('SW registered');
-                    messaging.useServiceWorker(reg);
+                    messaging = firebase.messaging();
                 })
                 .catch(err => console.log('SW failed', err));
         }
         
-        // 알림 권한 요청 + FCM 토큰 발급 + 토픽 구독
+        // 알림 권한 요청
         async function requestNotification() {
             if (!('Notification' in window)) {
                 alert('이 브라우저는 알림을 지원하지 않습니다.');
@@ -468,26 +472,25 @@
                 const permission = await Notification.requestPermission();
                 
                 if (permission === 'granted') {
-                    // FCM 토큰 발급
+                    if (!messaging) {
+                        messaging = firebase.messaging();
+                    }
+                    
                     const token = await messaging.getToken({ vapidKey: VAPID_KEY });
                     console.log('FCM Token:', token);
                     
-                    // Firestore에 토큰 저장
                     await db.collection('fcm_tokens').doc(token).set({
                         token: token,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        platform: navigator.platform,
-                        userAgent: navigator.userAgent
+                        platform: navigator.platform
                     });
                     
-                    // UI 업데이트
                     document.getElementById('notifStatus').textContent = 'ON';
                     document.getElementById('notifStatus').classList.add('on');
                     document.getElementById('notifMsg').textContent = '알림이 켜져 있어요';
                     document.getElementById('notifBtn').textContent = '알림 켜짐 ✓';
                     document.getElementById('notifBtn').disabled = true;
                     
-                    // 테스트 알림
                     new Notification('주식 사여?!', {
                         body: '알림이 설정되었습니다!',
                         icon: '/icon-192.png'
@@ -495,21 +498,12 @@
                 }
             } catch (err) {
                 console.error('알림 설정 실패:', err);
-                alert('알림 설정 중 오류가 발생했습니다.');
+                alert('알림 설정 중 오류: ' + err.message);
             }
         }
         
-        // 포그라운드 메시지 수신
-        messaging.onMessage((payload) => {
-            console.log('포그라운드 메시지:', payload);
-            new Notification(payload.notification.title, {
-                body: payload.notification.body,
-                icon: '/icon-192.png'
-            });
-        });
-        
         // 초기 알림 상태 체크
-        if (Notification.permission === 'granted') {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
             document.getElementById('notifStatus').textContent = 'ON';
             document.getElementById('notifStatus').classList.add('on');
             document.getElementById('notifMsg').textContent = '알림이 켜져 있어요';
