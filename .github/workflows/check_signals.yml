@@ -1,0 +1,37 @@
+name: Stock Signal Check
+
+on:
+  schedule:
+    # 국장: 월~금 09:00~15:30 KST (UTC 00:00~06:30)
+    - cron: '*/10 0-6 * * 1-5'
+    # 미장: 월~금 22:30~05:00 KST (UTC 13:30~20:00)
+    - cron: '*/10 13-20 * * 1-5'
+  workflow_dispatch:  # 수동 실행
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 lxml yfinance firebase-admin python-dotenv
+      
+      - name: Create Firebase key
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-key.json
+      
+      - name: Create .env file
+        run: |
+          echo "KIS_APP_KEY=${{ secrets.KIS_APP_KEY }}" >> .env
+          echo "KIS_APP_SECRET=${{ secrets.KIS_APP_SECRET }}" >> .env
+      
+      - name: Run signal checker
+        run: python uploader.py

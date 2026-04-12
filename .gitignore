@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+.env
+firebase-key.json
+.DS_Store
