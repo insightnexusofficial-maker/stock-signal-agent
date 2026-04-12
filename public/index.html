@@ -65,14 +65,14 @@
         /* 헤더 */
         .header {
             text-align: center;
-            padding: 30px 0;
+            padding: 30px 0 20px;
         }
         .header-icon {
             width: 160px;
             height: 160px;
             background: #fff;
             border-radius: 50%;
-            margin: 0 auto 20px;
+            margin: 0 auto 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -84,66 +84,60 @@
             width: 140px;
             height: 140px;
             object-fit: contain;
+            border-radius: 50%;
         }
         
-        /* 더듬이 애니메이션 */
+        /* 더듬이 애니메이션 - 회색 */
         .antenna {
             position: absolute;
-            width: 4px;
-            height: 24px;
-            background: #1e293b;
+            width: 3px;
+            height: 18px;
+            background: #b0b8c4;
             border-radius: 2px;
-            top: -5px;
-            animation: wiggle 0.6s ease-in-out infinite;
+            top: 8px;
+            animation: wiggle 0.8s ease-in-out infinite;
         }
         .antenna.left {
-            left: 50px;
+            left: 58px;
             transform-origin: bottom center;
         }
         .antenna.right {
-            right: 50px;
+            right: 58px;
             transform-origin: bottom center;
-            animation-delay: 0.3s;
+            animation-delay: 0.4s;
         }
         .antenna::after {
             content: '';
             position: absolute;
-            top: -8px;
-            left: -4px;
-            width: 12px;
-            height: 12px;
-            background: #ef4444;
+            top: -5px;
+            left: -3px;
+            width: 8px;
+            height: 8px;
+            background: #b0b8c4;
             border-radius: 50%;
         }
-        .antenna.right::after {
-            background: #3b82f6;
-        }
         @keyframes wiggle {
-            0%, 100% { transform: rotate(-8deg); }
-            50% { transform: rotate(8deg); }
+            0%, 100% { transform: rotate(-12deg); }
+            50% { transform: rotate(12deg); }
         }
         
         .scanning-text {
-            position: absolute;
-            bottom: -28px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
+            font-size: 14px;
             color: #64748b;
-            white-space: nowrap;
-            animation: pulse 1.5s ease-in-out infinite;
+            margin-bottom: 8px;
+            animation: pulse 2s ease-in-out infinite;
         }
         @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
+            0%, 100% { opacity: 0.6; }
             50% { opacity: 1; }
         }
         
         .header h1 {
             font-size: 32px;
             color: #1e293b;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
-        .header p {
+        .header p.subtitle {
             color: #64748b;
             font-size: 15px;
         }
@@ -367,7 +361,8 @@
         .guide-item {
             font-size: 14px;
             color: #475569;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            line-height: 1.5;
         }
         .guide-item:last-child { margin-bottom: 0; }
         .guide-highlight { font-weight: 600; }
@@ -391,18 +386,19 @@
             background: #94a3b8;
         }
         
-        /* 알림 상태 */
+        /* 알림 상태 - 더 크게 */
         .notification-status {
             text-align: center;
-            padding: 20px 0;
+            padding: 24px 0;
         }
         .status-badge {
             display: inline-block;
             background: #f1f5f9;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 28px;
+            border-radius: 24px;
             color: #64748b;
-            font-size: 14px;
+            font-size: 18px;
+            font-weight: 700;
         }
         .status-badge.on {
             background: #dcfce7;
@@ -414,7 +410,7 @@
             background: #f0f9ff;
             border-radius: 12px;
             padding: 16px;
-            margin-top: 16px;
+            margin-top: 8px;
         }
         .intro-item {
             display: flex;
@@ -423,8 +419,10 @@
         }
         .intro-item:last-child { margin-bottom: 0; }
         .intro-icon {
-            font-size: 20px;
+            font-size: 18px;
             margin-right: 12px;
+            width: 24px;
+            text-align: center;
         }
         .intro-text {
             font-size: 14px;
@@ -447,31 +445,30 @@
                     <div class="antenna left"></div>
                     <div class="antenna right"></div>
                     <img src="/icon-192.png" alt="사여?!">
-                    <span class="scanning-text">📡 시그널 감지중...</span>
                 </div>
+                <p class="scanning-text">📡 매수 타이밍 감지 중</p>
                 <h1>사여?!</h1>
-                <p>개미의 매수 타이밍 알림</p>
+                <p class="subtitle">개미의 매수 타이밍 알림</p>
             </div>
             
             <div class="card">
                 <div class="notification-status">
                     <div class="status-badge" id="notifStatus">OFF</div>
-                    <p style="margin-top: 12px; font-size: 15px; color: #334155; font-weight: 500;" id="notifMsg">알림이 꺼져 있어요</p>
-                    <p style="margin-top: 4px; font-size: 13px; color: #94a3b8;">켜두면 매수 타이밍에 알려드려요</p>
+                    <p style="margin-top: 16px; font-size: 18px; color: #334155; font-weight: 600;" id="notifMsg">알림이 꺼져 있어요</p>
                 </div>
                 
                 <div class="intro-box">
                     <div class="intro-item">
                         <span class="intro-icon">📊</span>
-                        <span class="intro-text"><strong>국내주식 + ETF + 미국주식</strong> 통합 모니터링</span>
-                    </div>
-                    <div class="intro-item">
-                        <span class="intro-icon">🔔</span>
-                        <span class="intro-text"><strong>10분마다</strong> 자동 스크리닝 및 푸시 알림</span>
+                        <span class="intro-text">국내주식, 국내ETF, 미국주식 모니터링</span>
                     </div>
                     <div class="intro-item">
                         <span class="intro-icon">🎯</span>
-                        <span class="intro-text"><strong>Valuation + Timing</strong> 2단계 시그널</span>
+                        <span class="intro-text">Valuation, Timing 기반 예측 모델</span>
+                    </div>
+                    <div class="intro-item">
+                        <span class="intro-icon">🔔</span>
+                        <span class="intro-text">10분 단위 자동 스크리닝 및 알림 시스템</span>
                     </div>
                 </div>
             </div>
@@ -521,18 +518,18 @@
                     <div class="guide-section">
                         <div class="guide-title">📈 주식 시그널 (국내/미국)</div>
                         <div class="guide-box">
-                            <div class="guide-item"><span class="guide-highlight blue">① Valuation:</span> Forward PEG &lt; 1.0 + 매출성장 ≥ 15%</div>
-                            <div style="text-align: center; color: #94a3b8; font-size: 13px; margin: 8px 0;">AND</div>
-                            <div class="guide-item"><span class="guide-highlight blue">② Timing:</span> RSI 35 하회 후 상향 돌파</div>
+                            <div class="guide-item">• <span class="guide-highlight green">Valuation</span> — Forward PEG &lt; 1.0, 매출성장 ≥ 15%</div>
+                            <div class="guide-item">• <span class="guide-highlight green">Timing</span> — RSI 35 하회 후 상향 돌파</div>
+                            <div class="guide-item">• <span class="guide-highlight">컨센서스</span> — 목표가 괴리율로 PEG 신뢰도 검증</div>
                         </div>
                     </div>
                     
                     <div class="guide-section">
                         <div class="guide-title">📊 ETF 시그널</div>
                         <div class="guide-box">
-                            <div class="guide-item"><span class="guide-highlight blue">① 과매도:</span> RSI ≤ 30</div>
-                            <div style="text-align: center; color: #94a3b8; font-size: 13px; margin: 8px 0;">AND</div>
-                            <div class="guide-item"><span class="guide-highlight blue">② 강화조건:</span> NAV 괴리율 &lt; -0.5% 또는 거래량 2배 이상</div>
+                            <div class="guide-item">• <span class="guide-highlight green">과매도</span> — RSI ≤ 30</div>
+                            <div class="guide-item">• <span class="guide-highlight green">할인매수</span> — NAV 괴리율 &lt; -0.5%</div>
+                            <div class="guide-item">• <span class="guide-highlight">거래량</span> — 20일 평균 대비 2배 이상</div>
                         </div>
                     </div>
                 </div>
@@ -545,8 +542,8 @@
                         <div class="guide-title">RSI (상대강도지수)</div>
                         <div class="guide-desc">14일간 가격 흐름을 0~100으로 표현</div>
                         <div class="guide-box">
-                            <div class="guide-item"><span class="guide-highlight blue">30~35 이하</span> — 과매도, 매수 기회</div>
-                            <div class="guide-item"><span class="guide-highlight red">70 이상</span> — 과매수, 조정 가능성</div>
+                            <div class="guide-item">• <span class="guide-highlight blue">30~35 이하</span> — 과매도, 매수 기회</div>
+                            <div class="guide-item">• <span class="guide-highlight red">70 이상</span> — 과매수, 조정 가능성</div>
                         </div>
                     </div>
                     
@@ -554,8 +551,8 @@
                         <div class="guide-title">Forward PEG</div>
                         <div class="guide-desc">Forward PER ÷ 예상 EPS 성장률</div>
                         <div class="guide-box">
-                            <div class="guide-item"><span class="guide-highlight green">1.0 미만</span> — 저평가</div>
-                            <div class="guide-item"><span class="guide-highlight red">1.5 초과</span> — 고평가</div>
+                            <div class="guide-item">• <span class="guide-highlight green">1.0 미만</span> — 저평가</div>
+                            <div class="guide-item">• <span class="guide-highlight red">1.5 초과</span> — 고평가</div>
                         </div>
                     </div>
                     
@@ -563,7 +560,7 @@
                         <div class="guide-title">TTM PEG</div>
                         <div class="guide-desc">TTM PER ÷ 과거 EPS 성장률</div>
                         <div class="guide-box">
-                            <div class="guide-item">Forward PEG의 보조 지표로 활용</div>
+                            <div class="guide-item">• Forward PEG의 보조 지표로 활용</div>
                         </div>
                     </div>
                     
@@ -571,8 +568,8 @@
                         <div class="guide-title">컨센서스 괴리율</div>
                         <div class="guide-desc">애널리스트 목표주가 vs 현재주가</div>
                         <div class="guide-box">
-                            <div class="guide-item"><span class="guide-highlight green">+20% 이상</span> — 상승 여력</div>
-                            <div class="guide-item"><span class="guide-highlight red">-10% 이하</span> — 하락 위험</div>
+                            <div class="guide-item">• <span class="guide-highlight green">+20% 이상</span> — 상승 여력, PEG 신뢰 보강</div>
+                            <div class="guide-item">• <span class="guide-highlight red">-10% 이하</span> — 하락 위험, PEG 재검토</div>
                         </div>
                     </div>
                     
@@ -580,9 +577,9 @@
                         <div class="guide-title">NAV 괴리율 (ETF)</div>
                         <div class="guide-desc">순자산가치 대비 시장가격 차이</div>
                         <div class="guide-box">
-                            <div class="guide-item"><span class="guide-highlight blue">-0.5% 이하</span> — 할인 거래 중</div>
-                            <div class="guide-item"><span class="guide-highlight">0% 근처</span> — 정상</div>
-                            <div class="guide-item"><span class="guide-highlight red">+0.5% 이상</span> — 프리미엄</div>
+                            <div class="guide-item">• <span class="guide-highlight blue">-0.5% 이하</span> — 할인 거래 중</div>
+                            <div class="guide-item">• <span class="guide-highlight">0% 근처</span> — 정상</div>
+                            <div class="guide-item">• <span class="guide-highlight red">+0.5% 이상</span> — 프리미엄</div>
                         </div>
                     </div>
                     
@@ -590,8 +587,8 @@
                         <div class="guide-title">52주 밴드</div>
                         <div class="guide-desc">1년 최저~최고 구간에서 현재 위치</div>
                         <div class="guide-box">
-                            <div class="guide-item"><span class="guide-highlight blue">20% 이하</span> — 저점 근처</div>
-                            <div class="guide-item"><span class="guide-highlight red">80% 이상</span> — 고점 근처</div>
+                            <div class="guide-item">• <span class="guide-highlight blue">20% 이하</span> — 저점 근처</div>
+                            <div class="guide-item">• <span class="guide-highlight red">80% 이상</span> — 고점 근처</div>
                         </div>
                     </div>
                     
@@ -599,7 +596,7 @@
                         <div class="guide-title">거래량 배수</div>
                         <div class="guide-desc">20일 평균 대비 오늘 거래량</div>
                         <div class="guide-box">
-                            <div class="guide-item"><span class="guide-highlight blue">2x 이상</span> — 이상 거래, 이벤트 가능</div>
+                            <div class="guide-item">• <span class="guide-highlight blue">2x 이상</span> — 이상 거래, 관심 집중</div>
                         </div>
                     </div>
                 </div>
