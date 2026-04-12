@@ -74,8 +74,9 @@ def send_push_notifications(alerts):
     """FCM 토큰들에게 푸시 알림 발송"""
     
     # Firestore에서 토큰 목록 가져오기
-    tokens_ref = db.collection("fcm_tokens").stream()
+    tokens_ref = db.collection("fcm_tokens").where("approved", "==", True).stream()
     tokens = [doc.id for doc in tokens_ref]
+
     
     if not tokens:
         print("📭 등록된 토큰 없음")

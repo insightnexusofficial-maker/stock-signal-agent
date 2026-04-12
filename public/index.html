@@ -23,7 +23,7 @@
             padding-bottom: 80px;
         }
         
-        /* 티커바 - 흘러가는 효과 */
+        /* 티커바 */
         .ticker-bar {
             background: #1e293b;
             padding: 10px 0;
@@ -35,9 +35,7 @@
             animation: ticker-scroll 25s linear infinite;
             white-space: nowrap;
         }
-        .ticker-track:hover {
-            animation-play-state: paused;
-        }
+        .ticker-track:hover { animation-play-state: paused; }
         @keyframes ticker-scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -67,18 +65,21 @@
             text-align: center;
             padding: 30px 0 20px;
         }
+        .header-icon-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
         .header-icon {
             width: 160px;
             height: 160px;
             background: #fff;
             border-radius: 50%;
-            margin: 0 auto 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            overflow: visible;
-            position: relative;
+            overflow: hidden;
         }
         .header-icon img {
             width: 140px;
@@ -87,49 +88,38 @@
             border-radius: 50%;
         }
         
-        /* 더듬이 애니메이션 - 회색 */
+        /* 더듬이 - 아이콘 위에 */
         .antenna {
             position: absolute;
             width: 3px;
-            height: 18px;
+            height: 20px;
             background: #b0b8c4;
             border-radius: 2px;
-            top: 8px;
+            top: -18px;
             animation: wiggle 0.8s ease-in-out infinite;
         }
         .antenna.left {
-            left: 58px;
+            left: 55px;
             transform-origin: bottom center;
         }
         .antenna.right {
-            right: 58px;
+            right: 55px;
             transform-origin: bottom center;
             animation-delay: 0.4s;
         }
         .antenna::after {
             content: '';
             position: absolute;
-            top: -5px;
+            top: -6px;
             left: -3px;
-            width: 8px;
-            height: 8px;
+            width: 9px;
+            height: 9px;
             background: #b0b8c4;
             border-radius: 50%;
         }
         @keyframes wiggle {
             0%, 100% { transform: rotate(-12deg); }
             50% { transform: rotate(12deg); }
-        }
-        
-        .scanning-text {
-            font-size: 14px;
-            color: #64748b;
-            margin-bottom: 8px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
         }
         
         .header h1 {
@@ -150,12 +140,6 @@
             margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
-        .card-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #334155;
-            margin-bottom: 12px;
-        }
         
         /* 섹션 */
         .section-header {
@@ -174,7 +158,7 @@
             color: #94a3b8;
         }
         
-        /* 탭 (3개) */
+        /* 탭 */
         .tabs {
             display: flex;
             background: #fff;
@@ -198,7 +182,7 @@
             color: #fff;
         }
         
-        /* 서브탭 (가이드용) */
+        /* 서브탭 */
         .subtabs {
             display: flex;
             gap: 8px;
@@ -386,23 +370,48 @@
             background: #94a3b8;
         }
         
-        /* 알림 상태 - 더 크게 */
+        /* 알림 상태 */
         .notification-status {
             text-align: center;
             padding: 24px 0;
         }
         .status-badge {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             background: #f1f5f9;
             padding: 10px 28px;
             border-radius: 24px;
             color: #64748b;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
         }
         .status-badge.on {
             background: #dcfce7;
             color: #16a34a;
+        }
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .status-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #d97706;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .status-spinner.active {
+            border-color: #16a34a;
+            border-top-color: transparent;
+        }
+        
+        .status-msg {
+            margin-top: 16px;
+            font-size: 17px;
+            color: #334155;
+            font-weight: 600;
         }
         
         /* 서비스 소개 */
@@ -429,24 +438,101 @@
             color: #334155;
             line-height: 1.5;
         }
+        
+        /* 모달 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+        }
+        .modal h3 {
+            font-size: 18px;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+        .modal p {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        .modal input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            outline: none;
+        }
+        .modal input:focus {
+            border-color: #3b82f6;
+        }
+        .modal-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .modal-btn.primary {
+            background: #3b82f6;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .modal-btn.secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
     </style>
 </head>
 <body>
-    <!-- 티커바: 사도됨 종목 (흘러가는 효과) -->
+    <!-- 티커바 -->
     <div class="ticker-bar" id="tickerBar">
         <span class="ticker-empty">📡 시그널 스캔중...</span>
+    </div>
+    
+    <!-- 닉네임 입력 모달 -->
+    <div class="modal-overlay" id="nicknameModal">
+        <div class="modal">
+            <h3>🐜 개미 등록</h3>
+            <p>관리자가 확인할 수 있도록<br>이름 또는 닉네임을 입력해주세요</p>
+            <input type="text" id="nicknameInput" placeholder="예: 재환, 투자개미123">
+            <button class="modal-btn primary" onclick="submitNickname()">등록하기</button>
+            <button class="modal-btn secondary" onclick="closeModal()">취소</button>
+        </div>
     </div>
     
     <!-- 페이지 1: 알림 설정 -->
     <div class="page active" id="page1">
         <div class="container">
             <div class="header">
-                <div class="header-icon">
+                <div class="header-icon-wrapper">
                     <div class="antenna left"></div>
                     <div class="antenna right"></div>
-                    <img src="/icon-192.png" alt="사여?!">
+                    <div class="header-icon">
+                        <img src="/icon-192.png" alt="사여?!">
+                    </div>
                 </div>
-                <p class="scanning-text">📡 매수 타이밍 감지 중</p>
                 <h1>사여?!</h1>
                 <p class="subtitle">개미의 매수 타이밍 알림</p>
             </div>
@@ -454,7 +540,7 @@
             <div class="card">
                 <div class="notification-status">
                     <div class="status-badge" id="notifStatus">OFF</div>
-                    <p style="margin-top: 16px; font-size: 18px; color: #334155; font-weight: 600;" id="notifMsg">알림이 꺼져 있어요</p>
+                    <p class="status-msg" id="notifMsg">알림이 꺼져 있어요</p>
                 </div>
                 
                 <div class="intro-box">
@@ -473,7 +559,7 @@
                 </div>
             </div>
             
-            <button class="btn-primary" id="notifBtn" onclick="requestNotification()">알림 켜기</button>
+            <button class="btn-primary" id="notifBtn" onclick="openNicknameModal()">알림 켜기</button>
         </div>
     </div>
     
@@ -512,7 +598,6 @@
                 <div class="subtab" onclick="showGuide('terms')">용어 설명</div>
             </div>
             
-            <!-- 시그널 조건 -->
             <div class="guide-content active" id="guide-signal">
                 <div class="card">
                     <div class="guide-section">
@@ -535,7 +620,6 @@
                 </div>
             </div>
             
-            <!-- 용어 설명 -->
             <div class="guide-content" id="guide-terms">
                 <div class="card">
                     <div class="guide-section">
@@ -604,7 +688,6 @@
         </div>
     </div>
     
-    <!-- 하단 네비게이션 -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="showPage(1)">알림</div>
         <div class="nav-item" onclick="showPage(2)">지표</div>
@@ -612,7 +695,6 @@
     </div>
     
     <script>
-        // Firebase 초기화
         const firebaseConfig = {
             apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
             authDomain: "stock-sayo.firebaseapp.com",
@@ -625,24 +707,43 @@
         
         const db = firebase.firestore();
         let messaging = null;
+        let currentToken = null;
         
         const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
         
         let stockData = { kr_stock: [], kr_etf: [], us_stock: [] };
         let currentMarket = 'kr_stock';
         
-        // 서비스 워커 등록
+        // SW 등록
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/firebase-messaging-sw.js')
                 .then(reg => {
-                    console.log('SW registered');
                     messaging = firebase.messaging();
                 })
                 .catch(err => console.log('SW failed', err));
         }
         
-        // 알림 권한 요청
-        async function requestNotification() {
+        // 닉네임 모달
+        function openNicknameModal() {
+            document.getElementById('nicknameModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('nicknameModal').classList.remove('show');
+        }
+        
+        async function submitNickname() {
+            const nickname = document.getElementById('nicknameInput').value.trim();
+            if (!nickname) {
+                alert('닉네임을 입력해주세요!');
+                return;
+            }
+            
+            closeModal();
+            await requestNotification(nickname);
+        }
+        
+        async function requestNotification(nickname) {
             if (!('Notification' in window)) {
                 alert('이 브라우저는 알림을 지원하지 않습니다.');
                 return;
@@ -655,22 +756,21 @@
                     if (!messaging) messaging = firebase.messaging();
                     
                     const token = await messaging.getToken({ vapidKey: VAPID_KEY });
-                    console.log('FCM Token:', token);
+                    currentToken = token;
                     
                     await db.collection('fcm_tokens').doc(token).set({
                         token: token,
+                        nickname: nickname,
+                        approved: false,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         platform: navigator.platform
                     });
                     
-                    document.getElementById('notifStatus').textContent = 'ON';
-                    document.getElementById('notifStatus').classList.add('on');
-                    document.getElementById('notifMsg').textContent = '알림이 켜져 있어요';
-                    document.getElementById('notifBtn').textContent = '알림 켜짐 ✓';
-                    document.getElementById('notifBtn').disabled = true;
+                    localStorage.setItem('fcm_token', token);
+                    updateStatusPending();
                     
                     new Notification('사여?!', {
-                        body: '알림이 설정되었습니다!',
+                        body: '알림 신청이 완료되었습니다. 관리자 승인을 기다려주세요!',
                         icon: '/icon-192.png'
                     });
                 }
@@ -680,14 +780,44 @@
             }
         }
         
-        // 초기 알림 상태
-        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            document.getElementById('notifStatus').textContent = 'ON';
-            document.getElementById('notifStatus').classList.add('on');
-            document.getElementById('notifMsg').textContent = '알림이 켜져 있어요';
+        function updateStatusPending() {
+            document.getElementById('notifStatus').innerHTML = '<span class="status-spinner"></span> 심사중';
+            document.getElementById('notifStatus').className = 'status-badge pending';
+            document.getElementById('notifMsg').textContent = '개미 알림 서비스 심사중';
+            document.getElementById('notifBtn').textContent = '신청 완료';
+            document.getElementById('notifBtn').disabled = true;
+        }
+        
+        function updateStatusApproved() {
+            document.getElementById('notifStatus').innerHTML = '<span class="status-spinner active"></span> ON';
+            document.getElementById('notifStatus').className = 'status-badge on';
+            document.getElementById('notifMsg').textContent = '매수 타이밍 감지 중';
             document.getElementById('notifBtn').textContent = '알림 켜짐 ✓';
             document.getElementById('notifBtn').disabled = true;
         }
+        
+        // 상태 체크
+        async function checkApprovalStatus() {
+            const savedToken = localStorage.getItem('fcm_token');
+            if (!savedToken) return;
+            
+            try {
+                const doc = await db.collection('fcm_tokens').doc(savedToken).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.approved) {
+                        updateStatusApproved();
+                    } else {
+                        updateStatusPending();
+                    }
+                }
+            } catch (err) {
+                console.log('Status check error:', err);
+            }
+        }
+        
+        // 초기화
+        checkApprovalStatus();
         
         function showPage(num) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -732,12 +862,10 @@
                     priceStr = isUs ? '$' + s.price.toFixed(2) : s.price.toLocaleString() + '원';
                 }
                 
-                // 배지
                 let badges = '';
                 if (s.step1) badges += '<span class="badge green">사도됨</span>';
                 if (s.step2) badges += '<span class="badge red">지금!</span>';
                 
-                // RSI 색상
                 const rsiThreshold = isEtf ? 30 : 35;
                 const rsiClass = s.rsi < rsiThreshold ? 'bad' : (s.rsi < rsiThreshold + 5 ? 'warn' : '');
                 
@@ -748,7 +876,6 @@
                     </div>`;
                 
                 if (isEtf) {
-                    // ETF 지표: RSI, NAV괴리, 거래량, 밴드
                     const navClass = s.nav_discount && s.nav_discount < -0.5 ? 'good' : (s.nav_discount && s.nav_discount > 0.5 ? 'bad' : '');
                     const volClass = s.vol_ratio && s.vol_ratio >= 2 ? 'warn' : '';
                     const bandClass = s.band_pct && s.band_pct < 20 ? 'good' : (s.band_pct && s.band_pct > 80 ? 'bad' : '');
@@ -772,7 +899,6 @@
                         </div>
                     </div>`;
                 } else {
-                    // 주식 지표: RSI, PEG(F), PEG(T), 매출성장, 컨센서스
                     const pegFClass = s.peg_forward && s.peg_forward < 1.0 ? 'good' : (s.peg_forward && s.peg_forward > 1.5 ? 'bad' : '');
                     const pegTClass = s.peg_ttm && s.peg_ttm < 1.5 ? 'good' : '';
                     const revClass = s.rev_growth && s.rev_growth >= 15 ? 'good' : (s.rev_growth && s.rev_growth < 5 ? 'bad' : '');
@@ -828,10 +954,7 @@
                 items += `<span class="ticker-item"><span class="name">${s.name}</span><span class="value">${label} ${value}</span></span>`;
             });
             
-            // 무한 스크롤 효과 (복제)
-            document.getElementById('tickerBar').innerHTML = `
-                <div class="ticker-track">${items}${items}</div>
-            `;
+            document.getElementById('tickerBar').innerHTML = `<div class="ticker-track">${items}${items}</div>`;
         }
         
         function loadData() {
@@ -861,7 +984,6 @@
                 });
         }
         
-        // 페이지 로드시 데이터 미리 로드
         loadData();
     </script>
 </body>

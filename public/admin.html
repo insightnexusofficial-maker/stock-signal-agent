@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사여?! 관리자</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 24px;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .nickname {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .meta {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .status {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .status.approved {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .btn.approve {
+            background: #22c55e;
+            color: #fff;
+        }
+        .btn.reject {
+            background: #ef4444;
+            color: #fff;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .tab.active {
+            background: #3b82f6;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐜 사여?! 관리자</h1>
+        <p class="subtitle">개미 알림 서비스 승인 관리</p>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('pending')">대기중</div>
+            <div class="tab" onclick="showTab('approved')">승인됨</div>
+            <div class="tab" onclick="showTab('all')">전체</div>
+        </div>
+        
+        <div id="userList">
+            <div class="empty">로딩 중...</div>
+        </div>
+    </div>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
+            authDomain: "stock-sayo.firebaseapp.com",
+            projectId: "stock-sayo",
+            storageBucket: "stock-sayo.firebasestorage.app",
+            messagingSenderId: "964666304071",
+            appId: "1:964666304071:web:0c806002d44229f71e3362"
+        };
+        firebase.initializeApp(firebaseConfig);
+        
+        const db = firebase.firestore();
+        let allUsers = [];
+        let currentTab = 'pending';
+        
+        async function loadUsers() {
+            const snapshot = await db.collection('fcm_tokens').orderBy('createdAt', 'desc').get();
+            allUsers = [];
+            snapshot.forEach(doc => {
+                allUsers.push({ id: doc.id, ...doc.data() });
+            });
+            renderUsers();
+        }
+        
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderUsers();
+        }
+        
+        function renderUsers() {
+            let filtered = allUsers;
+            if (currentTab === 'pending') {
+                filtered = allUsers.filter(u => !u.approved);
+            } else if (currentTab === 'approved') {
+                filtered = allUsers.filter(u => u.approved);
+            }
+            
+            if (filtered.length === 0) {
+                document.getElementById('userList').innerHTML = '<div class="empty">사용자가 없습니다</div>';
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(user => {
+                const date = user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('ko-KR') : '-';
+                const statusClass = user.approved ? 'approved' : 'pending';
+                const statusText = user.approved ? '승인됨' : '대기중';
+                
+                html += `
+                    <div class="card">
+                        <div class="user-info">
+                            <div class="nickname">${user.nickname || '(이름없음)'}</div>
+                            <div class="meta">${user.platform || '-'} · ${date}</div>
+                        </div>
+                        <span class="status ${statusClass}">${statusText}</span>
+                        ${!user.approved ? `<button class="btn approve" onclick="approveUser('${user.id}')">승인</button>` : ''}
+                        <button class="btn reject" onclick="deleteUser('${user.id}')">삭제</button>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('userList').innerHTML = html;
+        }
+        
+        async function approveUser(id) {
+            await db.collection('fcm_tokens').doc(id).update({ approved: true });
+            loadUsers();
+        }
+        
+        async function deleteUser(id) {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                await db.collection('fcm_tokens').doc(id).delete();
+                loadUsers();
+            }
+        }
+        
+        loadUsers();
+    </script>
+</body>
+</html>
