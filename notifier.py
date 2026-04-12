@@ -23,9 +23,10 @@ def check_and_notify():
     # 현재 데이터 로드
     doc = db.collection("stocks").document("data").get()
     if not doc.exists:
+        print("📭 데이터 없음")
         return
     
-    data = doc.data()
+    data = doc.to_dict()
     all_stocks = data.get("kr", []) + data.get("us", [])
     
     new_state = {}
@@ -58,28 +59,36 @@ def check_and_notify():
     # 알림 발송
     if alerts:
         send_push_notifications(alerts)
+    else:
+        print("📭 새 시그널 없음")
     
     return alerts
 
 def send_push_notifications(alerts):
-    """FCM 토픽으로 푸시 알림 발송"""
+    """FCM 토큰들에게 푸시 알림 발송"""
+    
+    # Firestore에서 토큰 목록 가져오기
+    tokens_ref = db.collection("fcm_tokens").stream()
+    tokens = [doc.id for doc in tokens_ref]
+    
+    if not tokens:
+        print("📭 등록된 토큰 없음")
+        return
     
     for alert in alerts:
-        message = messaging.Message(
+        message = messaging.MulticastMessage(
             notification=messaging.Notification(
                 title=f"🚨 {alert['name']} 매수 시그널!",
                 body=f"RSI {alert['rsi']} 돌파! STEP1+STEP2 충족"
             ),
-            topic="stock-alerts"
+            tokens=tokens
         )
         
         try:
-            response = messaging.send(message)
-            print(f"✅ 알림 발송: {alert['name']} ({response})")
+            response = messaging.send_each_for_multicast(message)
+            print(f"✅ 알림 발송: {alert['name']} (성공: {response.success_count})")
         except Exception as e:
             print(f"❌ 알림 실패: {e}")
 
 if __name__ == "__main__":
     alerts = check_and_notify()
-    if not alerts:
-        print("📭 새 시그널 없음")
