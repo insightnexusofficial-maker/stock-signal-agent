@@ -38,9 +38,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         .user-info {
             flex: 1;
+            min-width: 150px;
         }
         .nickname {
             font-size: 16px;
@@ -66,6 +69,10 @@
             background: #dcfce7;
             color: #16a34a;
         }
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
         .btn {
             padding: 8px 16px;
             border: none;
@@ -73,7 +80,6 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            margin-left: 8px;
         }
         .btn.approve {
             background: #22c55e;
@@ -101,30 +107,212 @@
             font-weight: 500;
             color: #64748b;
             cursor: pointer;
+            border: none;
         }
         .tab.active {
             background: #3b82f6;
             color: #fff;
         }
+        
+        /* 로그인 화면 */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .login-overlay.hidden {
+            display: none;
+        }
+        .login-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px;
+            width: 90%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .login-box h2 {
+            font-size: 24px;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .login-box p {
+            color: #64748b;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            outline: none;
+            text-align: center;
+        }
+        .login-box input:focus {
+            border-color: #3b82f6;
+        }
+        .login-box .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .login-box .btn-login:hover {
+            background: #2563eb;
+        }
+        .login-error {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 12px;
+            display: none;
+        }
+        .login-error.show {
+            display: block;
+        }
+        
+        /* 메인 컨텐츠 */
+        .main-content {
+            display: none;
+        }
+        .main-content.show {
+            display: block;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            flex: 1;
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #64748b;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🐜 사여?! 관리자</h1>
-        <p class="subtitle">개미 알림 서비스 승인 관리</p>
-        
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('pending')">대기중</div>
-            <div class="tab" onclick="showTab('approved')">승인됨</div>
-            <div class="tab" onclick="showTab('all')">전체</div>
+    <!-- 로그인 화면 -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🐜 관리자 로그인</h2>
+            <p>사여?! 어드민 페이지입니다</p>
+            <input type="password" id="passwordInput" placeholder="비밀번호 입력" onkeypress="if(event.key==='Enter')attemptLogin()">
+            <button class="btn-login" onclick="attemptLogin()">로그인</button>
+            <p class="login-error" id="loginError">비밀번호가 틀렸습니다</p>
         </div>
+    </div>
+    
+    <!-- 메인 컨텐츠 -->
+    <div class="main-content" id="mainContent">
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
         
-        <div id="userList">
-            <div class="empty">로딩 중...</div>
+        <div class="container">
+            <h1>🐜 사여?! 관리자</h1>
+            <p class="subtitle">개미 알림 서비스 승인 관리</p>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="statPending">0</div>
+                    <div class="stat-label">대기중</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statApproved">0</div>
+                    <div class="stat-label">승인됨</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">전체</div>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('pending', this)">대기중</button>
+                <button class="tab" onclick="showTab('approved', this)">승인됨</button>
+                <button class="tab" onclick="showTab('all', this)">전체</button>
+            </div>
+            
+            <div id="userList">
+                <div class="empty">로딩 중...</div>
+            </div>
         </div>
     </div>
     
     <script>
+        // ⚠️ 비밀번호 설정 (원하는 것으로 변경하세요)
+        const ADMIN_PASSWORD = "insight01!!";
+        
+        // 세션 체크
+        function checkSession() {
+            const isLoggedIn = sessionStorage.getItem('admin_logged_in');
+            if (isLoggedIn === 'true') {
+                showMainContent();
+            }
+        }
+        
+        function attemptLogin() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === ADMIN_PASSWORD) {
+                sessionStorage.setItem('admin_logged_in', 'true');
+                showMainContent();
+            } else {
+                document.getElementById('loginError').classList.add('show');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+        
+        function showMainContent() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('show');
+            loadUsers();
+        }
+        
+        function logout() {
+            sessionStorage.removeItem('admin_logged_in');
+            location.reload();
+        }
+        
+        // Firebase 초기화
         const firebaseConfig = {
             apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
             authDomain: "stock-sayo.firebaseapp.com",
@@ -145,13 +333,22 @@
             snapshot.forEach(doc => {
                 allUsers.push({ id: doc.id, ...doc.data() });
             });
+            updateStats();
             renderUsers();
         }
         
-        function showTab(tab) {
+        function updateStats() {
+            const pending = allUsers.filter(u => !u.approved).length;
+            const approved = allUsers.filter(u => u.approved).length;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statApproved').textContent = approved;
+            document.getElementById('statTotal').textContent = allUsers.length;
+        }
+        
+        function showTab(tab, el) {
             currentTab = tab;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            el.classList.add('active');
             renderUsers();
         }
         
@@ -181,8 +378,10 @@
                             <div class="meta">${user.platform || '-'} · ${date}</div>
                         </div>
                         <span class="status ${statusClass}">${statusText}</span>
-                        ${!user.approved ? `<button class="btn approve" onclick="approveUser('${user.id}')">승인</button>` : ''}
-                        <button class="btn reject" onclick="deleteUser('${user.id}')">삭제</button>
+                        <div class="actions">
+                            ${!user.approved ? `<button class="btn approve" onclick="approveUser('${user.id}')">승인</button>` : ''}
+                            <button class="btn reject" onclick="deleteUser('${user.id}')">삭제</button>
+                        </div>
                     </div>
                 `;
             });
@@ -202,7 +401,8 @@
             }
         }
         
-        loadUsers();
+        // 초기화
+        checkSession();
     </script>
 </body>
 </html>

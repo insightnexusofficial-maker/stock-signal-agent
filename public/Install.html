@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <title>사여?! 설치하기</title>
+    
+    <style>
+        :root {
+            --blue: #3b82f6;
+            --navy: #1e293b;
+            --gray: #64748b;
+            --light: #f1f5f9;
+            --green: #22c55e;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg, #e8f4fc 0%, #d0e8f8 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 120px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        /* 히어로 */
+        .hero {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+        .hero-icon {
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            border-radius: 28px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        .hero-icon img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
+        .hero h1 {
+            font-size: 32px;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+        .hero p {
+            color: var(--gray);
+            font-size: 16px;
+        }
+        
+        /* 카드 */
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .card h2 {
+            font-size: 18px;
+            color: var(--navy);
+            margin-bottom: 12px;
+        }
+        .card p {
+            font-size: 15px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        /* 기능 리스트 */
+        .features {
+            margin-top: 16px;
+        }
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .feature:last-child { margin-bottom: 0; }
+        .feature-icon {
+            font-size: 20px;
+            margin-right: 12px;
+            width: 28px;
+            text-align: center;
+        }
+        .feature-text {
+            font-size: 14px;
+            color: var(--navy);
+            line-height: 1.5;
+        }
+        
+        /* CTA 버튼 */
+        .cta-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px 32px;
+            background: linear-gradient(transparent, #e8f4fc 30%);
+        }
+        .cta {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            display: block;
+            padding: 18px;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+        .cta:active {
+            transform: scale(0.98);
+        }
+        .cta.installed {
+            background: var(--green);
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+        }
+        
+        /* 가이드 (기본 숨김) */
+        .guide {
+            display: none;
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .guide.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .guide h2 {
+            font-size: 18px;
+            color: var(--navy);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .step:last-child { margin-bottom: 0; }
+        .step-num {
+            width: 28px;
+            height: 28px;
+            background: var(--blue);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+        .step-desc {
+            font-size: 13px;
+            color: var(--gray);
+            line-height: 1.5;
+        }
+        .step-icon {
+            font-size: 24px;
+            margin-top: 8px;
+        }
+        
+        /* 토스트 */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--navy);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* 플랫폼별 표시 */
+        .ios-only { display: none; }
+        .android-only { display: none; }
+        .desktop-only { display: none; }
+        
+        body.ios .ios-only { display: block; }
+        body.android .android-only { display: block; }
+        body.desktop .desktop-only { display: block; }
+        
+        /* 데스크톱 안내 */
+        .desktop-notice {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .desktop-notice .emoji {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .desktop-notice h2 {
+            font-size: 20px;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+        .desktop-notice p {
+            color: var(--gray);
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 히어로 -->
+        <div class="hero">
+            <div class="hero-icon">
+                <img src="/icon-192.png" alt="사여?!">
+            </div>
+            <h1>사여?!</h1>
+            <p>개미의 매수 타이밍 알림</p>
+        </div>
+        
+        <!-- 앱 소개 -->
+        <div class="card">
+            <h2>🐜 이 앱은 뭐예요?</h2>
+            <p>국내주식, 국내ETF, 미국주식의 매수 타이밍을 자동으로 감지해서 푸시 알림으로 알려주는 앱이에요.</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <span class="feature-icon">📊</span>
+                    <span class="feature-text">국내주식 + 국내ETF + 미국주식 통합 모니터링</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🎯</span>
+                    <span class="feature-text">Valuation + Timing 기반 2단계 시그널</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🔔</span>
+                    <span class="feature-text">장중 10분마다 자동 스크리닝 및 푸시 알림</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📱</span>
+                    <span class="feature-text">앱 설치 후 알림 켜기만 하면 끝!</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 설치 후 안내 -->
+        <div class="card">
+            <h2>📲 설치 후 이렇게 해주세요</h2>
+            <div class="features">
+                <div class="feature">
+                    <span class="feature-icon">1️⃣</span>
+                    <span class="feature-text">홈 화면에서 앱 아이콘 탭</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">2️⃣</span>
+                    <span class="feature-text">"알림 켜기" 버튼 누르기</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">3️⃣</span>
+                    <span class="feature-text">닉네임 입력 → 관리자 승인 대기</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">✅</span>
+                    <span class="feature-text">승인 완료되면 자동 알림 시작!</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- iOS 가이드 (기본 숨김) -->
+        <div class="guide ios-only" id="iosGuide">
+            <h2>🍎 아이폰 설치 방법</h2>
+            
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <div class="step-title">Safari로 열렸는지 확인</div>
+                    <div class="step-desc">Chrome이나 다른 앱 내 브라우저는 안 돼요. Safari 앱으로 열어주세요.</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <div class="step-title">하단 공유 버튼 탭</div>
+                    <div class="step-desc">화면 맨 아래 가운데 있는 공유 버튼을 눌러주세요.</div>
+                    <div class="step-icon">⬆️</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <div class="step-title">"홈 화면에 추가" 선택</div>
+                    <div class="step-desc">스크롤해서 "홈 화면에 추가"를 찾아 탭해주세요.</div>
+                    <div class="step-icon">➕</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <div class="step-title">홈 화면 아이콘으로 열기</div>
+                    <div class="step-desc">홈 화면에 생긴 "사여?!" 아이콘을 탭하면 앱처럼 열려요!</div>
+                    <div class="step-icon">🐜</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 데스크톱 안내 -->
+        <div class="card desktop-only" id="desktopGuide">
+            <div class="desktop-notice">
+                <div class="emoji">📱</div>
+                <h2>폰으로 열어주세요</h2>
+                <p>이 앱은 모바일 푸시 알림을 받는 앱이에요.<br>아이폰이나 안드로이드 폰으로 이 페이지를 열어주세요!</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CTA 버튼 -->
+    <div class="cta-container">
+        <button class="cta" id="installBtn" onclick="handleInstall()">
+            📲 설치하기
+        </button>
+    </div>
+    
+    <!-- 토스트 -->
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // 플랫폼 감지
+        const ua = navigator.userAgent.toLowerCase();
+        const isIOS = /iphone|ipad|ipod/.test(ua);
+        const isAndroid = /android/.test(ua);
+        const platform = isIOS ? "ios" : isAndroid ? "android" : "desktop";
+        
+        document.body.classList.add(platform);
+        
+        // 이미 설치된 상태 체크
+        const isStandalone = 
+            window.matchMedia("(display-mode: standalone)").matches 
+            || window.navigator.standalone;
+        
+        if (isStandalone) {
+            const btn = document.getElementById("installBtn");
+            btn.textContent = "✅ 앱 열기";
+            btn.classList.add("installed");
+            btn.onclick = () => location.href = "/";
+        }
+        
+        // Android 설치 이벤트 캡처
+        let deferredPrompt = null;
+        
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+        
+        // 설치 버튼 핸들러
+        async function handleInstall() {
+            // 이미 설치됨
+            if (isStandalone) {
+                location.href = "/";
+                return;
+            }
+            
+            // iOS: 가이드 펼침
+            if (platform === "ios") {
+                const guide = document.getElementById("iosGuide");
+                guide.classList.add("show");
+                guide.scrollIntoView({ behavior: "smooth", block: "start" });
+                return;
+            }
+            
+            // Android: 시스템 설치 팝업
+            if (platform === "android") {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === "accepted") {
+                        showToast("🎉 설치 완료! 홈 화면에서 열어주세요");
+                        const btn = document.getElementById("installBtn");
+                        btn.textContent = "✅ 앱 열기";
+                        btn.classList.add("installed");
+                    }
+                    deferredPrompt = null;
+                } else {
+                    showToast("Chrome 메뉴 ⋮ → '홈 화면에 추가'를 선택해주세요");
+                }
+                return;
+            }
+            
+            // Desktop: 가이드 표시
+            const desktopGuide = document.getElementById("desktopGuide");
+            desktopGuide.scrollIntoView({ behavior: "smooth" });
+        }
+        
+        // 토스트 표시
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 3000);
+        }
+        
+        // iOS Safari가 아닌 경우 경고
+        if (isIOS && !navigator.userAgent.includes("Safari")) {
+            showToast("Safari 앱으로 열어주세요!");
+        }
+    </script>
+</body>
+</html>
