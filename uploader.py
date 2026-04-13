@@ -11,7 +11,6 @@ from config import KR_STOCKS, US_STOCKS, KR_ETFS, SIGNAL_CONDITIONS
 
 load_dotenv()
 
-# Firebase 초기화
 try:
     firebase_admin.get_app()
 except ValueError:
@@ -20,14 +19,10 @@ except ValueError:
 
 db = firestore.client()
 
-# KIS API 설정
 APP_KEY = os.getenv("KIS_APP_KEY")
 APP_SECRET = os.getenv("KIS_APP_SECRET")
 BASE_URL = "https://openapi.koreainvestment.com:9443"
 
-# ============================================================
-# 공통 함수
-# ============================================================
 def calculate_rsi(prices, period=14):
     if len(prices) < period + 1:
         return None
@@ -42,9 +37,6 @@ def calculate_rsi(prices, period=14):
         return 100
     return round(100 - (100 / (1 + avg_gain / avg_loss)), 2)
 
-# ============================================================
-# 국내 주식 (KIS API + FnGuide)
-# ============================================================
 def get_kis_token():
     url = f"{BASE_URL}/oauth2/tokenP"
     body = {"grant_type": "client_credentials", "appkey": APP_KEY, "appsecret": APP_SECRET}
@@ -55,7 +47,6 @@ def get_kr_stock_data(token, code):
     result = {}
     headers = {"authorization": f"Bearer {token}", "appkey": APP_KEY, "appsecret": APP_SECRET, "tr_id": "FHKST01010100"}
     
-    # 현재가
     url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price"
     params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code}
     res = requests.get(url, headers=headers, params=params)
@@ -64,10 +55,9 @@ def get_kr_stock_data(token, code):
     
     time.sleep(1)
     
-    # RSI
     headers["tr_id"] = "FHKST03010100"
     url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice"
-    params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code, "FID_INPUT_DATE_1": "20250101", "FID_INPUT_DATE_2": "20250412", "FID_PERIOD_DIV_CODE": "D", "FID_ORG_ADJ_PRC": "0"}
+    params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code, "FID_INPUT_DATE_1": "20250101", "FID_INPUT_DATE_2": "20250413", "FID_PERIOD_DIV_CODE": "D", "FID_ORG_ADJ_PRC": "0"}
     res = requests.get(url, headers=headers, params=params)
     if res.json().get("rt_cd") == "0":
         prices = [int(d["stck_clpr"]) for d in reversed(res.json()["output2"])]
@@ -76,7 +66,6 @@ def get_kr_stock_data(token, code):
     return result
 
 def get_kr_valuation(code):
-    """FnGuide에서 Forward PEG + 매출성장률 + 컨센서스 괴리율 + TTM PEG"""
     session = requests.Session()
     url = f"https://comp.fnguide.com/SVO2/ASP/SVD_Main.asp?pGB=1&gicode=A{code}"
     res = session.get(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -88,7 +77,6 @@ def get_kr_valuation(code):
     if len(tables) < 12:
         return result
     
-    # IFRS 연결 Annual 테이블 (인덱스 11)
     for row in tables[11].select("tr"):
         cells = [c.get_text(strip=True) for c in row.select("th, td")]
         if cells and cells[0] == "매출액":
@@ -104,18 +92,16 @@ def get_kr_valuation(code):
         if cells and "PER" in cells[0] and "수정주가" in cells[0]:
             try:
                 result["per_forward"] = float(cells[6].replace(",", ""))
-                # TTM PER (최근 실적 기준)
                 result["per_ttm"] = float(cells[5].replace(",", ""))
             except: pass
     
-    # Forward PEG
-    if result.get("per_forward") and result.get("eps_growth") and result["eps_growth"] > 0:
-        result["peg_forward"] = round(result["per_forward"] / result["eps_growth"], 2)
+    if result.get("per_forward") and result.get("eps_growth"):
+        eg = result["eps_growth"]
+        if 5 <= eg <= 200:
+            result["peg_forward"] = round(result["per_forward"] / eg, 2)
     
-    # TTM PEG (TTM PER / 과거 EPS 성장률)
     try:
         if result.get("per_ttm"):
-            # 과거 EPS 성장률 (2024 vs 2023)
             for row in tables[11].select("tr"):
                 cells = [c.get_text(strip=True) for c in row.select("th, td")]
                 if cells and "EPS" in cells[0] and "지배주주" in cells[0]:
@@ -123,28 +109,22 @@ def get_kr_valuation(code):
                     e23 = float(cells[4].replace(",", ""))
                     if e23 > 0:
                         eps_growth_ttm = (e24 - e23) / e23 * 100
-                        if eps_growth_ttm > 0:
+                        if 5 <= eps_growth_ttm <= 200:
                             result["peg_ttm"] = round(result["per_ttm"] / eps_growth_ttm, 2)
                     break
     except: pass
     
-    # 컨센서스 괴리율 (목표주가 vs 현재주가)
     try:
         consensus_section = soup.select_one("div.corp_group2")
         if consensus_section:
             target_text = consensus_section.get_text()
-            # 목표주가 찾기
             match = re.search(r'목표주가[^\d]*(\d[\d,]*)', target_text)
             if match:
-                target_price = float(match.group(1).replace(",", ""))
-                result["target_price"] = target_price
+                result["target_price"] = float(match.group(1).replace(",", ""))
     except: pass
     
     return result
 
-# ============================================================
-# 미국 주식 (yfinance)
-# ============================================================
 def get_us_stock_data(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
@@ -154,39 +134,39 @@ def get_us_stock_data(ticker):
     result["per_forward"] = info.get("forwardPE")
     result["per_ttm"] = info.get("trailingPE")
     
-    # EPS 성장률
     eg = info.get("earningsGrowth")
-    if eg: result["eps_growth"] = round(eg * 100, 1)
+    if eg is not None:
+        eps_growth_pct = eg * 100
+        if 5 <= eps_growth_pct <= 200:
+            result["eps_growth"] = round(eps_growth_pct, 1)
     
-    # 매출 성장률
     rg = info.get("revenueGrowth")
-    if rg: result["rev_growth"] = round(rg * 100, 1)
+    if rg is not None:
+        result["rev_growth"] = round(rg * 100, 1)
     
-    # Forward PEG
-    if result.get("per_forward") and result.get("eps_growth") and result["eps_growth"] > 0:
+    peg_yf = info.get("pegRatio")
+    if peg_yf and 0.1 <= peg_yf <= 5:
+        result["peg_forward"] = round(peg_yf, 2)
+    elif result.get("per_forward") and result.get("eps_growth"):
         result["peg_forward"] = round(result["per_forward"] / result["eps_growth"], 2)
     
-    # TTM PEG (yfinance 제공 또는 계산)
-    result["peg_ttm"] = info.get("trailingPegRatio")
-    if not result["peg_ttm"] and result.get("per_ttm") and result.get("eps_growth") and result["eps_growth"] > 0:
+    peg_ttm_yf = info.get("trailingPegRatio")
+    if peg_ttm_yf and 0.1 <= peg_ttm_yf <= 5:
+        result["peg_ttm"] = round(peg_ttm_yf, 2)
+    elif result.get("per_ttm") and result.get("eps_growth"):
         result["peg_ttm"] = round(result["per_ttm"] / result["eps_growth"], 2)
     
-    # 컨센서스 괴리율 (목표주가 vs 현재주가)
     target = info.get("targetMeanPrice")
     if target and result["price"]:
         result["consensus_gap"] = round((target - result["price"]) / result["price"] * 100, 1)
         result["target_price"] = target
     
-    # RSI
     hist = stock.history(period="3mo")
     if not hist.empty:
         result["rsi"] = calculate_rsi(hist["Close"].tolist())
     
     return result
 
-# ============================================================
-# 국내 ETF (yfinance + 네이버 NAV)
-# ============================================================
 def get_etf_data(etf):
     ticker = etf["ticker_yf"]
     result = {"name": etf["name"], "code": etf["ticker_krx"]}
@@ -198,23 +178,19 @@ def get_etf_data(etf):
         if hist.empty or len(hist) < 15:
             return None
         
-        # 현재가, RSI
         result["price"] = round(float(hist["Close"].iloc[-1]), 0)
         result["rsi"] = calculate_rsi(hist["Close"].tolist())
         
-        # 이전 RSI (회복 시그널용)
         if len(hist) >= 2:
             prices_prev = hist["Close"].tolist()[:-1]
             result["rsi_prev"] = calculate_rsi(prices_prev)
         
-        # 52주 밴드
         info = stock.info
         low52 = info.get("fiftyTwoWeekLow")
         high52 = info.get("fiftyTwoWeekHigh")
         if low52 and high52 and high52 > low52:
             result["band_pct"] = round((result["price"] - low52) / (high52 - low52) * 100, 1)
         
-        # 거래량 배수
         if "Volume" in hist.columns and len(hist) >= 21:
             avg_vol = hist["Volume"].iloc[-21:-1].mean()
             latest_vol = hist["Volume"].iloc[-1]
@@ -222,26 +198,22 @@ def get_etf_data(etf):
                 result["vol_ratio"] = round(float(latest_vol / avg_vol), 2)
         
     except Exception as e:
-        print(f"   ETF 데이터 에러 ({etf['name']}): {e}")
+        print(f"   ETF 에러 ({etf['name']}): {e}")
         return None
     
-    # NAV 괴리율 (네이버)
     try:
-        nav_data = fetch_nav_from_naver(etf["ticker_krx"], etf["name"])
+        nav_data = fetch_nav_from_naver(etf["ticker_krx"])
         if nav_data and nav_data > 0:
             result["nav"] = nav_data
             result["nav_discount"] = round((result["price"] - nav_data) / nav_data * 100, 2)
-    except:
-        pass
+    except: pass
     
     return result
 
-def fetch_nav_from_naver(ticker_krx, name=""):
-    """네이버 금융에서 NAV 가져오기"""
+def fetch_nav_from_naver(ticker_krx):
     try:
-        headers = {"User-Agent": "Mozilla/5.0"}
         url = f"https://finance.naver.com/item/sise.naver?code={ticker_krx}"
-        res = requests.get(url, headers=headers, timeout=10)
+        res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
         res.encoding = "euc-kr"
         
         idx = res.text.find(">NAV<")
@@ -254,47 +226,35 @@ def fetch_nav_from_naver(ticker_krx, name=""):
         
         if td_values:
             return float(td_values[0].replace(",", ""))
-    except:
-        pass
+    except: pass
     return None
 
-# ============================================================
-# 시그널 판정
-# ============================================================
 def check_stock_signal(data):
-    """주식 시그널: Forward PEG < 1.0 AND 매출성장 >= 15%"""
     cond = SIGNAL_CONDITIONS["stock"]
     peg = data.get("peg_forward")
     rev_g = data.get("rev_growth")
     
-    step1 = (peg is not None and peg < cond["peg_threshold"]) and \
-            (rev_g is not None and rev_g >= cond["rev_growth_threshold"])
+    step1 = (peg is not None and peg < cond["peg_threshold"]) and (rev_g is not None and rev_g >= cond["rev_growth_threshold"])
     step2 = data.get("rsi") is not None and data.get("rsi") < cond["rsi_threshold"]
     
     return step1, step2
 
 def check_etf_signal(data):
-    """ETF 시그널: RSI <= 30 AND (NAV 할인 또는 거래량 급증)"""
     cond = SIGNAL_CONDITIONS["etf"]
     rsi = data.get("rsi")
     nav_disc = data.get("nav_discount")
     vol_ratio = data.get("vol_ratio")
     
     step1 = rsi is not None and rsi <= cond["rsi_threshold"]
-    step2 = (nav_disc is not None and nav_disc < cond["nav_discount_threshold"]) or \
-            (vol_ratio is not None and vol_ratio >= cond["vol_surge_threshold"])
+    step2 = (nav_disc is not None and nav_disc < cond["nav_discount_threshold"]) or (vol_ratio is not None and vol_ratio >= cond["vol_surge_threshold"])
     
     return step1, step2
 
-# ============================================================
-# 메인 업로드 함수
-# ============================================================
 def upload_data():
     print("📊 데이터 수집 시작...\n")
     updated = time.strftime("%m월 %d일 %H:%M")
     
-    # === 국내 주식 ===
-    print("🇰🇷 국내 주식 데이터 수집...")
+    print("🇰🇷 국내 주식...")
     kr_stock_list = []
     token = get_kis_token()
     if token:
@@ -313,7 +273,6 @@ def upload_data():
                 "target_price": val_data.get("target_price"),
             }
             
-            # 컨센서스 괴리율 계산
             if merged.get("target_price") and merged.get("price"):
                 merged["consensus_gap"] = round((merged["target_price"] - merged["price"]) / merged["price"] * 100, 1)
             
@@ -324,8 +283,7 @@ def upload_data():
             kr_stock_list.append(merged)
             time.sleep(1)
     
-    # === 국내 ETF ===
-    print("\n🇰🇷 국내 ETF 데이터 수집...")
+    print("\n🇰🇷 국내 ETF...")
     kr_etf_list = []
     for etf in KR_ETFS:
         print(f"   {etf['name']}...")
@@ -337,8 +295,7 @@ def upload_data():
             kr_etf_list.append(data)
         time.sleep(0.5)
     
-    # === 미국 주식 ===
-    print("\n🇺🇸 미국 주식 데이터 수집...")
+    print("\n🇺🇸 미국 주식...")
     us_stock_list = []
     for ticker, name in US_STOCKS.items():
         print(f"   {name}...")
@@ -356,7 +313,6 @@ def upload_data():
             print(f"   에러: {e}")
         time.sleep(0.5)
     
-    # === Firestore 업로드 ===
     print("\n☁️ Firestore 업로드...")
     db.collection("stocks").document("data").set({
         "kr_stock": kr_stock_list,
@@ -370,7 +326,6 @@ def upload_data():
     print(f"   국내 ETF: {len(kr_etf_list)}개")
     print(f"   미국 주식: {len(us_stock_list)}개")
     
-    # 알림 체크
     from notifier import check_and_notify
     check_and_notify()
 

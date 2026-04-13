@@ -828,26 +828,26 @@
             document.getElementById('notifBtn').disabled = true;
         }
         
-        async function checkApprovalStatus() {
-            const savedToken = localStorage.getItem('fcm_token');
-            if (!savedToken) return;
-            
-            try {
-                const doc = await db.collection('fcm_tokens').doc(savedToken).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    if (data.approved) {
-                        updateStatusApproved();
-                    } else {
-                        updateStatusPending();
-                    }
-                }
-            } catch (err) {
-                console.log('Status check error:', err);
-            }
-        }
+        function watchApprovalStatus() {
+        const savedToken = localStorage.getItem('fcm_token');
+        if (!savedToken) return;
         
-        checkApprovalStatus();
+        // 실시간 리스너 - 승인 상태 변경 즉시 반영
+        db.collection('fcm_tokens').doc(savedToken).onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                if (data.approved) {
+                    updateStatusApproved();
+                } else {
+                    updateStatusPending();
+                }
+            }
+        }, err => {
+            console.log('Status watch error:', err);
+        });
+    }
+
+    watchApprovalStatus();
         
         function showPage(num) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
