@@ -252,7 +252,9 @@ def check_etf_signal(data):
 
 def upload_data():
     print("📊 데이터 수집 시작...\n")
-    updated = time.strftime("%m월 %d일 %H:%M")
+    from datetime import datetime, timezone, timedelta
+    KST = timezone(timedelta(hours=9))
+    updated = datetime.now(KST).strftime("%m월 %d일 %H:%M")
     
     print("🇰🇷 국내 주식...")
     kr_stock_list = []
