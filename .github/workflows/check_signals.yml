@@ -42,8 +42,9 @@ jobs:
           echo "KIS_APP_KEY=${{ secrets.KIS_APP_KEY }}" >> .env
           echo "KIS_APP_SECRET=${{ secrets.KIS_APP_SECRET }}" >> .env
       
-      - name: Run signal checker
-        run: python uploader.py
+      - name: Run signal checker (with retry)
+        run: |
+          python uploader.py || (echo "1차 실행 실패, 30초 후 재시도" && sleep 30 && python uploader.py)
 
       - name: Verify Firestore updated field
         run: |
