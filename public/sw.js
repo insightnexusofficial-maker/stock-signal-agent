@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stock-sayo-v1';
+const CACHE_NAME = 'stock-sayo-v2';
 const urlsToCache = ['/', '/index.html', '/manifest.json'];
 
 // 캐시 설치
@@ -6,13 +6,35 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
     );
+    self.skipWaiting();
 });
 
-// 캐시 응답
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(response => response || fetch(event.request))
+// 새 서비스워커 즉시 활성화
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(keys =>
+            Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
+        )
     );
+    self.clients.claim();
+});
+
+// 네트워크 우선 응답 (실패 시 캐시 fallback)
+self.addEventListener('fetch', event => {
+    if (event.request.method !== 'GET') return;
+
+    event.respondWith((async () => {
+        try {
+            const networkResponse = await fetch(event.request);
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+        } catch (e) {
+            const cachedResponse = await caches.match(event.request);
+            if (cachedResponse) return cachedResponse;
+            throw e;
+        }
+    })());
 });
 
 // 푸시 알림 수신

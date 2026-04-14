@@ -809,7 +809,7 @@
         const db = firebase.firestore();
         let messaging = null;
         let currentToken = null;
-        let dataUnsubscribe = null;
+        let refreshTimer = null;
         
         const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
         
@@ -1077,35 +1077,51 @@
             document.getElementById('tickerBar').innerHTML = `<div class="ticker-track">${items}${items}</div>`;
         }
         
-        function loadData() {
-            if (dataUnsubscribe) return;
+        function normalizeItem(s) {
+            const pegForward = s.peg_forward ?? s.peg_fwd ?? s.pegFwd ?? null;
+            return {
+                ...s,
+                peg_forward: pegForward,
+                peg_fwd: pegForward
+            };
+        }
 
+        function applyData(data) {
+            stockData.kr_stock = (data.kr_stock || []).map(normalizeItem);
+            stockData.kr_etf = (data.kr_etf || []).map(normalizeItem);
+            stockData.us_stock = (data.us_stock || []).map(normalizeItem);
+            document.getElementById('updateTime').textContent = data.updated || '-';
+            renderStocks();
+            updateTickerBar();
+            if (data.vix) updateVixDisplay(data.vix);
+        }
+
+        function fetchLatestData() {
+            return db.collection("stocks").doc("data").get({ source: 'server' })
+                .then(doc => {
+                    if (doc.exists) {
+                        applyData(doc.data());
+                    } else {
+                        document.getElementById('stockList').innerHTML = '<div class="loading">데이터가 없습니다.</div>';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('stockList').innerHTML = `<div class="loading">에러: ${err.message}</div>`;
+                });
+        }
+
+        function loadData() {
             document.getElementById('stockList').innerHTML = `
                 <div class="loading">
                     <div class="loading-spinner"></div>
                     <div>데이터 로딩 중...</div>
                 </div>
             `;
-            
-            dataUnsubscribe = db.collection("stocks").doc("data").onSnapshot(doc => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    stockData.kr_stock = data.kr_stock || [];
-                    stockData.kr_etf = data.kr_etf || [];
-                    stockData.us_stock = data.us_stock || [];
-                    document.getElementById('updateTime').textContent = data.updated || '-';
-                    renderStocks();
-                    updateTickerBar();
 
-                    if (data.vix) {
-                        updateVixDisplay(data.vix);
-                    }
-                } else {
-                    document.getElementById('stockList').innerHTML = '<div class="loading">데이터가 없습니다.</div>';
-                }
-            }, err => {
-                    document.getElementById('stockList').innerHTML = `<div class="loading">에러: ${err.message}</div>`;
-            });
+            fetchLatestData();
+
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(fetchLatestData, 60000);
         }
         
         loadData();
