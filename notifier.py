@@ -1,7 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 
-# Firebase 이미 초기화되어 있으면 스킵
 try:
     firebase_admin.get_app()
 except ValueError:
@@ -10,8 +9,31 @@ except ValueError:
 
 db = firestore.client()
 
-def check_and_notify():
-    """RSI 돌파 체크 및 알림 발송"""
+def check_and_notify(vix_data=None):
+    """VIX 모드에 따른 알림 분기"""
+    
+    # VIX 모드 확인
+    vix_mode = vix_data.get("mode", "normal") if vix_data else "normal"
+    vix_reversal = vix_data.get("reversal", False) if vix_data else False
+    vix_current = vix_data.get("current", 0) if vix_data else 0
+    
+    print(f"📊 VIX 모드: {vix_mode.upper()} (VIX: {vix_current})")
+    
+    # Level 1/2에서 VIX 하락 반전 시 특별 알림
+    if vix_mode in ["level1", "level2"] and vix_reversal:
+        send_panic_alert(vix_mode, vix_current)
+        return []
+    
+    # Level 1/2에서는 일반 알림 Mute
+    if vix_mode in ["level1", "level2"]:
+        print(f"🔇 일반 알림 Mute (VIX ≥ 25)")
+        return []
+    
+    # Normal 모드: 일반 시그널 체크
+    return check_normal_signals()
+
+def check_normal_signals():
+    """평상시 RSI 돌파 체크 및 알림 발송"""
     
     # 이전 상태 로드
     try:
@@ -24,7 +46,7 @@ def check_and_notify():
     doc = db.collection("stocks").document("data").get()
     if not doc.exists:
         print("📭 데이터 없음")
-        return
+        return []
     
     data = doc.to_dict()
     
@@ -70,13 +92,42 @@ def check_and_notify():
     
     return alerts
 
+def send_panic_alert(mode, vix_current):
+    """패닉장 VIX 하락 반전 시 특별 알림"""
+    
+    tokens_ref = db.collection("fcm_tokens").where("approved", "==", True).stream()
+    tokens = [doc.id for doc in tokens_ref]
+    
+    if not tokens:
+        print("📭 등록된 토큰 없음")
+        return
+    
+    if mode == "level2":
+        title = "🔥 강력 매수 기회!"
+        body = f"VIX {vix_current} 하락 반전 감지! 공포장 저점 매수 타이밍"
+    else:
+        title = "⚡ 패닉 저점 기회!"
+        body = f"VIX {vix_current} 하락 반전 감지! 분할 매수 고려"
+    
+    message = messaging.MulticastMessage(
+        notification=messaging.Notification(
+            title=title,
+            body=body
+        ),
+        tokens=tokens
+    )
+    
+    try:
+        response = messaging.send_each_for_multicast(message)
+        print(f"✅ 패닉 알림 발송 (성공: {response.success_count})")
+    except Exception as e:
+        print(f"❌ 패닉 알림 실패: {e}")
+
 def send_push_notifications(alerts):
     """FCM 토큰들에게 푸시 알림 발송"""
     
-    # Firestore에서 토큰 목록 가져오기
     tokens_ref = db.collection("fcm_tokens").where("approved", "==", True).stream()
     tokens = [doc.id for doc in tokens_ref]
-
     
     if not tokens:
         print("📭 등록된 토큰 없음")
@@ -100,4 +151,4 @@ def send_push_notifications(alerts):
             print(f"❌ 알림 실패: {e}")
 
 if __name__ == "__main__":
-    alerts = check_and_notify()
+    check_and_notify()

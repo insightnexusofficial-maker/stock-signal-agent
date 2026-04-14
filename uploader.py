@@ -6,6 +6,7 @@ import yfinance as yf
 import re
 import os
 import time
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from config import KR_STOCKS, US_STOCKS, KR_ETFS, SIGNAL_CONDITIONS
 
@@ -37,6 +38,47 @@ def calculate_rsi(prices, period=14):
         return 100
     return round(100 - (100 / (1 + avg_gain / avg_loss)), 2)
 
+# ============================================================
+# VIX 모니터링
+# ============================================================
+def get_vix_data():
+    """VIX 지수 + 5일 이평 + 모드 판정"""
+    try:
+        vix = yf.Ticker("^VIX")
+        hist = vix.history(period="1mo")
+        
+        if hist.empty:
+            return None
+        
+        current = round(float(hist["Close"].iloc[-1]), 2)
+        ma5 = round(float(hist["Close"].iloc[-5:].mean()), 2) if len(hist) >= 5 else current
+        prev = round(float(hist["Close"].iloc[-2]), 2) if len(hist) >= 2 else current
+        
+        # 모드 판정
+        if current < 25:
+            mode = "normal"
+        elif current < 35:
+            mode = "level1"
+        else:
+            mode = "level2"
+        
+        # 하락 반전 감지 (VIX가 MA5 아래로 내려오면)
+        reversal = current < ma5 and prev >= ma5
+        
+        return {
+            "current": current,
+            "ma5": ma5,
+            "prev": prev,
+            "mode": mode,
+            "reversal": reversal
+        }
+    except Exception as e:
+        print(f"   VIX 에러: {e}")
+        return None
+
+# ============================================================
+# 국내 주식 (KIS API + FnGuide)
+# ============================================================
 def get_kis_token():
     url = f"{BASE_URL}/oauth2/tokenP"
     body = {"grant_type": "client_credentials", "appkey": APP_KEY, "appsecret": APP_SECRET}
@@ -125,6 +167,9 @@ def get_kr_valuation(code):
     
     return result
 
+# ============================================================
+# 미국 주식 (yfinance)
+# ============================================================
 def get_us_stock_data(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
@@ -167,6 +212,9 @@ def get_us_stock_data(ticker):
     
     return result
 
+# ============================================================
+# 국내 ETF (yfinance + 네이버 NAV)
+# ============================================================
 def get_etf_data(etf):
     ticker = etf["ticker_yf"]
     result = {"name": etf["name"], "code": etf["ticker_krx"]}
@@ -229,6 +277,9 @@ def fetch_nav_from_naver(ticker_krx):
     except: pass
     return None
 
+# ============================================================
+# 시그널 판정
+# ============================================================
 def check_stock_signal(data):
     cond = SIGNAL_CONDITIONS["stock"]
     peg = data.get("peg_forward")
@@ -250,13 +301,24 @@ def check_etf_signal(data):
     
     return step1, step2
 
+# ============================================================
+# 메인 업로드 함수
+# ============================================================
 def upload_data():
     print("📊 데이터 수집 시작...\n")
-    from datetime import datetime, timezone, timedelta
     KST = timezone(timedelta(hours=9))
     updated = datetime.now(KST).strftime("%m월 %d일 %H:%M")
     
-    print("🇰🇷 국내 주식...")
+    # === VIX 모니터링 ===
+    print("📈 VIX 지수 확인...")
+    vix_data = get_vix_data()
+    if vix_data:
+        print(f"   VIX: {vix_data['current']} | MA5: {vix_data['ma5']} | 모드: {vix_data['mode']}")
+        if vix_data['reversal']:
+            print("   ⚡ VIX 하락 반전 감지!")
+    
+    # === 국내 주식 ===
+    print("\n🇰🇷 국내 주식...")
     kr_stock_list = []
     token = get_kis_token()
     if token:
@@ -285,6 +347,7 @@ def upload_data():
             kr_stock_list.append(merged)
             time.sleep(1)
     
+    # === 국내 ETF ===
     print("\n🇰🇷 국내 ETF...")
     kr_etf_list = []
     for etf in KR_ETFS:
@@ -297,6 +360,7 @@ def upload_data():
             kr_etf_list.append(data)
         time.sleep(0.5)
     
+    # === 미국 주식 ===
     print("\n🇺🇸 미국 주식...")
     us_stock_list = []
     for ticker, name in US_STOCKS.items():
@@ -315,11 +379,13 @@ def upload_data():
             print(f"   에러: {e}")
         time.sleep(0.5)
     
+    # === Firestore 업로드 ===
     print("\n☁️ Firestore 업로드...")
     db.collection("stocks").document("data").set({
         "kr_stock": kr_stock_list,
         "kr_etf": kr_etf_list,
         "us_stock": us_stock_list,
+        "vix": vix_data,
         "updated": updated
     })
     
@@ -327,9 +393,13 @@ def upload_data():
     print(f"   국내 주식: {len(kr_stock_list)}개")
     print(f"   국내 ETF: {len(kr_etf_list)}개")
     print(f"   미국 주식: {len(us_stock_list)}개")
+    if vix_data:
+        mode_emoji = {"normal": "🟢", "level1": "🟡", "level2": "🔴"}
+        print(f"   VIX 모드: {mode_emoji.get(vix_data['mode'], '')} {vix_data['mode'].upper()}")
     
+    # 알림 체크
     from notifier import check_and_notify
-    check_and_notify()
+    check_and_notify(vix_data)
 
 if __name__ == "__main__":
     upload_data()
