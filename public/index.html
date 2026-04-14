@@ -1022,7 +1022,8 @@
                     const pegFClass = pegForward && pegForward < 1.0 ? 'good' : (pegForward && pegForward > 1.5 ? 'bad' : '');
                     const pegTClass = pegTtm && pegTtm < 1.5 ? 'good' : '';
                     const revClass = s.rev_growth && s.rev_growth >= 15 ? 'good' : (s.rev_growth && s.rev_growth < 5 ? 'bad' : '');
-                    const consClass = s.consensus_gap && s.consensus_gap > 20 ? 'good' : (s.consensus_gap && s.consensus_gap < -10 ? 'bad' : '');
+                    const hasConsensus = s.consensus_gap !== undefined && s.consensus_gap !== null;
+                    const consClass = hasConsensus && s.consensus_gap > 20 ? 'good' : (hasConsensus && s.consensus_gap < -10 ? 'bad' : '');
                     
                     html += `<div class="metrics-grid cols-5">
                         <div class="metric">
@@ -1043,7 +1044,7 @@
                         </div>
                         <div class="metric">
                             <div class="metric-label">컨센</div>
-                            <div class="metric-value ${consClass}">${s.consensus_gap ? (s.consensus_gap > 0 ? '+' : '') + s.consensus_gap + '%' : '-'}</div>
+                            <div class="metric-value ${consClass}">${hasConsensus ? (s.consensus_gap > 0 ? '+' : '') + s.consensus_gap + '%' : '-'}</div>
                         </div>
                     </div>`;
                 }

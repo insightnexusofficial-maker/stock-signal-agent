@@ -301,6 +301,8 @@ def get_kr_valuation(code):
     
     if result.get("per_fwd") and result.get("eps_growth") and 5 <= result["eps_growth"] <= 200:
         result["peg_fwd"] = round(result["per_fwd"] / result["eps_growth"], 2)
+    if result.get("per_ttm") and result.get("eps_growth") and 5 <= result["eps_growth"] <= 200:
+        result["peg_ttm"] = round(result["per_ttm"] / result["eps_growth"], 2)
     
     try:
         consensus_section = soup.select_one("div.corp_group2")
@@ -343,6 +345,11 @@ def get_us_stock_data(ticker):
         result["peg_fwd"] = round(peg_yf, 2)
     elif result.get("per_fwd") and result.get("eps_growth"):
         result["peg_fwd"] = round(result["per_fwd"] / result["eps_growth"], 2)
+
+    if result.get("per_ttm") and result.get("eps_growth"):
+        peg_ttm = result["per_ttm"] / result["eps_growth"]
+        if 0.05 <= peg_ttm <= 10:
+            result["peg_ttm"] = round(peg_ttm, 2)
     
     target = info.get("targetMeanPrice")
     if target and result["price"]:
@@ -565,38 +572,42 @@ def upload_data():
                 name = info["name"]
                 sector = info["sector"]
                 print(f"   {name} ({sector})...")
-                
-                stock_data = get_kr_stock_data(token, code)
-                val_data = get_kr_valuation(code)
-                
-                merged = {
-                    "code": code,
-                    "name": name,
-                    "sector": sector,
-                    **stock_data,
-                    **val_data,
-                }
-            if merged.get("peg_fwd") is not None and merged.get("peg_forward") is None:
-                merged["peg_forward"] = merged.get("peg_fwd")
-                
-                if merged.get("target_price") and merged.get("price"):
-                    merged["consensus_gap"] = round((merged["target_price"] - merged["price"]) / merged["price"] * 100, 1)
-                
-                save_snapshot(code, {
-                    "eps_fwd": merged.get("eps_fwd"),
-                    "peg_fwd": merged.get("peg_fwd"),
-                    "pbr": merged.get("pbr"),
-                    "price": merged.get("price"),
-                    "rsi": merged.get("rsi"),
-                })
-                
-                step1, step2, reason = check_stock_signal(merged, sector, macro)
-                merged["step1"] = step1
-                merged["step2"] = step2
-                if reason:
-                    merged["skip_reason"] = reason
-                
-                kr_stock_list.append(merged)
+
+                try:
+                    stock_data = get_kr_stock_data(token, code)
+                    val_data = get_kr_valuation(code)
+                    
+                    merged = {
+                        "code": code,
+                        "name": name,
+                        "sector": sector,
+                        **stock_data,
+                        **val_data,
+                    }
+                    if merged.get("peg_fwd") is not None and merged.get("peg_forward") is None:
+                        merged["peg_forward"] = merged.get("peg_fwd")
+                    
+                    if merged.get("target_price") and merged.get("price"):
+                        merged["consensus_gap"] = round((merged["target_price"] - merged["price"]) / merged["price"] * 100, 1)
+                    
+                    save_snapshot(code, {
+                        "eps_fwd": merged.get("eps_fwd"),
+                        "peg_fwd": merged.get("peg_fwd"),
+                        "peg_ttm": merged.get("peg_ttm"),
+                        "pbr": merged.get("pbr"),
+                        "price": merged.get("price"),
+                        "rsi": merged.get("rsi"),
+                    })
+                    
+                    step1, step2, reason = check_stock_signal(merged, sector, macro)
+                    merged["step1"] = step1
+                    merged["step2"] = step2
+                    if reason:
+                        merged["skip_reason"] = reason
+                    
+                    kr_stock_list.append(merged)
+                except Exception as e:
+                    print(f"   국내 종목 처리 실패({name}): {e}")
                 time.sleep(1)
         
         # === 국내 ETF ===
@@ -633,6 +644,7 @@ def upload_data():
                 save_snapshot(ticker, {
                     "eps_fwd": data.get("eps_fwd"),
                     "peg_fwd": data.get("peg_fwd"),
+                    "peg_ttm": data.get("peg_ttm"),
                     "pbr": data.get("pbr"),
                     "ps": data.get("ps"),
                     "price": data.get("price"),
