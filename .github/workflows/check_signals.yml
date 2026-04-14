@@ -11,6 +11,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +45,7 @@ jobs:
       
       - name: Run signal checker (with retry)
         run: |
-          python uploader.py || (echo "1차 실행 실패, 30초 후 재시도" && sleep 30 && python uploader.py)
+          python -u uploader.py || (echo "1차 실행 실패, 30초 후 재시도" && sleep 30 && python -u uploader.py)
 
       - name: Verify Firestore updated field
         run: |
