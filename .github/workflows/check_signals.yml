@@ -2,10 +2,8 @@ name: Stock Signal Check
 
 on:
   schedule:
-    # 국장: 월~금 09:00~15:30 KST (UTC 00:00~06:30)
-    - cron: '*/10 0-6 * * 1-5'
-    # 미장: 월~금 22:30~05:00 KST (UTC 13:30~20:00)
-    - cron: '*/10 13-20 * * 1-5'
+    # 월~금 10분 주기 (시장별 시간/데이터 소스 이슈 대비 안정 운용)
+    - cron: '*/10 * * * 1-5'
   workflow_dispatch:  # 수동 실행
 
 jobs:

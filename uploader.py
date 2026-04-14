@@ -261,7 +261,7 @@ def get_kr_stock_data(token, code):
 def get_kr_valuation(code):
     session = requests.Session()
     url = f"https://comp.fnguide.com/SVO2/ASP/SVD_Main.asp?pGB=1&gicode=A{code}"
-    res = session.get(url, headers={"User-Agent": "Mozilla/5.0"})
+    res = session.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
     soup = BeautifulSoup(res.text, "lxml")
     session.close()
     
@@ -576,6 +576,8 @@ def upload_data():
                     **stock_data,
                     **val_data,
                 }
+            if merged.get("peg_fwd") is not None and merged.get("peg_forward") is None:
+                merged["peg_forward"] = merged.get("peg_fwd")
                 
                 if merged.get("target_price") and merged.get("price"):
                     merged["consensus_gap"] = round((merged["target_price"] - merged["price"]) / merged["price"] * 100, 1)
@@ -625,6 +627,8 @@ def upload_data():
                 data["code"] = ticker
                 data["name"] = name
                 data["sector"] = sector
+                if data.get("peg_fwd") is not None and data.get("peg_forward") is None:
+                    data["peg_forward"] = data.get("peg_fwd")
                 
                 save_snapshot(ticker, {
                     "eps_fwd": data.get("eps_fwd"),
