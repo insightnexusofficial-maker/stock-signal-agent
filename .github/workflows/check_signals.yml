@@ -27,6 +27,15 @@ jobs:
       - name: Create Firebase key
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-key.json
+
+      - name: Debug Firebase project id
+        run: |
+          python - <<'PY'
+          import json
+          with open("firebase-key.json", "r", encoding="utf-8") as f:
+              data = json.load(f)
+          print("FIREBASE_PROJECT_ID:", data.get("project_id"))
+          PY
       
       - name: Create .env file
         run: |
@@ -35,3 +44,23 @@ jobs:
       
       - name: Run signal checker
         run: python uploader.py
+
+      - name: Verify Firestore updated field
+        run: |
+          python - <<'PY'
+          import firebase_admin
+          from firebase_admin import credentials, firestore
+
+          cred = credentials.Certificate("firebase-key.json")
+          firebase_admin.initialize_app(cred)
+          db = firestore.client()
+
+          doc = db.collection("stocks").document("data").get()
+          if not doc.exists:
+              raise RuntimeError("stocks/data 문서를 찾지 못했습니다.")
+
+          updated = doc.to_dict().get("updated")
+          print("FIRESTORE_UPDATED:", updated)
+          if not updated:
+              raise RuntimeError("stocks/data.updated 값이 비어 있습니다.")
+          PY

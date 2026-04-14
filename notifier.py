@@ -1,38 +1,43 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
+from runtime_secrets import load_runtime_env, get_firebase_key_path
+
+load_runtime_env()
 
 try:
     firebase_admin.get_app()
 except ValueError:
-    cred = credentials.Certificate("firebase-key.json")
+    cred = credentials.Certificate(get_firebase_key_path())
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-def check_and_notify(vix_data=None):
-    """VIX 모드에 따른 알림 분기"""
-    
-    # VIX 모드 확인
+def check_and_notify(vix_data=None, qqq_data=None):
+    """VIX/QQQ 모드에 따른 알림 분기"""
     vix_mode = vix_data.get("mode", "normal") if vix_data else "normal"
     vix_reversal = vix_data.get("reversal", False) if vix_data else False
     vix_current = vix_data.get("current", 0) if vix_data else 0
-    
+
+    qqq_above = qqq_data.get("above_ma20", True) if qqq_data else True
+    market_mode = "normal" if qqq_above else "caution"
+
     print(f"📊 VIX 모드: {vix_mode.upper()} (VIX: {vix_current})")
-    
+    print(f"📊 QQQ 모드: {'🟢 상승' if qqq_above else '🟡 경계'}")
+
     # Level 1/2에서 VIX 하락 반전 시 특별 알림
     if vix_mode in ["level1", "level2"] and vix_reversal:
         send_panic_alert(vix_mode, vix_current)
         return []
-    
+
     # Level 1/2에서는 일반 알림 Mute
     if vix_mode in ["level1", "level2"]:
-        print(f"🔇 일반 알림 Mute (VIX ≥ 25)")
+        print("🔇 일반 알림 Mute (VIX ≥ 25)")
         return []
-    
-    # Normal 모드: 일반 시그널 체크
-    return check_normal_signals()
 
-def check_normal_signals():
+    # Normal/Caution 모드: 일반 시그널 체크
+    return check_normal_signals(market_mode)
+
+def check_normal_signals(market_mode):
     """평상시 RSI 돌파 체크 및 알림 발송"""
     
     # 이전 상태 로드
@@ -50,11 +55,15 @@ def check_normal_signals():
     
     data = doc.to_dict()
     
+    # RSI 기준: 일반 40, 경계 30
+    stock_rsi = 40 if market_mode == "normal" else 30
+    etf_rsi = 30 if market_mode == "normal" else 25
+
     # 모든 종목 합치기
     all_items = []
-    all_items.extend([(s, "stock", 35) for s in data.get("kr_stock", [])])
-    all_items.extend([(s, "etf", 30) for s in data.get("kr_etf", [])])
-    all_items.extend([(s, "stock", 35) for s in data.get("us_stock", [])])
+    all_items.extend([(s, "stock", stock_rsi) for s in data.get("kr_stock", [])])
+    all_items.extend([(s, "etf", etf_rsi) for s in data.get("kr_etf", [])])
+    all_items.extend([(s, "stock", stock_rsi) for s in data.get("us_stock", [])])
     
     new_state = {}
     alerts = []
