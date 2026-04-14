@@ -1,6 +1,13 @@
 venv/
 __pycache__/
 *.pyc
+
 .env
+.env.*
+
 firebase-key.json
+
+*.key
+*.pem
+
 .DS_Store
