@@ -809,6 +809,7 @@
         const db = firebase.firestore();
         let messaging = null;
         let currentToken = null;
+        let dataUnsubscribe = null;
         
         const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
         
@@ -973,6 +974,8 @@
                 const cardClass = s.step2 ? 'alert' : (s.step1 ? 'buy' : '');
                 const isEtf = currentMarket === 'kr_etf';
                 const isUs = currentMarket === 'us_stock';
+                const pegForward = s.peg_fwd ?? s.peg_forward;
+                const pegTtm = s.peg_ttm;
                 
                 let priceStr = '-';
                 if (s.price) {
@@ -983,7 +986,7 @@
                 if (s.step1) badges += '<span class="badge green">매수</span>';
                 if (s.step2) badges += '<span class="badge red">지금 매수!</span>';
                 
-                const rsiThreshold = isEtf ? 30 : 35;
+                const rsiThreshold = s.rsi_threshold || (isEtf ? 30 : 35);
                 const rsiClass = s.rsi < rsiThreshold ? 'bad' : (s.rsi < rsiThreshold + 5 ? 'warn' : '');
                 
                 html += `<div class="stock-card ${cardClass}">
@@ -1016,8 +1019,8 @@
                         </div>
                     </div>`;
                 } else {
-                    const pegFClass = s.peg_forward && s.peg_forward < 1.0 ? 'good' : (s.peg_forward && s.peg_forward > 1.5 ? 'bad' : '');
-                    const pegTClass = s.peg_ttm && s.peg_ttm < 1.5 ? 'good' : '';
+                    const pegFClass = pegForward && pegForward < 1.0 ? 'good' : (pegForward && pegForward > 1.5 ? 'bad' : '');
+                    const pegTClass = pegTtm && pegTtm < 1.5 ? 'good' : '';
                     const revClass = s.rev_growth && s.rev_growth >= 15 ? 'good' : (s.rev_growth && s.rev_growth < 5 ? 'bad' : '');
                     const consClass = s.consensus_gap && s.consensus_gap > 20 ? 'good' : (s.consensus_gap && s.consensus_gap < -10 ? 'bad' : '');
                     
@@ -1028,11 +1031,11 @@
                         </div>
                         <div class="metric">
                             <div class="metric-label">PEG(F)</div>
-                            <div class="metric-value ${pegFClass}">${s.peg_forward || '-'}</div>
+                            <div class="metric-value ${pegFClass}">${pegForward || '-'}</div>
                         </div>
                         <div class="metric">
                             <div class="metric-label">PEG(T)</div>
-                            <div class="metric-value ${pegTClass}">${s.peg_ttm || '-'}</div>
+                            <div class="metric-value ${pegTClass}">${pegTtm || '-'}</div>
                         </div>
                         <div class="metric">
                             <div class="metric-label">매출↑</div>
@@ -1067,7 +1070,7 @@
             all.forEach(s => {
                 const isEtf = stockData.kr_etf.includes(s);
                 const label = isEtf ? 'NAV' : 'PEG';
-                const value = isEtf ? (s.nav_discount ? s.nav_discount.toFixed(1) + '%' : '-') : (s.peg_forward || '-');
+                const value = isEtf ? (s.nav_discount ? s.nav_discount.toFixed(1) + '%' : '-') : (s.peg_fwd ?? s.peg_forward ?? '-');
                 items += `<span class="ticker-item"><span class="name">${s.name}</span><span class="value">${label} ${value}</span></span>`;
             });
             
@@ -1075,6 +1078,8 @@
         }
         
         function loadData() {
+            if (dataUnsubscribe) return;
+
             document.getElementById('stockList').innerHTML = `
                 <div class="loading">
                     <div class="loading-spinner"></div>
@@ -1082,28 +1087,25 @@
                 </div>
             `;
             
-            db.collection("stocks").doc("data").get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        stockData.kr_stock = data.kr_stock || [];
-                        stockData.kr_etf = data.kr_etf || [];
-                        stockData.us_stock = data.us_stock || [];
-                        document.getElementById('updateTime').textContent = data.updated || '-';
-                        renderStocks();
-                        updateTickerBar();
-                        
-                        // VIX 표시
-                        if (data.vix) {
-                            updateVixDisplay(data.vix);
-                        }
-                    } else {
-                        document.getElementById('stockList').innerHTML = '<div class="loading">데이터가 없습니다.</div>';
+            dataUnsubscribe = db.collection("stocks").doc("data").onSnapshot(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    stockData.kr_stock = data.kr_stock || [];
+                    stockData.kr_etf = data.kr_etf || [];
+                    stockData.us_stock = data.us_stock || [];
+                    document.getElementById('updateTime').textContent = data.updated || '-';
+                    renderStocks();
+                    updateTickerBar();
+
+                    if (data.vix) {
+                        updateVixDisplay(data.vix);
                     }
-                })
-                .catch(err => {
+                } else {
+                    document.getElementById('stockList').innerHTML = '<div class="loading">데이터가 없습니다.</div>';
+                }
+            }, err => {
                     document.getElementById('stockList').innerHTML = `<div class="loading">에러: ${err.message}</div>`;
-                });
+            });
         }
         
         loadData();
