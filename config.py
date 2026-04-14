@@ -1,45 +1,31 @@
-"""
-사여?! - 통합 설정
-==================
-국내주식 + 국내ETF + 미국주식
-"""
+# config.py
 
-# ============================================================
-# 국내 주식 (KIS API + FnGuide)
-# ============================================================
 KR_STOCKS = {
-    "005930": "삼성전자",
-    "000660": "SK하이닉스",
-    "012450": "한화에어로",
-    "047810": "한국항공우주",
-    "064350": "현대로템",
-    "035420": "LIG넥스원"
+    "005930": {"name": "삼성전자", "sector": "semiconductor"},
+    "000660": {"name": "SK하이닉스", "sector": "semiconductor"},
+    "012450": {"name": "한화에어로", "sector": "defense"},
+    "047810": {"name": "한국항공우주", "sector": "aerospace"},
+    "064350": {"name": "현대로템", "sector": "defense"},
+    "079550": {"name": "LIG넥스원", "sector": "defense"},
 }
 
-# ============================================================
-# 미국 주식 (yfinance)
-# ============================================================
 US_STOCKS = {
-    "NVDA": "엔비디아",
-    "AVGO": "브로드컴",
-    "MU": "마이크론",
-    "AMD": "AMD",
-    "TSM": "TSMC",
-    "INTC": "인텔",
-    "LMT": "록히드마틴",
-    "RTX": "RTX",
-    "NOC": "노스롭그루먼",
-    "ATI": "ATI"
+    "NVDA": {"name": "엔비디아", "sector": "ai_bigtech"},
+    "AVGO": {"name": "브로드컴", "sector": "ai_bigtech"},
+    "MU": {"name": "마이크론", "sector": "semiconductor"},
+    "AMD": {"name": "AMD", "sector": "semiconductor"},
+    "TSM": {"name": "TSMC", "sector": "ai_bigtech"},
+    "INTC": {"name": "인텔", "sector": "semiconductor"},
+    "LMT": {"name": "록히드마틴", "sector": "defense"},
+    "RTX": {"name": "RTX", "sector": "defense"},
+    "NOC": {"name": "노스롭그루먼", "sector": "aerospace"},
+    "ATI": {"name": "ATI", "sector": "aerospace"},
 }
 
-# ============================================================
-# 국내 ETF (yfinance + 네이버 NAV)
-# ============================================================
 KR_ETFS = [
     {"name": "KODEX 미국S&P500", "ticker_krx": "379800", "ticker_yf": "379800.KS"},
     {"name": "KODEX 200", "ticker_krx": "069500", "ticker_yf": "069500.KS"},
     {"name": "KODEX 반도체", "ticker_krx": "091160", "ticker_yf": "091160.KS"},
-    {"name": "KODEX 미국우주항공", "ticker_krx": "0167Z0", "ticker_yf": "0167Z0.KS"},
     {"name": "KODEX 미국AI테크TOP10", "ticker_krx": "485540", "ticker_yf": "485540.KS"},
     {"name": "KODEX 미국AI테크TOP10타겟커버드콜", "ticker_krx": "483280", "ticker_yf": "483280.KS"},
     {"name": "KODEX 200타겟위클리커버드콜", "ticker_krx": "498400", "ticker_yf": "498400.KS"},
@@ -47,20 +33,39 @@ KR_ETFS = [
     {"name": "TIGER 미국배당다우존스", "ticker_krx": "458730", "ticker_yf": "458730.KS"},
 ]
 
-# ============================================================
-# 시그널 조건
-# ============================================================
-SIGNAL_CONDITIONS = {
-    # 주식 시그널
-    "stock": {
-        "rsi_threshold": 35,          # RSI 이하 → 과매도
-        "peg_threshold": 1.0,         # Forward PEG 미만 → 저평가
-        "rev_growth_threshold": 15,   # 매출성장률 이상 → 고성장
+# 섹터별 Valuation 기준
+SECTOR_CRITERIA = {
+    "semiconductor": {
+        "peg_threshold": 0.5,
+        "pbr_threshold": 3.0,
+        "rsi_normal": 40,      # QQQ > MA20
+        "rsi_caution": 30,     # QQQ < MA20
     },
-    # ETF 시그널
+    "ai_bigtech": {
+        "peg_threshold": 1.2,
+        "rev_growth_threshold": 15,
+        "consensus_gap_threshold": -10,
+        "rsi_normal": 40,
+        "rsi_caution": 30,
+    },
+    "defense": {
+        "peg_threshold": 1.5,
+        "per_threshold": 15,
+        "rev_growth_threshold": 5,
+        "rsi_normal": 40,
+        "rsi_caution": 30,
+    },
+    "aerospace": {
+        "peg_threshold": 1.5,
+        "ps_threshold": 10,
+        "band_threshold": 30,
+        "rsi_normal": 40,
+        "rsi_caution": 30,
+    },
     "etf": {
-        "rsi_threshold": 30,          # RSI 이하 → 과매도
-        "nav_discount_threshold": -0.5,  # NAV 괴리율 이하 → 할인
-        "vol_surge_threshold": 2.0,   # 거래량 배수 이상 → 급증
-    }
+        "rsi_normal": 30,
+        "rsi_caution": 25,
+        "nav_discount_threshold": -0.5,
+        "band_threshold": 25,
+    },
 }

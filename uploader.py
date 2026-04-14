@@ -7,7 +7,55 @@ import re
 import os
 import time
 from datetime import datetime, timezone, timedelta
-from config import KR_STOCKS, US_STOCKS, KR_ETFS, SECTOR_CRITERIA
+from config import KR_STOCKS, US_STOCKS, KR_ETFS
+try:
+    from config import SECTOR_CRITERIA
+except ImportError:
+    from config import SIGNAL_CONDITIONS
+
+    # 구버전 config 호환: SIGNAL_CONDITIONS만 있을 때 최소 기준 구성
+    SECTOR_CRITERIA = {
+        "semiconductor": {
+            "peg_threshold": SIGNAL_CONDITIONS["stock"]["peg_threshold"],
+            "pbr_threshold": 3.0,
+            "rsi_normal": SIGNAL_CONDITIONS["stock"]["rsi_threshold"],
+            "rsi_caution": 30,
+        },
+        "ai_bigtech": {
+            "peg_threshold": SIGNAL_CONDITIONS["stock"]["peg_threshold"],
+            "rev_growth_threshold": SIGNAL_CONDITIONS["stock"]["rev_growth_threshold"],
+            "consensus_gap_threshold": -10,
+            "rsi_normal": SIGNAL_CONDITIONS["stock"]["rsi_threshold"],
+            "rsi_caution": 30,
+        },
+        "defense": {
+            "peg_threshold": 1.5,
+            "per_threshold": 15,
+            "rev_growth_threshold": 5,
+            "rsi_normal": SIGNAL_CONDITIONS["stock"]["rsi_threshold"],
+            "rsi_caution": 30,
+        },
+        "aerospace": {
+            "peg_threshold": 1.5,
+            "ps_threshold": 10,
+            "band_threshold": 30,
+            "rsi_normal": SIGNAL_CONDITIONS["stock"]["rsi_threshold"],
+            "rsi_caution": 30,
+        },
+        "etf": {
+            "rsi_normal": SIGNAL_CONDITIONS["etf"]["rsi_threshold"],
+            "rsi_caution": 25,
+            "nav_discount_threshold": SIGNAL_CONDITIONS["etf"]["nav_discount_threshold"],
+            "band_threshold": 25,
+        },
+    }
+
+# 구버전 config 호환: 문자열 종목명을 {"name","sector"} 형식으로 승격
+if KR_STOCKS and isinstance(next(iter(KR_STOCKS.values())), str):
+    KR_STOCKS = {code: {"name": name, "sector": "semiconductor"} for code, name in KR_STOCKS.items()}
+
+if US_STOCKS and isinstance(next(iter(US_STOCKS.values())), str):
+    US_STOCKS = {ticker: {"name": name, "sector": "ai_bigtech"} for ticker, name in US_STOCKS.items()}
 from runtime_secrets import load_runtime_env, get_firebase_key_path
 
 load_runtime_env()
