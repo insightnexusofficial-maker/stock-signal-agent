@@ -1,12 +1,8 @@
 name: Stock Signal Check
 
 on:
-  schedule:
-    # 국장: 월~금 09:00~15:30 KST (UTC 00:00~06:30)
-    - cron: '*/10 0-6 * * 1-5'
-    # 미장: 월~금 22:30~05:00 KST (UTC 13:30~20:00)
-    - cron: '*/10 13-20 * * 1-5'
-  workflow_dispatch:  # 수동 실행
+  # 외부 트리거(cron-job.org) 전용. GitHub 내장 cron은 신뢰도 낮아 제거.
+  workflow_dispatch:
 
 jobs:
   check:
