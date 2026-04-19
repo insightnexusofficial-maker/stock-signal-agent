@@ -1,5 +1,5 @@
 """
-사여?! - 통합 설정 (v2: 섹터 파라미터화)
+사여?! - 통합 설정 (v3: 섹터별 Earnings Surprise 공통화)
 ==================================================
 국내주식 + 국내ETF + 미국주식
 섹터별 매수/매도 임계값을 SECTOR_CRITERIA에서 일괄 관리
@@ -49,25 +49,27 @@ KR_ETFS = [
 ]
 
 # ============================================================
-# 섹터별 임계값 (P0 확장판)
+# 섹터별 임계값 (v3: consensus_gap_min 모든 섹터 추가)
 # ============================================================
 # 필드 설명:
 #   peg_max               : PEG fwd 상한 (이하일 때 매수 후보)
-#   valuation_metric      : 5년 밸류 위치 지표 ("pbr_5y_pct" / "per_5y_pct" / "evebitda_5y_pct")
-#                           → P1에서 히스토리 데이터 연동 후 작동
+#   valuation_metric      : 5년 밸류 위치 지표 ("pbr_5y_pct"/"per_5y_pct"/"evebitda_5y_pct")
+#                           → P1에서 히스토리 데이터 연동 후 실제 작동
 #   valuation_threshold   : 밸류 위치 상단 임계값 (이 이상이면 "가속도 점검" 구간)
+#   pbr_max, per_max      : fallback 또는 OR 조건용 단순 상한
 #   rev_growth_min        : 매출 성장률 하한 (%)
 #   consensus_gap_min     : Earnings Surprise (%) 하한 — 실제 EPS vs 직전 분기 컨센
-#   per_max               : OR 조건용 PER 상한 (방산 등 성장률 낮지만 저PER 가치주)
+#                           0 = "플러스 서프라이즈만 통과", -10 = "10% 쇼크까진 허용"
 #   ps_max, band_max      : 적자기업 대안 지표 (우주항공)
-#   rsi_*                 : 시장 모드별 RSI 돌파 임계값 (아래에서 위로 "상향 돌파" 기준)
+#   rsi_*                 : 시장 모드별 RSI 돌파 임계값 (아래→위 상향 돌파 기준)
 # ============================================================
 SECTOR_CRITERIA = {
     "semiconductor": {
         "peg_max": 0.5,
         "valuation_metric": "pbr_5y_pct",
         "valuation_threshold": 0.8,
-        "pbr_max": 3.0,  # fallback (5년 위치 데이터 없을 때)
+        "pbr_max": 3.0,
+        "consensus_gap_min": 0,      # 플러스 서프라이즈만
         "rsi_normal": 40,
         "rsi_adjust": 35,
         "rsi_caution": 30,
@@ -78,7 +80,7 @@ SECTOR_CRITERIA = {
         "valuation_metric": "per_5y_pct",   # 빅테크는 PBR 부적합 → PER 5년 위치
         "valuation_threshold": 0.8,
         "rev_growth_min": 15,
-        "consensus_gap_min": -10,
+        "consensus_gap_min": -10,    # 빅테크는 변동성 커서 -10%까지 허용
         "rsi_normal": 40,
         "rsi_adjust": 35,
         "rsi_caution": 30,
@@ -90,6 +92,7 @@ SECTOR_CRITERIA = {
         "valuation_threshold": 0.8,
         "per_max": 15,
         "rev_growth_min": 5,
+        "consensus_gap_min": 0,      # 플러스 서프라이즈만
         "rsi_normal": 40,
         "rsi_adjust": 35,
         "rsi_caution": 30,
@@ -101,6 +104,7 @@ SECTOR_CRITERIA = {
         "valuation_threshold": 0.8,
         "ps_max": 10,
         "band_max": 30,
+        "consensus_gap_min": 0,      # 플러스 서프라이즈만
         "rsi_normal": 40,
         "rsi_adjust": 35,
         "rsi_caution": 30,

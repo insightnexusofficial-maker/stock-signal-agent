@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#3b82f6">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon-192.png">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>사여?! Admin</title>
+        
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#0f172a">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="사여 Admin">
+        
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+        <link rel="shortcut icon" href="/icon-192.png">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+        <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
+    
     <title>사여?!</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
@@ -18,14 +30,15 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(180deg, #e8f4fc 0%, #d0e8f8 100%);
+            background: #f8fafc;
             min-height: 100vh;
             padding-bottom: 80px;
+            color: #0f172a;
         }
         
-        /* 티커바 */
+        /* 티커바 (차콜) */
         .ticker-bar {
-            background: #1e293b;
+            background: #0f172a;
             padding: 10px 0;
             overflow: hidden;
             white-space: nowrap;
@@ -48,7 +61,7 @@
             border-right: 1px solid #334155;
         }
         .ticker-item:last-child { border-right: none; }
-        .ticker-item .name { color: #fff; font-weight: 500; }
+        .ticker-item .name { color: #f1f5f9; font-weight: 500; }
         .ticker-item .value { color: #22c55e; font-weight: 600; margin-left: 6px; }
         .ticker-empty {
             color: #64748b;
@@ -58,67 +71,35 @@
             text-align: center;
         }
         
-        /* VIX 상태바 */
-        .vix-bar {
+        /* 시장 모드 바 */
+        .mode-bar {
             background: #fff;
-            padding: 12px 16px;
+            padding: 10px 12px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
+            gap: 8px;
             border-bottom: 1px solid #e2e8f0;
         }
-        .vix-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
+        .mode-pill {
+            flex: 1;
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 12px;
             font-weight: 600;
+            text-align: center;
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid transparent;
+            transition: all 0.3s;
         }
-        .vix-indicator.normal {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-        .vix-indicator.level1 {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        .vix-indicator.level2 {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        .vix-light {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        .vix-indicator.normal .vix-light { background: #22c55e; }
-        .vix-indicator.level1 .vix-light { background: #f59e0b; }
-        .vix-indicator.level2 .vix-light { background: #ef4444; }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .vix-value {
-            font-size: 12px;
-            color: #64748b;
-            font-weight: 400;
-        }
-        .vix-desc {
-            font-size: 12px;
-            color: #94a3b8;
-        }
+        .mode-pill.normal { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+        .mode-pill.adjust { background: #fef3c7; color: #a16207; border-color: #fde68a; }
+        .mode-pill.caution { background: #fed7aa; color: #9a3412; border-color: #fdba74; }
+        .mode-pill.panic { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
         
         .container { max-width: 480px; margin: 0 auto; padding: 20px 16px; }
         
         /* 헤더 */
-        .header {
-            text-align: center;
-            padding: 30px 0 20px;
-        }
+        .header { text-align: center; padding: 30px 0 20px; }
         .header-icon-wrapper {
             position: relative;
             display: inline-block;
@@ -132,8 +113,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
             overflow: hidden;
+            border: 1px solid #e2e8f0;
         }
         .header-icon img {
             width: 140px;
@@ -147,28 +129,19 @@
             position: absolute;
             width: 3px;
             height: 18px;
-            background: #b0b8c4;
+            background: #94a3b8;
             border-radius: 2px;
             top: -18px;
             animation: wiggle 0.8s ease-in-out infinite;
         }
-        .antenna.left {
-            left: 55px;
-            transform-origin: bottom center;
-        }
-        .antenna.right {
-            right: 55px;
-            transform-origin: bottom center;
-            animation-delay: 0.4s;
-        }
+        .antenna.left { left: 55px; transform-origin: bottom center; }
+        .antenna.right { right: 55px; transform-origin: bottom center; animation-delay: 0.4s; }
         .antenna::after {
             content: '';
             position: absolute;
-            top: -6px;
-            left: -3px;
-            width: 9px;
-            height: 9px;
-            background: #b0b8c4;
+            top: -6px; left: -3px;
+            width: 9px; height: 9px;
+            background: #94a3b8;
             border-radius: 50%;
         }
         @keyframes wiggle {
@@ -176,15 +149,8 @@
             50% { transform: rotate(12deg); }
         }
         
-        .header h1 {
-            font-size: 32px;
-            color: #1e293b;
-            margin-bottom: 6px;
-        }
-        .header p.subtitle {
-            color: #64748b;
-            font-size: 15px;
-        }
+        .header h1 { font-size: 32px; color: #0f172a; margin-bottom: 6px; }
+        .header p.subtitle { color: #64748b; font-size: 15px; }
         
         /* 카드 */
         .card {
@@ -192,7 +158,146 @@
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* 매크로 대시보드 */
+        .macro-dashboard {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+        .macro-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .macro-section-title .reversal-flag {
+            font-size: 11px;
+            padding: 3px 8px;
+            background: #fef3c7;
+            color: #a16207;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+        .macro-section-title .reversal-flag.active { display: inline-block; }
+        
+        .macro-card {
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .macro-card:last-child { border-bottom: none; padding-bottom: 0; }
+        .macro-card:first-of-type { padding-top: 4px; }
+        
+        .macro-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .macro-card-title {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .macro-card-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .macro-card-badge.good { background: #dcfce7; color: #15803d; }
+        .macro-card-badge.warn { background: #fef3c7; color: #a16207; }
+        .macro-card-badge.bad { background: #fee2e2; color: #991b1b; }
+        
+        .macro-card-value {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .macro-card-main {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .macro-card-sub {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .macro-card-dev {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .macro-card-dev.good { color: #22c55e; }
+        .macro-card-dev.bad { color: #ef4444; }
+        
+        .macro-gauge {
+            position: relative;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+        .macro-gauge-fill {
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            border-radius: 4px;
+            background: #22c55e;
+            transition: width 0.4s ease;
+        }
+        .macro-gauge-mark {
+            position: absolute;
+            top: -2px;
+            width: 2px;
+            height: 12px;
+            background: #94a3b8;
+            transform: translateX(-50%);
+        }
+        .macro-gauge-center {
+            position: absolute;
+            left: 50%;
+            top: -2px;
+            width: 2px;
+            height: 12px;
+            background: #94a3b8;
+            transform: translateX(-50%);
+        }
+        .macro-gauge-dot {
+            position: absolute;
+            top: -3px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #22c55e;
+            border: 2px solid #fff;
+            transform: translateX(-50%);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+            transition: left 0.4s ease, background 0.4s ease;
+        }
+        .macro-gauge-scale {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+        .macro-card-meta {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 6px;
         }
         
         /* 섹션 */
@@ -202,23 +307,17 @@
             align-items: center;
             margin: 24px 0 12px;
         }
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e293b;
-        }
-        .section-time {
-            font-size: 13px;
-            color: #94a3b8;
-        }
+        .section-title { font-size: 18px; font-weight: 700; color: #0f172a; }
+        .section-time { font-size: 13px; color: #94a3b8; }
         
-        /* 탭 */
+        /* 탭 (차콜 악센트) */
         .tabs {
             display: flex;
             background: #fff;
             border-radius: 12px;
             padding: 4px;
             margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
         }
         .tab {
             flex: 1;
@@ -231,32 +330,26 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .tab.active {
-            background: #3b82f6;
-            color: #fff;
-        }
+        .tab.active { background: #0f172a; color: #fff; }
         
         /* 서브탭 */
         .subtabs {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 16px;
         }
         .subtab {
             flex: 1;
-            padding: 8px;
+            padding: 8px 4px;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             color: #64748b;
             background: #f1f5f9;
             border-radius: 8px;
             cursor: pointer;
         }
-        .subtab.active {
-            background: #e0e7ff;
-            color: #3b82f6;
-        }
+        .subtab.active { background: #0f172a; color: #fff; }
         
         /* 종목 카드 */
         .stock-card {
@@ -264,11 +357,13 @@
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
             min-height: 110px;
+            border: 1px solid #e2e8f0;
         }
         .stock-card.buy { border-left: 4px solid #22c55e; }
         .stock-card.alert { border-left: 4px solid #ef4444; }
+        .stock-card.exit { border-left: 4px solid #f97316; }
         
         .stock-header {
             display: flex;
@@ -276,20 +371,23 @@
             align-items: center;
             margin-bottom: 12px;
             min-height: 28px;
+            gap: 8px;
         }
         .stock-name {
             font-size: 15px;
             font-weight: 600;
-            color: #1e293b;
+            color: #0f172a;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 4px;
+            flex: 1;
+            min-width: 0;
         }
         .stock-price {
             font-size: 15px;
             font-weight: 700;
-            color: #1e293b;
+            color: #0f172a;
             white-space: nowrap;
         }
         
@@ -299,9 +397,7 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 6px;
         }
-        .metrics-grid.cols-5 {
-            grid-template-columns: repeat(5, 1fr);
-        }
+        .metrics-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
         .metric {
             background: #f8fafc;
             border-radius: 8px;
@@ -312,21 +408,13 @@
             flex-direction: column;
             justify-content: center;
         }
-        .metric-label {
-            font-size: 10px;
-            color: #94a3b8;
-            margin-bottom: 2px;
-        }
-        .metric-value {
-            font-size: 13px;
-            font-weight: 600;
-            color: #334155;
-        }
+        .metric-label { font-size: 10px; color: #94a3b8; margin-bottom: 2px; }
+        .metric-value { font-size: 13px; font-weight: 600; color: #334155; }
         .metric-value.good { color: #22c55e; }
         .metric-value.warn { color: #f59e0b; }
         .metric-value.bad { color: #ef4444; }
         
-        /* 배지 */
+        /* 배지 (시그널 컬러만 유지) */
         .badge {
             display: inline-block;
             padding: 3px 6px;
@@ -338,13 +426,12 @@
         .badge.green { background: #dcfce7; color: #16a34a; }
         .badge.red { background: #fee2e2; color: #dc2626; }
         .badge.yellow { background: #fef3c7; color: #d97706; }
+        .badge.orange { background: #fed7aa; color: #9a3412; }
         
-        /* 하단 네비게이션 */
+        /* 하단 네비 (차콜 악센트) */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 0; left: 0; right: 0;
             background: #fff;
             display: flex;
             border-top: 1px solid #e2e8f0;
@@ -360,10 +447,7 @@
             border-top: 2px solid transparent;
             transition: all 0.2s;
         }
-        .nav-item.active {
-            color: #3b82f6;
-            border-top-color: #3b82f6;
-        }
+        .nav-item.active { color: #0f172a; border-top-color: #0f172a; font-weight: 600; }
         
         /* 로딩 */
         .loading {
@@ -372,10 +456,9 @@
             color: #64748b;
         }
         .loading-spinner {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             border: 3px solid #e2e8f0;
-            border-top-color: #3b82f6;
+            border-top-color: #0f172a;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 16px;
@@ -389,13 +472,12 @@
         /* 가이드 */
         .guide-content { display: none; }
         .guide-content.active { display: block; }
-        
         .guide-section { margin-bottom: 16px; }
         .guide-section:last-child { margin-bottom: 0; }
         .guide-title {
             font-size: 15px;
             font-weight: 600;
-            color: #1e293b;
+            color: #0f172a;
             margin-bottom: 8px;
         }
         .guide-box {
@@ -409,18 +491,25 @@
             padding: 6px 0;
             font-size: 13px;
             border-bottom: 1px solid #e2e8f0;
+            gap: 8px;
         }
         .guide-row:last-child { border-bottom: none; }
-        .guide-label { color: #64748b; }
-        .guide-value { font-weight: 600; color: #334155; }
+        .guide-label { color: #64748b; flex: 1; }
+        .guide-value { font-weight: 600; color: #334155; text-align: right; }
         .guide-value.good { color: #22c55e; }
         .guide-value.warn { color: #f59e0b; }
         .guide-value.bad { color: #ef4444; }
+        .guide-note {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.5;
+            padding: 8px 0;
+        }
         
-        /* 버튼 */
+        /* 버튼 (차콜) */
         .btn-primary {
             width: 100%;
-            background: #3b82f6;
+            background: #0f172a;
             color: #fff;
             border: none;
             padding: 16px;
@@ -429,15 +518,10 @@
             font-weight: 600;
             cursor: pointer;
         }
-        .btn-primary:disabled {
-            background: #94a3b8;
-        }
+        .btn-primary:disabled { background: #94a3b8; }
         
         /* 알림 상태 */
-        .notification-status {
-            text-align: center;
-            padding: 24px 0;
-        }
+        .notification-status { text-align: center; padding: 24px 0; }
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -449,17 +533,10 @@
             font-size: 16px;
             font-weight: 700;
         }
-        .status-badge.on {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-        .status-badge.pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
+        .status-badge.on { background: #dcfce7; color: #16a34a; }
+        .status-badge.pending { background: #fef3c7; color: #d97706; }
         .status-spinner {
-            width: 16px;
-            height: 16px;
+            width: 16px; height: 16px;
             border: 2px solid #d97706;
             border-top-color: transparent;
             border-radius: 50%;
@@ -469,55 +546,36 @@
             border-color: #16a34a;
             border-top-color: transparent;
         }
-        
         .status-msg {
             margin-top: 16px;
             font-size: 17px;
-            color: #334155;
+            color: #0f172a;
             font-weight: 600;
         }
         
-        /* 서비스 소개 */
+        /* 서비스 소개 (슬레이트) */
         .intro-box {
-            background: #f0f9ff;
+            background: #f1f5f9;
             border-radius: 12px;
             padding: 16px;
             margin-top: 8px;
         }
-        .intro-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
+        .intro-item { display: flex; align-items: flex-start; margin-bottom: 12px; }
         .intro-item:last-child { margin-bottom: 0; }
-        .intro-icon {
-            font-size: 18px;
-            margin-right: 12px;
-            width: 24px;
-            text-align: center;
-        }
-        .intro-text {
-            font-size: 14px;
-            color: #334155;
-            line-height: 1.5;
-        }
+        .intro-icon { font-size: 18px; margin-right: 12px; width: 24px; text-align: center; }
+        .intro-text { font-size: 14px; color: #334155; line-height: 1.5; }
         
         /* 모달 */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
             z-index: 100;
             align-items: center;
             justify-content: center;
         }
-        .modal-overlay.show {
-            display: flex;
-        }
+        .modal-overlay.show { display: flex; }
         .modal {
             background: #fff;
             border-radius: 16px;
@@ -526,16 +584,8 @@
             max-width: 320px;
             text-align: center;
         }
-        .modal h3 {
-            font-size: 18px;
-            color: #1e293b;
-            margin-bottom: 12px;
-        }
-        .modal p {
-            font-size: 14px;
-            color: #64748b;
-            margin-bottom: 20px;
-        }
+        .modal h3 { font-size: 18px; color: #0f172a; margin-bottom: 12px; }
+        .modal p { font-size: 14px; color: #64748b; margin-bottom: 20px; }
         .modal input {
             width: 100%;
             padding: 12px 16px;
@@ -545,9 +595,7 @@
             margin-bottom: 16px;
             outline: none;
         }
-        .modal input:focus {
-            border-color: #3b82f6;
-        }
+        .modal input:focus { border-color: #0f172a; }
         .modal-btn {
             width: 100%;
             padding: 14px;
@@ -557,34 +605,20 @@
             font-weight: 600;
             cursor: pointer;
         }
-        .modal-btn.primary {
-            background: #3b82f6;
-            color: #fff;
-            margin-bottom: 8px;
-        }
-        .modal-btn.secondary {
-            background: #f1f5f9;
-            color: #64748b;
-        }
+        .modal-btn.primary { background: #0f172a; color: #fff; margin-bottom: 8px; }
+        .modal-btn.secondary { background: #f1f5f9; color: #64748b; }
     </style>
 </head>
 <body>
-    <!-- 티커바 -->
     <div class="ticker-bar" id="tickerBar">
         <span class="ticker-empty">📡 시그널 스캔중...</span>
     </div>
     
-    <!-- VIX 상태바 -->
-    <div class="vix-bar" id="vixBar">
-        <div class="vix-indicator normal" id="vixIndicator">
-            <span class="vix-light"></span>
-            <span id="vixMode">로딩중</span>
-            <span class="vix-value" id="vixValue">VIX -</span>
-        </div>
-        <span class="vix-desc" id="vixDesc">분할매수 모드</span>
+    <div class="mode-bar">
+        <div class="mode-pill normal" id="modeUsPill">🇺🇸 미국 로딩중</div>
+        <div class="mode-pill normal" id="modeKrPill">🇰🇷 한국 로딩중</div>
     </div>
     
-    <!-- 닉네임 입력 모달 -->
     <div class="modal-overlay" id="nicknameModal">
         <div class="modal">
             <h3>🐜 개미 등록</h3>
@@ -595,7 +629,6 @@
         </div>
     </div>
     
-    <!-- 페이지 1: 알림 설정 -->
     <div class="page active" id="page1">
         <div class="container">
             <div class="header">
@@ -623,11 +656,15 @@
                     </div>
                     <div class="intro-item">
                         <span class="intro-icon">🎯</span>
-                        <span class="intro-text">Valuation, Timing 기반 예측 모델</span>
+                        <span class="intro-text">섹터별 밸류에이션 + 모멘텀 기반 시그널</span>
                     </div>
                     <div class="intro-item">
                         <span class="intro-icon">🚦</span>
-                        <span class="intro-text">VIX 기반 시장 모드 자동 전환</span>
+                        <span class="intro-text">VIX + QQQ/KOSPI 20일선 기반 시장 모드</span>
+                    </div>
+                    <div class="intro-item">
+                        <span class="intro-icon">⚡</span>
+                        <span class="intro-text">EPS 컨센서스 추세로 매수/매도 트리거</span>
                     </div>
                 </div>
             </div>
@@ -636,18 +673,82 @@
         </div>
     </div>
     
-    <!-- 페이지 2: 주요 지표 -->
     <div class="page" id="page2">
         <div class="container">
+            <div class="macro-dashboard">
+                <div class="macro-section-title">
+                    <span>🌐 매크로 지표</span>
+                    <span class="reversal-flag" id="vixReversalFlag">⚡ VIX 반전</span>
+                </div>
+                
+                <div class="macro-card">
+                    <div class="macro-card-header">
+                        <span class="macro-card-title">VIX 공포지수</span>
+                        <span class="macro-card-badge good" id="vixBadge">🟢 평온</span>
+                    </div>
+                    <div class="macro-card-value">
+                        <span class="macro-card-main" id="vixVal">-</span>
+                        <span class="macro-card-sub" id="vixSub">MA5 -</span>
+                    </div>
+                    <div class="macro-gauge">
+                        <div class="macro-gauge-fill" id="vixGaugeFill" style="width: 0%;"></div>
+                        <div class="macro-gauge-mark" style="left: 50%"></div>
+                        <div class="macro-gauge-mark" style="left: 70%"></div>
+                        <div class="macro-gauge-dot" id="vixGaugeDot" style="left: 0%;"></div>
+                    </div>
+                    <div class="macro-gauge-scale">
+                        <span>0</span><span>25</span><span>35</span><span>50+</span>
+                    </div>
+                </div>
+                
+                <div class="macro-card">
+                    <div class="macro-card-header">
+                        <span class="macro-card-title">QQQ (나스닥100)</span>
+                        <span class="macro-card-badge good" id="qqqBadge">🟢 MA20↑</span>
+                    </div>
+                    <div class="macro-card-value">
+                        <span class="macro-card-main" id="qqqVal">-</span>
+                        <span class="macro-card-dev good" id="qqqDev">-</span>
+                    </div>
+                    <div class="macro-gauge">
+                        <div class="macro-gauge-center"></div>
+                        <div class="macro-gauge-dot" id="qqqGaugeDot" style="left: 50%;"></div>
+                    </div>
+                    <div class="macro-gauge-scale">
+                        <span>-5%</span><span>MA20</span><span>+5%</span>
+                    </div>
+                    <div class="macro-card-meta" id="qqqMeta">MA20: -</div>
+                </div>
+                
+                <div class="macro-card">
+                    <div class="macro-card-header">
+                        <span class="macro-card-title">KOSPI</span>
+                        <span class="macro-card-badge good" id="kospiBadge">🟢 MA20↑</span>
+                    </div>
+                    <div class="macro-card-value">
+                        <span class="macro-card-main" id="kospiVal">-</span>
+                        <span class="macro-card-dev good" id="kospiDev">-</span>
+                    </div>
+                    <div class="macro-gauge">
+                        <div class="macro-gauge-center"></div>
+                        <div class="macro-gauge-dot" id="kospiGaugeDot" style="left: 50%;"></div>
+                    </div>
+                    <div class="macro-gauge-scale">
+                        <span>-5%</span><span>MA20</span><span>+5%</span>
+                    </div>
+                    <div class="macro-card-meta" id="kospiMeta">MA20: -</div>
+                </div>
+            </div>
+            
             <div class="section-header">
                 <div class="section-title">주요 지표</div>
                 <div class="section-time" id="updateTime">-</div>
             </div>
             
             <div class="tabs">
-                <div class="tab active" onclick="showMarket('kr_stock')">🇰🇷 국내주식</div>
-                <div class="tab" onclick="showMarket('kr_etf')">🇰🇷 ETF</div>
-                <div class="tab" onclick="showMarket('us_stock')">🇺🇸 미국주식</div>
+                <div class="tab active" onclick="showMarket('kr_stock', event)">🇰🇷 국내주식</div>
+                <div class="tab" onclick="showMarket('kr_etf', event)">🇰🇷 ETF</div>
+                <div class="tab" onclick="showMarket('us_stock', event)">🇺🇸 미국주식</div>
             </div>
             
             <div id="stockList">
@@ -659,7 +760,6 @@
         </div>
     </div>
     
-    <!-- 페이지 3: 가이드 -->
     <div class="page" id="page3">
         <div class="container">
             <div class="section-header">
@@ -667,93 +767,160 @@
             </div>
             
             <div class="subtabs">
-                <div class="subtab active" onclick="showGuide('signal')">시그널 조건</div>
-                <div class="subtab" onclick="showGuide('terms')">용어 설명</div>
+                <div class="subtab active" onclick="showGuide('market', event)">시장 모드</div>
+                <div class="subtab" onclick="showGuide('signal', event)">매수/매도</div>
+                <div class="subtab" onclick="showGuide('terms', event)">용어</div>
             </div>
             
-            <!-- 시그널 조건 -->
-            <div class="guide-content active" id="guide-signal">
+            <div class="guide-content active" id="guide-market">
                 <div class="card">
                     <div class="guide-section">
-                        <div class="guide-title">🚦 VIX 모드</div>
+                        <div class="guide-title">🚦 4단계 시장 모드</div>
+                        <div class="guide-note">
+                            VIX와 QQQ/KOSPI 20일선을 조합해 시장 상황을 판정합니다.
+                            <strong>시장이 어려울수록 RSI 기준이 더 엄격해져</strong>,
+                            같은 종목도 더 싸게 사게 됩니다.
+                        </div>
                         <div class="guide-box">
                             <div class="guide-row">
-                                <span class="guide-label">🟢 Normal (VIX &lt; 25)</span>
-                                <span class="guide-value">일반 알림 ON</span>
+                                <span class="guide-label">🟢 일반 (Normal)</span>
+                                <span class="guide-value good">RSI 40 돌파</span>
                             </div>
                             <div class="guide-row">
-                                <span class="guide-label">🟡 Level 1 (25~34)</span>
-                                <span class="guide-value warn">알림 일시정지</span>
+                                <span class="guide-label">🟡 조정 (Adjust)</span>
+                                <span class="guide-value warn">RSI 35 돌파</span>
                             </div>
                             <div class="guide-row">
-                                <span class="guide-label">🔴 Level 2 (≥35)</span>
-                                <span class="guide-value bad">패닉 매수 대기</span>
+                                <span class="guide-label">🟠 경계 (Caution)</span>
+                                <span class="guide-value warn">RSI 30 돌파</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">🔴 공포 (Panic)</span>
+                                <span class="guide-value bad">RSI 25 돌파</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="guide-section">
-                        <div class="guide-title">📈 주식 시그널</div>
+                        <div class="guide-title">🌐 매크로 판정 기준</div>
                         <div class="guide-box">
                             <div class="guide-row">
-                                <span class="guide-label">Valuation</span>
-                                <span class="guide-value">PEG &lt; 1.0 & 매출↑ ≥ 15%</span>
+                                <span class="guide-label">VIX &lt; 25 & 지수 &gt; MA20</span>
+                                <span class="guide-value good">일반</span>
                             </div>
                             <div class="guide-row">
-                                <span class="guide-label">Timing</span>
-                                <span class="guide-value">RSI 35 하회 후 돌파</span>
+                                <span class="guide-label">VIX &lt; 25 & 지수 &lt; MA20</span>
+                                <span class="guide-value warn">조정</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">VIX 25~34</span>
+                                <span class="guide-value warn">경계</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">VIX ≥ 35</span>
+                                <span class="guide-value bad">공포 (최고 기회)</span>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">📊 ETF 시그널</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">과매도</span>
-                                <span class="guide-value">RSI ≤ 30</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">할인매수</span>
-                                <span class="guide-value">NAV 괴리율 &lt; -0.5%</span>
-                            </div>
+                        <div class="guide-note">
+                            미국 종목은 <strong>QQQ 20일선</strong>, 한국 종목은 <strong>KOSPI 20일선</strong>을 사용합니다.
+                            20일선 이탈은 1% 이상, 2거래일 연속일 때만 확정 (whipsaw 방지).
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 용어 설명 -->
+            <div class="guide-content" id="guide-signal">
+                <div class="card">
+                    <div class="guide-section">
+                        <div class="guide-title">🔔 매수 시그널 (섹터별)</div>
+                        <div class="guide-box">
+                            <div class="guide-row">
+                                <span class="guide-label">반도체</span>
+                                <span class="guide-value">PEG &lt; 0.5 & PBR &lt; 3</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">AI/빅테크</span>
+                                <span class="guide-value">PEG &lt; 1.2 & 매출↑ ≥ 15%</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">방산</span>
+                                <span class="guide-value">(PEG &lt; 1.5 or PER &lt; 15) & 매출↑ ≥ 5%</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">우주항공</span>
+                                <span class="guide-value">PEG &lt; 1.5 (적자 시 PS &lt; 10)</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">공통</span>
+                                <span class="guide-value">거래량 ≥ 1.2x & 서프 ≥ 0% & EPS↑</span>
+                            </div>
+                        </div>
+                        <div class="guide-note">
+                            위 조건 + <strong>RSI가 임계값을 아래에서 위로 상향 돌파</strong>할 때 알림.
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <div class="guide-title">📊 ETF 매수 시그널</div>
+                        <div class="guide-box">
+                            <div class="guide-row">
+                                <span class="guide-label">과매도 or 할인</span>
+                                <span class="guide-value">RSI ≤ 임계값 또는 NAV &lt; -0.5%</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">저점 근처</span>
+                                <span class="guide-value">52주 밴드 &lt; 25%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <div class="guide-title">🚨 매도 시그널 (단계화)</div>
+                        <div class="guide-box">
+                            <div class="guide-row">
+                                <span class="guide-label">⚡ 경고</span>
+                                <span class="guide-value warn">V_curr &lt; V_wow 1회 or 컨센 -3%</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">⚠️ 절반 매도</span>
+                                <span class="guide-value warn">V_curr &lt; V_wow 2회 연속</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">🚨 전량 매도</span>
+                                <span class="guide-value bad">V_curr &lt; V_mom (추세 파괴)</span>
+                            </div>
+                        </div>
+                        <div class="guide-note">
+                            V_curr = 최근 5일 평균, V_wow = 7~11일 전, V_mom = 28~32일 전 EPS 컨센서스.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="guide-content" id="guide-terms">
                 <div class="card">
                     <div class="guide-section">
                         <div class="guide-title">VIX (공포지수)</div>
                         <div class="guide-box">
                             <div class="guide-row">
-                                <span class="guide-label">25 미만</span>
+                                <span class="guide-label">&lt; 25</span>
                                 <span class="guide-value good">평상시</span>
                             </div>
                             <div class="guide-row">
                                 <span class="guide-label">25~35</span>
-                                <span class="guide-value warn">경계 구간</span>
+                                <span class="guide-value warn">시장 스트레스</span>
                             </div>
                             <div class="guide-row">
-                                <span class="guide-label">35 이상</span>
-                                <span class="guide-value bad">공포장</span>
+                                <span class="guide-label">≥ 35</span>
+                                <span class="guide-value bad">패닉 · 최고 매수 기회</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="guide-section">
-                        <div class="guide-title">RSI</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">30~35 이하</span>
-                                <span class="guide-value good">과매도 (매수 기회)</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">70 이상</span>
-                                <span class="guide-value bad">과매수 (조정 가능)</span>
-                            </div>
+                        <div class="guide-title">RSI (14일)</div>
+                        <div class="guide-note">
+                            상승/하락 강도를 0~100으로 수치화. 과매도(낮을수록 반등 가능성) 구간을 <strong>아래에서 위로 돌파</strong>할 때 매수 타이밍.
                         </div>
                     </div>
                     
@@ -761,26 +928,44 @@
                         <div class="guide-title">Forward PEG</div>
                         <div class="guide-box">
                             <div class="guide-row">
-                                <span class="guide-label">1.0 미만</span>
-                                <span class="guide-value good">저평가</span>
+                                <span class="guide-label">반도체</span>
+                                <span class="guide-value good">&lt; 0.5 저평가</span>
                             </div>
                             <div class="guide-row">
-                                <span class="guide-label">1.5 초과</span>
-                                <span class="guide-value bad">고평가</span>
+                                <span class="guide-label">AI/빅테크</span>
+                                <span class="guide-value good">&lt; 1.2 저평가</span>
+                            </div>
+                            <div class="guide-row">
+                                <span class="guide-label">방산/항공</span>
+                                <span class="guide-value good">&lt; 1.5 저평가</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="guide-section">
-                        <div class="guide-title">NAV 괴리율</div>
+                        <div class="guide-title">Earnings Surprise</div>
+                        <div class="guide-note">
+                            최근 분기 실제 EPS vs 컨센서스. +면 서프라이즈, −면 쇼크. 미국 종목만 수집(yfinance).
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <div class="guide-title">목표주가 갭</div>
+                        <div class="guide-note">
+                            애널리스트 목표주가 대비 현재가의 상승 여력(%). +면 저평가, −면 고평가.
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <div class="guide-title">NAV 괴리율 (ETF)</div>
                         <div class="guide-box">
                             <div class="guide-row">
-                                <span class="guide-label">-0.5% 이하</span>
-                                <span class="guide-value good">할인 거래</span>
+                                <span class="guide-label">≤ -0.5%</span>
+                                <span class="guide-value good">할인 거래 (유리)</span>
                             </div>
                             <div class="guide-row">
-                                <span class="guide-label">+0.5% 이상</span>
-                                <span class="guide-value bad">프리미엄</span>
+                                <span class="guide-label">≥ +0.5%</span>
+                                <span class="guide-value bad">프리미엄 (불리)</span>
                             </div>
                         </div>
                     </div>
@@ -790,9 +975,9 @@
     </div>
     
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="showPage(1)">알림</div>
-        <div class="nav-item" onclick="showPage(2)">주요지표</div>
-        <div class="nav-item" onclick="showPage(3)">가이드</div>
+        <div class="nav-item active" onclick="showPage(1, event)">알림</div>
+        <div class="nav-item" onclick="showPage(2, event)">주요지표</div>
+        <div class="nav-item" onclick="showPage(3, event)">가이드</div>
     </div>
     
     <script>
@@ -812,6 +997,13 @@
         
         const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
         
+        const MODE_LABELS = {
+            normal: '🟢 일반',
+            adjust: '🟡 조정',
+            caution: '🟠 경계',
+            panic: '🔴 공포'
+        };
+        
         let stockData = { kr_stock: [], kr_etf: [], us_stock: [] };
         let currentMarket = 'kr_stock';
         
@@ -821,44 +1013,88 @@
                 .catch(err => console.log('SW failed', err));
         }
         
-        // VIX 표시 업데이트
-        function updateVixDisplay(vix) {
-            if (!vix) return;
+        function updateModeBar(modeUs, modeKr) {
+            const usEl = document.getElementById('modeUsPill');
+            const krEl = document.getElementById('modeKrPill');
             
-            const indicator = document.getElementById('vixIndicator');
-            const modeText = document.getElementById('vixMode');
-            const valueText = document.getElementById('vixValue');
-            const descText = document.getElementById('vixDesc');
+            usEl.className = 'mode-pill ' + (modeUs || 'normal');
+            usEl.textContent = '🇺🇸 미국 ' + (MODE_LABELS[modeUs] || MODE_LABELS.normal);
             
-            indicator.className = 'vix-indicator ' + vix.mode;
-            valueText.textContent = 'VIX ' + vix.current;
-            
-            if (vix.mode === 'normal') {
-                modeText.textContent = '평상시';
-                descText.textContent = '분할매수 모드';
-            } else if (vix.mode === 'level1') {
-                modeText.textContent = '시장 경계';
-                descText.textContent = '알림 일시정지';
-            } else {
-                modeText.textContent = '공포장';
-                descText.textContent = '패닉 매수 대기';
+            krEl.className = 'mode-pill ' + (modeKr || 'normal');
+            krEl.textContent = '🇰🇷 한국 ' + (MODE_LABELS[modeKr] || MODE_LABELS.normal);
+        }
+        
+        function updateMacroDashboard(data) {
+            const vix = data.vix;
+            if (vix && vix.current != null) {
+                document.getElementById('vixVal').textContent = vix.current;
+                document.getElementById('vixSub').textContent = 'MA5 ' + (vix.ma5 || '-');
+                
+                const pct = Math.min(100, (vix.current / 50) * 100);
+                const color = vix.mode === 'normal' ? '#22c55e' : (vix.mode === 'level1' ? '#f97316' : '#ef4444');
+                
+                const fill = document.getElementById('vixGaugeFill');
+                fill.style.width = pct + '%';
+                fill.style.background = color;
+                
+                const dot = document.getElementById('vixGaugeDot');
+                dot.style.left = pct + '%';
+                dot.style.background = color;
+                
+                const badge = document.getElementById('vixBadge');
+                const badgeText = vix.mode === 'normal' ? '🟢 평온' : (vix.mode === 'level1' ? '🟠 경계' : '🔴 공포');
+                const badgeClass = vix.mode === 'normal' ? 'good' : (vix.mode === 'level1' ? 'warn' : 'bad');
+                badge.textContent = badgeText;
+                badge.className = 'macro-card-badge ' + badgeClass;
+                
+                const flag = document.getElementById('vixReversalFlag');
+                if (vix.reversal) flag.classList.add('active');
+                else flag.classList.remove('active');
             }
+            
+            updateIndexCard('qqq', data.qqq, '$', 2);
+            updateIndexCard('kospi', data.kospi, '', 0);
         }
         
-        function openNicknameModal() {
-            document.getElementById('nicknameModal').classList.add('show');
+        function updateIndexCard(key, idx, unit, decimals) {
+            if (!idx || idx.price == null) return;
+            
+            const val = document.getElementById(key + 'Val');
+            const dev = document.getElementById(key + 'Dev');
+            const dot = document.getElementById(key + 'GaugeDot');
+            const badge = document.getElementById(key + 'Badge');
+            const meta = document.getElementById(key + 'Meta');
+            
+            val.textContent = unit + Number(idx.price).toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+            
+            const devPct = idx.deviation_pct != null ? idx.deviation_pct : 0;
+            const devText = (devPct > 0 ? '+' : '') + devPct.toFixed(2) + '%';
+            dev.textContent = devText;
+            dev.className = 'macro-card-dev ' + (devPct >= 0 ? 'good' : 'bad');
+            
+            const clipped = Math.max(-5, Math.min(5, devPct));
+            const leftPct = 50 + (clipped / 5) * 50;
+            dot.style.left = leftPct + '%';
+            dot.style.background = idx.above_ma20 ? '#22c55e' : '#ef4444';
+            
+            badge.textContent = idx.above_ma20 ? '🟢 MA20↑' : '🔴 MA20↓';
+            badge.className = 'macro-card-badge ' + (idx.above_ma20 ? 'good' : 'bad');
+            
+            meta.textContent = 'MA20: ' + unit + Number(idx.ma20).toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
         }
         
-        function closeModal() {
-            document.getElementById('nicknameModal').classList.remove('show');
-        }
+        function openNicknameModal() { document.getElementById('nicknameModal').classList.add('show'); }
+        function closeModal() { document.getElementById('nicknameModal').classList.remove('show'); }
         
         async function submitNickname() {
             const nickname = document.getElementById('nicknameInput').value.trim();
-            if (!nickname) {
-                alert('닉네임을 입력해주세요!');
-                return;
-            }
+            if (!nickname) { alert('닉네임을 입력해주세요!'); return; }
             closeModal();
             await requestNotification(nickname);
         }
@@ -868,16 +1104,12 @@
                 alert('이 브라우저는 알림을 지원하지 않습니다.');
                 return;
             }
-            
             try {
                 const permission = await Notification.requestPermission();
-                
                 if (permission === 'granted') {
                     if (!messaging) messaging = firebase.messaging();
-                    
                     const token = await messaging.getToken({ vapidKey: VAPID_KEY });
                     currentToken = token;
-                    
                     await db.collection('fcm_tokens').doc(token).set({
                         token: token,
                         nickname: nickname,
@@ -885,10 +1117,8 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         platform: navigator.platform
                     });
-                    
                     localStorage.setItem('fcm_token', token);
                     updateStatusPending();
-                    
                     new Notification('사여?!', {
                         body: '알림 신청 완료! 관리자 승인을 기다려주세요.',
                         icon: '/icon-192.png'
@@ -919,45 +1149,36 @@
         function watchApprovalStatus() {
             const savedToken = localStorage.getItem('fcm_token');
             if (!savedToken) return;
-            
             db.collection('fcm_tokens').doc(savedToken).onSnapshot(doc => {
                 if (doc.exists) {
-                    const data = doc.data();
-                    if (data.approved) {
-                        updateStatusApproved();
-                    } else {
-                        updateStatusPending();
-                    }
+                    if (doc.data().approved) updateStatusApproved();
+                    else updateStatusPending();
                 }
-            }, err => {
-                console.log('Status watch error:', err);
-            });
+            }, err => console.log('Status watch error:', err));
         }
-        
         watchApprovalStatus();
         
-        function showPage(num) {
+        function showPage(num, ev) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('page' + num).classList.add('active');
-            document.querySelectorAll('.nav-item')[num - 1].classList.add('active');
+            if (ev && ev.target) ev.target.classList.add('active');
+            else document.querySelectorAll('.nav-item')[num - 1].classList.add('active');
             
-            if (num === 2 && stockData.kr_stock.length === 0) {
-                loadData();
-            }
+            if (num === 2 && stockData.kr_stock.length === 0) loadData();
         }
         
-        function showMarket(market) {
+        function showMarket(market, ev) {
             currentMarket = market;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            if (ev && ev.target) ev.target.classList.add('active');
             renderStocks();
         }
         
-        function showGuide(type) {
+        function showGuide(type, ev) {
             document.querySelectorAll('.subtab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.guide-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
+            if (ev && ev.target) ev.target.classList.add('active');
             document.getElementById('guide-' + type).classList.add('active');
         }
         
@@ -970,21 +1191,30 @@
             
             let html = '';
             list.forEach(s => {
-                const cardClass = s.step2 ? 'alert' : (s.step1 ? 'buy' : '');
                 const isEtf = currentMarket === 'kr_etf';
                 const isUs = currentMarket === 'us_stock';
                 
+                let cardClass = '';
+                if (s.exit_level === 'sell_full') cardClass = 'alert';
+                else if (s.exit_level === 'sell_half' || s.exit_level === 'warn') cardClass = 'exit';
+                else if (s.step2) cardClass = 'alert';
+                else if (s.step1) cardClass = 'buy';
+                
                 let priceStr = '-';
                 if (s.price) {
-                    priceStr = isUs ? '$' + s.price.toFixed(2) : s.price.toLocaleString() + '원';
+                    priceStr = isUs ? '$' + Number(s.price).toFixed(2) : Number(s.price).toLocaleString() + '원';
                 }
                 
                 let badges = '';
-                if (s.step1) badges += '<span class="badge green">매수</span>';
-                if (s.step2) badges += '<span class="badge red">지금 매수!</span>';
+                if (s.exit_level === 'sell_full') badges += '<span class="badge red">🚨 매도</span>';
+                else if (s.exit_level === 'sell_half') badges += '<span class="badge orange">⚠️ 절반매도</span>';
+                else if (s.exit_level === 'warn') badges += '<span class="badge yellow">⚡ 경고</span>';
                 
-                const rsiThreshold = isEtf ? 30 : 35;
-                const rsiClass = s.rsi < rsiThreshold ? 'bad' : (s.rsi < rsiThreshold + 5 ? 'warn' : '');
+                if (s.step1 && !s.exit_level) badges += '<span class="badge green">매수</span>';
+                if (s.step2 && !s.exit_level) badges += '<span class="badge red">지금 매수!</span>';
+                
+                const rsiThreshold = s.rsi_threshold || (isEtf ? 30 : 40);
+                const rsiClass = s.rsi == null ? '' : (s.rsi < rsiThreshold ? 'bad' : (s.rsi < rsiThreshold + 5 ? 'warn' : ''));
                 
                 html += `<div class="stock-card ${cardClass}">
                     <div class="stock-header">
@@ -993,61 +1223,35 @@
                     </div>`;
                 
                 if (isEtf) {
-                    const navClass = s.nav_discount && s.nav_discount < -0.5 ? 'good' : (s.nav_discount && s.nav_discount > 0.5 ? 'bad' : '');
+                    const navClass = s.nav_discount == null ? '' : (s.nav_discount < -0.5 ? 'good' : (s.nav_discount > 0.5 ? 'bad' : ''));
                     const volClass = s.vol_ratio && s.vol_ratio >= 2 ? 'warn' : '';
-                    const bandClass = s.band_pct && s.band_pct < 20 ? 'good' : (s.band_pct && s.band_pct > 80 ? 'bad' : '');
+                    const bandClass = s.band_pct == null ? '' : (s.band_pct < 20 ? 'good' : (s.band_pct > 80 ? 'bad' : ''));
                     
                     html += `<div class="metrics-grid">
-                        <div class="metric">
-                            <div class="metric-label">RSI</div>
-                            <div class="metric-value ${rsiClass}">${s.rsi || '-'}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">NAV괴리</div>
-                            <div class="metric-value ${navClass}">${s.nav_discount ? s.nav_discount.toFixed(1) + '%' : '-'}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">거래량</div>
-                            <div class="metric-value ${volClass}">${s.vol_ratio ? s.vol_ratio + 'x' : '-'}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">밴드</div>
-                            <div class="metric-value ${bandClass}">${s.band_pct ? s.band_pct + '%' : '-'}</div>
-                        </div>
+                        <div class="metric"><div class="metric-label">RSI</div><div class="metric-value ${rsiClass}">${s.rsi != null ? s.rsi : '-'}</div></div>
+                        <div class="metric"><div class="metric-label">NAV괴리</div><div class="metric-value ${navClass}">${s.nav_discount != null ? s.nav_discount.toFixed(1) + '%' : '-'}</div></div>
+                        <div class="metric"><div class="metric-label">거래량</div><div class="metric-value ${volClass}">${s.vol_ratio != null ? s.vol_ratio + 'x' : '-'}</div></div>
+                        <div class="metric"><div class="metric-label">밴드</div><div class="metric-value ${bandClass}">${s.band_pct != null ? s.band_pct + '%' : '-'}</div></div>
                     </div>`;
                 } else {
-                    const pegFClass = s.peg_forward && s.peg_forward < 1.0 ? 'good' : (s.peg_forward && s.peg_forward > 1.5 ? 'bad' : '');
-                    const pegTClass = s.peg_ttm && s.peg_ttm < 1.5 ? 'good' : '';
-                    const revClass = s.rev_growth && s.rev_growth >= 15 ? 'good' : (s.rev_growth && s.rev_growth < 5 ? 'bad' : '');
-                    const consClass = s.consensus_gap && s.consensus_gap > 20 ? 'good' : (s.consensus_gap && s.consensus_gap < -10 ? 'bad' : '');
+                    const peg = s.peg_fwd;
+                    const pegClass = peg == null ? '' : (peg < 0.8 ? 'good' : (peg > 1.5 ? 'bad' : ''));
+                    const revClass = s.rev_growth == null ? '' : (s.rev_growth >= 15 ? 'good' : (s.rev_growth < 5 ? 'bad' : ''));
+                    const surprise = s.earnings_surprise_pct;
+                    const surpriseClass = surprise == null ? '' : (surprise > 0 ? 'good' : 'bad');
+                    const gap = s.target_gap;
+                    const gapClass = gap == null ? '' : (gap > 20 ? 'good' : (gap < 0 ? 'bad' : ''));
                     
                     html += `<div class="metrics-grid cols-5">
-                        <div class="metric">
-                            <div class="metric-label">RSI</div>
-                            <div class="metric-value ${rsiClass}">${s.rsi || '-'}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">PEG(F)</div>
-                            <div class="metric-value ${pegFClass}">${s.peg_forward || '-'}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">PEG(T)</div>
-                            <div class="metric-value ${pegTClass}">${s.peg_ttm || '-'}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">매출↑</div>
-                            <div class="metric-value ${revClass}">${s.rev_growth ? s.rev_growth + '%' : '-'}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">컨센</div>
-                            <div class="metric-value ${consClass}">${s.consensus_gap ? (s.consensus_gap > 0 ? '+' : '') + s.consensus_gap + '%' : '-'}</div>
-                        </div>
+                        <div class="metric"><div class="metric-label">RSI</div><div class="metric-value ${rsiClass}">${s.rsi != null ? s.rsi : '-'}</div></div>
+                        <div class="metric"><div class="metric-label">PEG</div><div class="metric-value ${pegClass}">${peg != null ? peg : '-'}</div></div>
+                        <div class="metric"><div class="metric-label">매출↑</div><div class="metric-value ${revClass}">${s.rev_growth != null ? s.rev_growth + '%' : '-'}</div></div>
+                        <div class="metric"><div class="metric-label">서프</div><div class="metric-value ${surpriseClass}">${surprise != null ? (surprise > 0 ? '+' : '') + surprise + '%' : '-'}</div></div>
+                        <div class="metric"><div class="metric-label">목표갭</div><div class="metric-value ${gapClass}">${gap != null ? (gap > 0 ? '+' : '') + gap + '%' : '-'}</div></div>
                     </div>`;
                 }
-                
                 html += '</div>';
             });
-            
             document.getElementById('stockList').innerHTML = html;
         }
         
@@ -1057,31 +1261,22 @@
                 ...stockData.kr_etf.filter(s => s.step1),
                 ...stockData.us_stock.filter(s => s.step1)
             ];
-            
             if (all.length === 0) {
                 document.getElementById('tickerBar').innerHTML = '<span class="ticker-empty">📡 매수 조건 충족 종목 스캔중...</span>';
                 return;
             }
-            
             let items = '';
             all.forEach(s => {
                 const isEtf = stockData.kr_etf.includes(s);
                 const label = isEtf ? 'NAV' : 'PEG';
-                const value = isEtf ? (s.nav_discount ? s.nav_discount.toFixed(1) + '%' : '-') : (s.peg_forward || '-');
+                const value = isEtf ? (s.nav_discount != null ? s.nav_discount.toFixed(1) + '%' : '-') : (s.peg_fwd != null ? s.peg_fwd : '-');
                 items += `<span class="ticker-item"><span class="name">${s.name}</span><span class="value">${label} ${value}</span></span>`;
             });
-            
             document.getElementById('tickerBar').innerHTML = `<div class="ticker-track">${items}${items}</div>`;
         }
         
         function loadData() {
-            document.getElementById('stockList').innerHTML = `
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div>데이터 로딩 중...</div>
-                </div>
-            `;
-            
+            document.getElementById('stockList').innerHTML = `<div class="loading"><div class="loading-spinner"></div><div>데이터 로딩 중...</div></div>`;
             db.collection("stocks").doc("data").get()
                 .then(doc => {
                     if (doc.exists) {
@@ -1090,13 +1285,10 @@
                         stockData.kr_etf = data.kr_etf || [];
                         stockData.us_stock = data.us_stock || [];
                         document.getElementById('updateTime').textContent = data.updated || '-';
+                        updateModeBar(data.market_mode_us || data.market_mode, data.market_mode_kr);
+                        updateMacroDashboard(data);
                         renderStocks();
                         updateTickerBar();
-                        
-                        // VIX 표시
-                        if (data.vix) {
-                            updateVixDisplay(data.vix);
-                        }
                     } else {
                         document.getElementById('stockList').innerHTML = '<div class="loading">데이터가 없습니다.</div>';
                     }
@@ -1105,7 +1297,6 @@
                     document.getElementById('stockList').innerHTML = `<div class="loading">에러: ${err.message}</div>`;
                 });
         }
-        
         loadData();
     </script>
 </body>

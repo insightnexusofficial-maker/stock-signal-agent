@@ -1,17 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
     match /stocks/{document=**} {
       allow read: if true;
       allow write: if false;
     }
+    
     match /state/{document=**} {
       allow read: if true;
       allow write: if false;
     }
-    match /fcm_tokens/{document=**} {
+    
+    match /snapshots/{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /fcm_tokens/{token} {
       allow read: if true;
-      allow write: if true;
+      allow update, delete: if true;
+      
+      allow create: if request.resource.data.keys().hasAll(['token', 'nickname'])
+                   && request.resource.data.nickname is string
+                   && request.resource.data.nickname.size() <= 30;
     }
   }
 }

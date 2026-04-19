@@ -4,3 +4,4 @@ __pycache__/
 .env
 firebase-key.json
 .DS_Store
+.firebase/
