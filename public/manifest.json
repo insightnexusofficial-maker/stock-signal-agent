@@ -1,11 +1,11 @@
 {
-  "name": "주식 사여?!",
-  "short_name": "주식사여",
-  "description": "개미의 매수 타이밍 알림",
+  "name": "SAYO — 매수 시그널 모니터",
+  "short_name": "SAYO",
+  "description": "섹터별 PEG/EPS 추세 기반 매수 타이밍 알림",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#0a0e13",
+  "theme_color": "#0a0e13",
   "icons": [
     {
       "src": "/icon-192.png",

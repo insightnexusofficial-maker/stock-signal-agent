@@ -1,1303 +1,1332 @@
 <!DOCTYPE html>
 <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>사여?! Admin</title>
-        
-        <link rel="manifest" href="/manifest.json">
-        <meta name="theme-color" content="#0f172a">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="default">
-        <meta name="apple-mobile-web-app-title" content="사여 Admin">
-        
-        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-        <link rel="shortcut icon" href="/icon-192.png">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
-        <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
-        <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
-        <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
-    
-    <title>사여?!</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
-    
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f8fafc;
-            min-height: 100vh;
-            padding-bottom: 80px;
-            color: #0f172a;
-        }
-        
-        /* 티커바 (차콜) */
-        .ticker-bar {
-            background: #0f172a;
-            padding: 10px 0;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-        .ticker-track {
-            display: inline-block;
-            animation: ticker-scroll 25s linear infinite;
-            white-space: nowrap;
-        }
-        .ticker-track:hover { animation-play-state: paused; }
-        @keyframes ticker-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .ticker-item {
-            display: inline-block;
-            padding: 4px 20px;
-            font-size: 13px;
-            color: #94a3b8;
-            border-right: 1px solid #334155;
-        }
-        .ticker-item:last-child { border-right: none; }
-        .ticker-item .name { color: #f1f5f9; font-weight: 500; }
-        .ticker-item .value { color: #22c55e; font-weight: 600; margin-left: 6px; }
-        .ticker-empty {
-            color: #64748b;
-            padding: 10px 20px;
-            font-size: 13px;
-            display: block;
-            text-align: center;
-        }
-        
-        /* 시장 모드 바 */
-        .mode-bar {
-            background: #fff;
-            padding: 10px 12px;
-            display: flex;
-            gap: 8px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .mode-pill {
-            flex: 1;
-            padding: 8px 10px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            background: #f1f5f9;
-            color: #334155;
-            border: 1px solid transparent;
-            transition: all 0.3s;
-        }
-        .mode-pill.normal { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
-        .mode-pill.adjust { background: #fef3c7; color: #a16207; border-color: #fde68a; }
-        .mode-pill.caution { background: #fed7aa; color: #9a3412; border-color: #fdba74; }
-        .mode-pill.panic { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
-        
-        .container { max-width: 480px; margin: 0 auto; padding: 20px 16px; }
-        
-        /* 헤더 */
-        .header { text-align: center; padding: 30px 0 20px; }
-        .header-icon-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 16px;
-        }
-        .header-icon {
-            width: 160px;
-            height: 160px;
-            background: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-        }
-        .header-icon img {
-            width: 140px;
-            height: 140px;
-            object-fit: contain;
-            border-radius: 50%;
-        }
-        
-        /* 더듬이 */
-        .antenna {
-            position: absolute;
-            width: 3px;
-            height: 18px;
-            background: #94a3b8;
-            border-radius: 2px;
-            top: -18px;
-            animation: wiggle 0.8s ease-in-out infinite;
-        }
-        .antenna.left { left: 55px; transform-origin: bottom center; }
-        .antenna.right { right: 55px; transform-origin: bottom center; animation-delay: 0.4s; }
-        .antenna::after {
-            content: '';
-            position: absolute;
-            top: -6px; left: -3px;
-            width: 9px; height: 9px;
-            background: #94a3b8;
-            border-radius: 50%;
-        }
-        @keyframes wiggle {
-            0%, 100% { transform: rotate(-12deg); }
-            50% { transform: rotate(12deg); }
-        }
-        
-        .header h1 { font-size: 32px; color: #0f172a; margin-bottom: 6px; }
-        .header p.subtitle { color: #64748b; font-size: 15px; }
-        
-        /* 카드 */
-        .card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-            border: 1px solid #e2e8f0;
-        }
-        
-        /* 매크로 대시보드 */
-        .macro-dashboard {
-            background: #fff;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-            border: 1px solid #e2e8f0;
-        }
-        .macro-section-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .macro-section-title .reversal-flag {
-            font-size: 11px;
-            padding: 3px 8px;
-            background: #fef3c7;
-            color: #a16207;
-            border-radius: 10px;
-            font-weight: 600;
-            display: none;
-        }
-        .macro-section-title .reversal-flag.active { display: inline-block; }
-        
-        .macro-card {
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .macro-card:last-child { border-bottom: none; padding-bottom: 0; }
-        .macro-card:first-of-type { padding-top: 4px; }
-        
-        .macro-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-        .macro-card-title {
-            font-size: 12px;
-            color: #64748b;
-            font-weight: 600;
-        }
-        .macro-card-badge {
-            font-size: 10px;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .macro-card-badge.good { background: #dcfce7; color: #15803d; }
-        .macro-card-badge.warn { background: #fef3c7; color: #a16207; }
-        .macro-card-badge.bad { background: #fee2e2; color: #991b1b; }
-        
-        .macro-card-value {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-        }
-        .macro-card-main {
-            font-size: 20px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-        .macro-card-sub {
-            font-size: 12px;
-            color: #64748b;
-        }
-        .macro-card-dev {
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .macro-card-dev.good { color: #22c55e; }
-        .macro-card-dev.bad { color: #ef4444; }
-        
-        .macro-gauge {
-            position: relative;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            margin-top: 4px;
-            margin-bottom: 4px;
-        }
-        .macro-gauge-fill {
-            position: absolute;
-            top: 0; left: 0;
-            height: 100%;
-            border-radius: 4px;
-            background: #22c55e;
-            transition: width 0.4s ease;
-        }
-        .macro-gauge-mark {
-            position: absolute;
-            top: -2px;
-            width: 2px;
-            height: 12px;
-            background: #94a3b8;
-            transform: translateX(-50%);
-        }
-        .macro-gauge-center {
-            position: absolute;
-            left: 50%;
-            top: -2px;
-            width: 2px;
-            height: 12px;
-            background: #94a3b8;
-            transform: translateX(-50%);
-        }
-        .macro-gauge-dot {
-            position: absolute;
-            top: -3px;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #22c55e;
-            border: 2px solid #fff;
-            transform: translateX(-50%);
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
-            transition: left 0.4s ease, background 0.4s ease;
-        }
-        .macro-gauge-scale {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: #94a3b8;
-        }
-        .macro-card-meta {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 6px;
-        }
-        
-        /* 섹션 */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 24px 0 12px;
-        }
-        .section-title { font-size: 18px; font-weight: 700; color: #0f172a; }
-        .section-time { font-size: 13px; color: #94a3b8; }
-        
-        /* 탭 (차콜 악센트) */
-        .tabs {
-            display: flex;
-            background: #fff;
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 16px;
-            border: 1px solid #e2e8f0;
-        }
-        .tab {
-            flex: 1;
-            padding: 10px 6px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 500;
-            color: #64748b;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .tab.active { background: #0f172a; color: #fff; }
-        
-        /* 서브탭 */
-        .subtabs {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 16px;
-        }
-        .subtab {
-            flex: 1;
-            padding: 8px 4px;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 500;
-            color: #64748b;
-            background: #f1f5f9;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .subtab.active { background: #0f172a; color: #fff; }
-        
-        /* 종목 카드 */
-        .stock-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-            min-height: 110px;
-            border: 1px solid #e2e8f0;
-        }
-        .stock-card.buy { border-left: 4px solid #22c55e; }
-        .stock-card.alert { border-left: 4px solid #ef4444; }
-        .stock-card.exit { border-left: 4px solid #f97316; }
-        
-        .stock-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            min-height: 28px;
-            gap: 8px;
-        }
-        .stock-name {
-            font-size: 15px;
-            font-weight: 600;
-            color: #0f172a;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 4px;
-            flex: 1;
-            min-width: 0;
-        }
-        .stock-price {
-            font-size: 15px;
-            font-weight: 700;
-            color: #0f172a;
-            white-space: nowrap;
-        }
-        
-        /* 지표 그리드 */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-        }
-        .metrics-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
-        .metric {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 8px 4px;
-            text-align: center;
-            min-height: 52px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .metric-label { font-size: 10px; color: #94a3b8; margin-bottom: 2px; }
-        .metric-value { font-size: 13px; font-weight: 600; color: #334155; }
-        .metric-value.good { color: #22c55e; }
-        .metric-value.warn { color: #f59e0b; }
-        .metric-value.bad { color: #ef4444; }
-        
-        /* 배지 (시그널 컬러만 유지) */
-        .badge {
-            display: inline-block;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        .badge.green { background: #dcfce7; color: #16a34a; }
-        .badge.red { background: #fee2e2; color: #dc2626; }
-        .badge.yellow { background: #fef3c7; color: #d97706; }
-        .badge.orange { background: #fed7aa; color: #9a3412; }
-        
-        /* 하단 네비 (차콜 악센트) */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: #fff;
-            display: flex;
-            border-top: 1px solid #e2e8f0;
-            padding: 8px 0 20px;
-        }
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            font-size: 12px;
-            color: #94a3b8;
-            cursor: pointer;
-            border-top: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        .nav-item.active { color: #0f172a; border-top-color: #0f172a; font-weight: 600; }
-        
-        /* 로딩 */
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: #64748b;
-        }
-        .loading-spinner {
-            width: 40px; height: 40px;
-            border: 3px solid #e2e8f0;
-            border-top-color: #0f172a;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* 페이지 */
-        .page { display: none; }
-        .page.active { display: block; }
-        
-        /* 가이드 */
-        .guide-content { display: none; }
-        .guide-content.active { display: block; }
-        .guide-section { margin-bottom: 16px; }
-        .guide-section:last-child { margin-bottom: 0; }
-        .guide-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 8px;
-        }
-        .guide-box {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 12px 14px;
-        }
-        .guide-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            font-size: 13px;
-            border-bottom: 1px solid #e2e8f0;
-            gap: 8px;
-        }
-        .guide-row:last-child { border-bottom: none; }
-        .guide-label { color: #64748b; flex: 1; }
-        .guide-value { font-weight: 600; color: #334155; text-align: right; }
-        .guide-value.good { color: #22c55e; }
-        .guide-value.warn { color: #f59e0b; }
-        .guide-value.bad { color: #ef4444; }
-        .guide-note {
-            font-size: 12px;
-            color: #64748b;
-            line-height: 1.5;
-            padding: 8px 0;
-        }
-        
-        /* 버튼 (차콜) */
-        .btn-primary {
-            width: 100%;
-            background: #0f172a;
-            color: #fff;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-primary:disabled { background: #94a3b8; }
-        
-        /* 알림 상태 */
-        .notification-status { text-align: center; padding: 24px 0; }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #f1f5f9;
-            padding: 10px 28px;
-            border-radius: 24px;
-            color: #64748b;
-            font-size: 16px;
-            font-weight: 700;
-        }
-        .status-badge.on { background: #dcfce7; color: #16a34a; }
-        .status-badge.pending { background: #fef3c7; color: #d97706; }
-        .status-spinner {
-            width: 16px; height: 16px;
-            border: 2px solid #d97706;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        .status-spinner.active {
-            border-color: #16a34a;
-            border-top-color: transparent;
-        }
-        .status-msg {
-            margin-top: 16px;
-            font-size: 17px;
-            color: #0f172a;
-            font-weight: 600;
-        }
-        
-        /* 서비스 소개 (슬레이트) */
-        .intro-box {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 8px;
-        }
-        .intro-item { display: flex; align-items: flex-start; margin-bottom: 12px; }
-        .intro-item:last-child { margin-bottom: 0; }
-        .intro-icon { font-size: 18px; margin-right: 12px; width: 24px; text-align: center; }
-        .intro-text { font-size: 14px; color: #334155; line-height: 1.5; }
-        
-        /* 모달 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.6);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-overlay.show { display: flex; }
-        .modal {
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            width: 90%;
-            max-width: 320px;
-            text-align: center;
-        }
-        .modal h3 { font-size: 18px; color: #0f172a; margin-bottom: 12px; }
-        .modal p { font-size: 14px; color: #64748b; margin-bottom: 20px; }
-        .modal input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 16px;
-            outline: none;
-        }
-        .modal input:focus { border-color: #0f172a; }
-        .modal-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .modal-btn.primary { background: #0f172a; color: #fff; margin-bottom: 8px; }
-        .modal-btn.secondary { background: #f1f5f9; color: #64748b; }
-    </style>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1419">
+<title>SAYO — 매수 시그널 모니터</title>
+
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SAYO">
+
+<style>
+/* ============================================================
+   디자인 토큰 — Bloomberg-lite for retail
+   ============================================================ */
+:root {
+  /* 배경 — 진한 차콜 톤 */
+  --bg-0: #0a0e13;
+  --bg-1: #0f1419;
+  --bg-2: #161c23;
+  --bg-3: #1d242d;
+  --bg-4: #252d38;
+
+  /* 텍스트 */
+  --fg-1: #e6edf3;
+  --fg-2: #b8c1cc;
+  --fg-3: #7d8896;
+  --fg-4: #4a5462;
+
+  /* 보더 */
+  --border-1: #1f2832;
+  --border-2: #2a3441;
+
+  /* 시그널 컬러 */
+  --signal-strong: #00d68f;        /* 🟢🟢 강력 매수 */
+  --signal-strong-glow: rgba(0, 214, 143, 0.18);
+  --signal-candidate: #5ad28c;     /* 🟢 매수 후보 */
+  --signal-candidate-glow: rgba(90, 210, 140, 0.12);
+  --signal-now: #ff5454;           /* 🚨 지금 매수! */
+  --signal-now-glow: rgba(255, 84, 84, 0.20);
+  --signal-crisis: #ff3838;        /* 🚨 위기 */
+  --signal-crisis-glow: rgba(255, 56, 56, 0.18);
+  --signal-warn: #ffb84d;          /* 🟡 주의 */
+  --signal-watch: #ff8c42;         /* 🟠 관찰 */
+  --signal-info: #5cb3ff;          /* 🔵 정보 */
+
+  /* 추세 컬러 */
+  --trend-up-strong: #00d68f;
+  --trend-up: #5ad28c;
+  --trend-flat: #7d8896;
+  --trend-down: #ff8c42;
+  --trend-down-strong: #ff3838;
+
+  /* 매크로 컬러 */
+  --macro-good: #00d68f;
+  --macro-warn: #ffb84d;
+  --macro-bad: #ff5454;
+
+  /* 강조 */
+  --accent: #4dabff;
+
+  /* 폰트 */
+  --font-mono: 'SF Mono', 'JetBrains Mono', 'Roboto Mono', 'Menlo', Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+}
+
+/* ============================================================
+   리셋 + 기본
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg-0);
+  color: var(--fg-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: inherit;
+}
+
+/* 모노 폰트 적용 (숫자) */
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   레이아웃 컨테이너
+   ============================================================ */
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+@media (max-width: 768px) {
+  .app { padding: 12px; }
+}
+
+/* ============================================================
+   상단 헤더
+   ============================================================ */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-1);
+}
+
+.app-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg-1);
+}
+
+.app-title .accent {
+  color: var(--signal-candidate);
+}
+
+.app-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
+  text-align: right;
+}
+
+.app-meta .updated-time {
+  color: var(--fg-2);
+}
+
+/* ============================================================
+   매크로 카드 (3개)
+   ============================================================ */
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .macro-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .macro-card.span-2 { grid-column: span 2; }
+}
+
+.macro-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  padding: 14px 16px;
+  position: relative;
+  transition: border-color .2s;
+}
+
+.macro-card.alert {
+  border-color: var(--signal-warn);
+}
+
+.macro-card.crisis {
+  border-color: var(--signal-now);
+  background: linear-gradient(135deg, var(--bg-1), rgba(255, 84, 84, 0.04));
+}
+
+.macro-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.macro-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg-1);
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+
+.macro-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
+}
+
+.macro-badge {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: var(--bg-3);
+  color: var(--fg-2);
+}
+
+.macro-badge.good { background: rgba(0, 214, 143, 0.15); color: var(--macro-good); }
+.macro-badge.warn { background: rgba(255, 184, 77, 0.15); color: var(--macro-warn); }
+.macro-badge.bad { background: rgba(255, 84, 84, 0.18); color: var(--macro-bad); }
+
+/* VIX 게이지 미니 */
+.vix-gauge {
+  margin-top: 6px;
+  height: 4px;
+  background: var(--bg-3);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+.vix-gauge .marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--fg-1);
+  transition: left .4s ease;
+}
+.vix-gauge .zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.vix-gauge .zone.normal { background: rgba(0, 214, 143, 0.25); left: 0; width: 50%; }
+.vix-gauge .zone.warn   { background: rgba(255, 184, 77, 0.25); left: 50%; width: 20%; }
+.vix-gauge .zone.bad    { background: rgba(255, 84, 84, 0.25); left: 70%; width: 30%; }
+
+/* MA 편차 표시 */
+.ma-bar {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.ma-bar .arrow.up { color: var(--macro-good); }
+.ma-bar .arrow.down { color: var(--macro-bad); }
+
+/* ============================================================
+   시장 모드 헤더
+   ============================================================ */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 24px 0 8px;
+  padding: 0 4px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg-1);
+  letter-spacing: -0.01em;
+}
+
+.mode-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.mode-tag.normal { background: rgba(0, 214, 143, 0.15); color: var(--macro-good); }
+.mode-tag.adjust { background: rgba(255, 184, 77, 0.15); color: var(--macro-warn); }
+.mode-tag.caution { background: rgba(255, 140, 66, 0.18); color: var(--signal-watch); }
+.mode-tag.panic { background: rgba(255, 84, 84, 0.20); color: var(--macro-bad); }
+
+/* ============================================================
+   종목 테이블 (데스크톱)
+   ============================================================ */
+.stock-table {
+  background: var(--bg-1);
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stock-row {
+  display: grid;
+  grid-template-columns: 4px 2.4fr 1fr 0.9fr 0.9fr 1.4fr 1.4fr 0.9fr;
+  align-items: center;
+  padding: 10px 14px 10px 0;
+  border-bottom: 1px solid var(--border-1);
+  position: relative;
+  cursor: pointer;
+  transition: background .15s;
+}
+.stock-row:last-child { border-bottom: none; }
+.stock-row:hover { background: var(--bg-2); }
+.stock-row.expanded { background: var(--bg-2); }
+
+/* 좌측 컬러 바 (시그널) */
+.row-bar {
+  width: 4px;
+  height: 100%;
+  min-height: 36px;
+  background: transparent;
+}
+.stock-row.signal-strong .row-bar { background: var(--signal-strong); }
+.stock-row.signal-candidate .row-bar { background: var(--signal-candidate); }
+.stock-row.signal-now .row-bar { background: var(--signal-now); }
+.stock-row.signal-crisis .row-bar { background: var(--signal-crisis); }
+.stock-row.signal-warn .row-bar { background: var(--signal-warn); }
+.stock-row.signal-watch .row-bar { background: var(--signal-watch); }
+.stock-row.signal-info .row-bar { background: var(--signal-info); }
+
+/* 시그널 글로우 (살짝) */
+.stock-row.signal-strong { box-shadow: inset 0 0 0 1px var(--signal-strong-glow); }
+.stock-row.signal-now { box-shadow: inset 0 0 16px var(--signal-now-glow); }
+.stock-row.signal-crisis { box-shadow: inset 0 0 16px var(--signal-crisis-glow); }
+
+/* 컬럼별 */
+.col-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 12px;
+  min-width: 0;
+}
+.col-name .name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--fg-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-name .meta {
+  font-size: 11px;
+  color: var(--fg-4);
+  font-family: var(--font-mono);
+}
+.col-name .badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.col-numeric {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: right;
+  padding-right: 8px;
+  color: var(--fg-2);
+}
+.col-numeric.primary { color: var(--fg-1); font-weight: 600; }
+.col-numeric .label {
+  display: block;
+  font-size: 9px;
+  color: var(--fg-4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1px;
+}
+
+/* 추세 셀 */
+.col-trend {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: right;
+  padding-right: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.col-trend .label {
+  font-size: 9px;
+  color: var(--fg-4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.col-trend .value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+.col-trend .arrow.up-strong { color: var(--trend-up-strong); }
+.col-trend .arrow.up { color: var(--trend-up); }
+.col-trend .arrow.flat { color: var(--trend-flat); }
+.col-trend .arrow.down { color: var(--trend-down); }
+.col-trend .arrow.down-strong { color: var(--trend-down-strong); }
+
+/* 시그널 뱃지 (소형) */
+.badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge.candidate { background: rgba(90, 210, 140, 0.16); color: var(--signal-candidate); }
+.badge.strong { background: rgba(0, 214, 143, 0.20); color: var(--signal-strong); }
+.badge.now { background: rgba(255, 84, 84, 0.22); color: var(--signal-now); }
+.badge.crisis { background: rgba(255, 56, 56, 0.22); color: var(--signal-crisis); }
+.badge.warn { background: rgba(255, 184, 77, 0.18); color: var(--signal-warn); }
+.badge.watch { background: rgba(255, 140, 66, 0.20); color: var(--signal-watch); }
+.badge.info { background: rgba(92, 179, 255, 0.18); color: var(--signal-info); }
+
+/* 표 헤더 (선택적) */
+.stock-table-header {
+  display: grid;
+  grid-template-columns: 4px 2.4fr 1fr 0.9fr 0.9fr 1.4fr 1.4fr 0.9fr;
+  padding: 10px 14px 10px 0;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border-2);
+  font-weight: 600;
+}
+.stock-table-header > div { padding-right: 8px; text-align: right; }
+.stock-table-header .col-name { padding-left: 16px; text-align: left; }
+
+/* ============================================================
+   확장 영역 (탭 시 펼침)
+   ============================================================ */
+.row-detail {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  padding: 12px 16px;
+  background: var(--bg-3);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-2);
+  display: none;
+  border: 1px solid var(--border-2);
+}
+.stock-row.expanded .row-detail {
+  display: block;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+.detail-item .key {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  margin-bottom: 2px;
+}
+.detail-item .val { color: var(--fg-1); font-weight: 600; }
+
+.detail-reasons {
+  font-size: 11px;
+  color: var(--fg-3);
+  padding-top: 8px;
+  border-top: 1px solid var(--border-2);
+}
+.detail-reasons .reason-tag {
+  display: inline-block;
+  margin: 2px 4px 2px 0;
+  padding: 2px 6px;
+  background: var(--bg-4);
+  border-radius: 3px;
+}
+
+/* ============================================================
+   모바일 카드 변환
+   ============================================================ */
+@media (max-width: 640px) {
+  .stock-table-header { display: none; }
+  
+  .stock-row {
+    grid-template-columns: 4px 1fr;
+    grid-template-rows: auto auto;
+    gap: 4px 0;
+    padding: 12px 14px 12px 0;
+  }
+  
+  .row-bar {
+    grid-row: 1 / 3;
+  }
+  
+  .col-name {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  
+  .col-numeric, .col-trend {
+    grid-column: 2;
+    text-align: left;
+    padding: 0 12px 0 12px;
+  }
+  
+  /* 모바일은 압축: rsi + peg + 두 추세만 한 줄에 */
+  .stock-row .col-numeric:nth-of-type(1),
+  .stock-row .col-numeric:nth-of-type(2),
+  .stock-row .col-trend:nth-of-type(1),
+  .stock-row .col-trend:nth-of-type(2),
+  .stock-row .col-numeric:nth-of-type(3) {
+    grid-column: 2;
+    grid-row: 2;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 4px;
+    padding: 0;
+    margin: 0 12px 0 12px;
+    font-size: 12px;
+  }
+  
+  .col-numeric .label, .col-trend .label {
+    display: inline;
+    margin-right: 2px;
+  }
+  
+  /* 모바일에선 가로 스크롤 영역으로 */
+  .stock-row {
+    overflow: visible;
+  }
+}
+
+/* ============================================================
+   빈 상태 / 로딩
+   ============================================================ */
+.empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--fg-4);
+  font-size: 13px;
+}
+
+.loading-pulse {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ============================================================
+   푸터
+   ============================================================ */
+.app-footer {
+  margin-top: 32px;
+  padding: 16px 4px;
+  border-top: 1px solid var(--border-1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--fg-4);
+  font-family: var(--font-mono);
+}
+
+.app-footer .links a {
+  color: var(--fg-3);
+  margin-left: 12px;
+}
+
+/* 토큰 등록 버튼 */
+.btn-subscribe {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  background: var(--bg-3);
+  color: var(--fg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: all .15s;
+}
+.btn-subscribe:hover { background: var(--bg-4); color: var(--fg-1); border-color: var(--border-2); }
+.btn-subscribe.active { background: rgba(0, 214, 143, 0.15); color: var(--signal-strong); border-color: var(--signal-strong); }
+/* ============================================================
+   라벨 가시성 — 데스크톱은 헤더로 충분 / 모바일만 행 라벨 표시
+   ============================================================ */
+   @media (min-width: 641px) {
+  .stock-row .col-numeric .label,
+  .stock-row .col-trend .label {
+    display: none;
+  }
+}
+
+/* ============================================================
+   컬러바 강화
+   ============================================================ */
+.stock-row {
+  border-left: 0;
+  position: relative;
+}
+.row-bar {
+  display: none; /* 별도 div 대신 left border로 처리 */
+}
+.stock-row.signal-strong { border-left: 4px solid var(--signal-strong); }
+.stock-row.signal-candidate { border-left: 4px solid var(--signal-candidate); }
+.stock-row.signal-now { border-left: 4px solid var(--signal-now); }
+.stock-row.signal-crisis { border-left: 4px solid var(--signal-crisis); }
+.stock-row.signal-warn { border-left: 4px solid var(--signal-warn); }
+.stock-row.signal-watch { border-left: 4px solid var(--signal-watch); }
+.stock-row.signal-info { border-left: 4px solid var(--signal-info); }
+
+/* 컬러바 없는 평상시 행도 동일 폭으로 정렬 맞춤 */
+.stock-row:not([class*="signal-"]) {
+  border-left: 4px solid transparent;
+}
+
+/* 그리드 첫 칸(row-bar)이 사라지므로 grid 재조정 */
+.stock-table-header,
+.stock-row {
+  grid-template-columns: 2.4fr 1fr 0.9fr 0.9fr 1.4fr 1.4fr 0.9fr;
+}
+
+/* 모바일은 다시 2열 */
+@media (max-width: 640px) {
+  .stock-table-header,
+  .stock-row {
+    grid-template-columns: 1fr;
+  }
+}
+/* 모바일 행 — 라벨 가독성 좋게 */
+@media (max-width: 640px) {
+  .stock-row .col-numeric,
+  .stock-row .col-trend {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 16px !important;
+    font-size: 12px;
+  }
+  .stock-row .col-numeric .label,
+  .stock-row .col-trend .label {
+    display: inline !important;
+    color: var(--fg-4);
+    font-weight: 500;
+    margin-right: 8px;
+  }
+  .stock-row .col-name {
+    padding: 0 16px;
+    margin-bottom: 4px;
+  }
+}
+</style>
+
 </head>
 <body>
-    <div class="ticker-bar" id="tickerBar">
-        <span class="ticker-empty">📡 시그널 스캔중...</span>
-    </div>
+    <div class="app">
+
+        <!-- ============================================================
+             헤더
+             ============================================================ -->
+        <header class="app-header">
+          <div class="app-title">SAYO</div>
+          <div class="app-meta">
+            <div class="updated-time" id="updated-time">— —</div>
+            <button class="btn-subscribe" id="btn-subscribe">알림 등록</button>
+          </div>
+        </header>
+      
+        <!-- ============================================================
+             매크로 카드 3개
+             ============================================================ -->
+        <section class="macro-grid">
+      
+          <!-- VIX -->
+          <div class="macro-card" id="macro-vix">
+            <div class="macro-label">VIX</div>
+            <div class="macro-value mono" id="vix-value">—</div>
+            <div class="macro-sub mono" id="vix-sub">5일 평균 —</div>
+            <div class="vix-gauge">
+              <div class="zone normal"></div>
+              <div class="zone warn"></div>
+              <div class="zone bad"></div>
+              <div class="marker" id="vix-marker"></div>
+            </div>
+            <span class="macro-badge" id="vix-badge">—</span>
+          </div>
+      
+          <!-- QQQ -->
+          <div class="macro-card" id="macro-qqq">
+            <div class="macro-label">QQQ · 미국</div>
+            <div class="macro-value mono" id="qqq-value">—</div>
+            <div class="macro-sub mono" id="qqq-sub">MA20 —</div>
+            <div class="ma-bar">
+              <span class="arrow" id="qqq-arrow">—</span>
+              <span class="mono" id="qqq-deviation">—</span>
+            </div>
+            <span class="macro-badge" id="qqq-badge">—</span>
+          </div>
+      
+          <!-- KOSPI -->
+          <div class="macro-card" id="macro-kospi">
+            <div class="macro-label">KOSPI · 한국</div>
+            <div class="macro-value mono" id="kospi-value">—</div>
+            <div class="macro-sub mono" id="kospi-sub">MA20 —</div>
+            <div class="ma-bar">
+              <span class="arrow" id="kospi-arrow">—</span>
+              <span class="mono" id="kospi-deviation">—</span>
+            </div>
+            <span class="macro-badge" id="kospi-badge">—</span>
+          </div>
+      
+        </section>
+      
+        <!-- ============================================================
+             미국 주식 섹션
+             ============================================================ -->
+        <section>
+          <div class="section-header">
+            <div class="section-title">🇺🇸 미국 주식</div>
+            <div class="mode-tag" id="mode-us">—</div>
+          </div>
+      
+          <div class="stock-table">
+            <div class="stock-table-header">
+              <div class="col-name" style="text-align:left;">종목</div>
+              <div>RSI</div>
+              <div>PEG</div>
+              <div>가격</div>
+              <div>EPS 추세</div>
+              <div>목표가 추세</div>
+              <div>서프</div>
+            </div>
+            <div id="us-stock-list">
+              <div class="empty-state">데이터 로딩 중...</div>
+            </div>
+          </div>
+        </section>
+      
+        <!-- ============================================================
+             한국 주식 섹션
+             ============================================================ -->
+        <section>
+          <div class="section-header">
+            <div class="section-title">🇰🇷 한국 주식</div>
+            <div class="mode-tag" id="mode-kr">—</div>
+          </div>
+      
+          <div class="stock-table">
+            <div class="stock-table-header">
+              <div class="col-name" style="text-align:left;">종목</div>
+              <div>RSI</div>
+              <div>PEG</div>
+              <div>가격</div>
+              <div>EPS 추세</div>
+              <div>목표가 추세</div>
+              <div>매출↑</div>
+            </div>
+            <div id="kr-stock-list">
+              <div class="empty-state">데이터 로딩 중...</div>
+            </div>
+          </div>
+        </section>
+      
+        <!-- ============================================================
+             한국 ETF 섹션
+             ============================================================ -->
+        <section>
+          <div class="section-header">
+            <div class="section-title">🇰🇷 한국 ETF</div>
+            <div class="mode-tag" id="mode-etf">—</div>
+          </div>
+      
+          <div class="stock-table">
+            <div class="stock-table-header">
+                <div class="col-name" style="text-align:left;">ETF</div>
+                <div>RSI</div>
+                <div>NAV괴리</div>
+                <div>가격</div>
+                <div>52주 위치</div>
+                <div>거래량</div>
+                <div></div>
+            </div>
+            <div id="kr-etf-list">
+              <div class="empty-state">데이터 로딩 중...</div>
+            </div>
+          </div>
+        </section>
+      
+        <!-- ============================================================
+             푸터
+             ============================================================ -->
+        <footer class="app-footer">
+          <div>
+            <span id="footer-status">●</span>
+            <span class="mono" id="footer-version">v4 · stock-sayo</span>
+          </div>
+          <div class="links">
+            <a href="/admin.html">admin</a>
+          </div>
+        </footer>
+      
+      </div>
+      <!-- ============================================================
+     Firebase SDK
+     ============================================================ -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
     
-    <div class="mode-bar">
-        <div class="mode-pill normal" id="modeUsPill">🇺🇸 미국 로딩중</div>
-        <div class="mode-pill normal" id="modeKrPill">🇰🇷 한국 로딩중</div>
-    </div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDexZpUgcv_oMkD9-y_IqB66cKp25qK3O0",
+      authDomain: "stock-sayo.firebaseapp.com",
+      projectId: "stock-sayo",
+      storageBucket: "stock-sayo.firebasestorage.app",
+      messagingSenderId: "907869401055",
+      appId: "1:907869401055:web:b48c92e37547f7afef99ed"
+    };
     
-    <div class="modal-overlay" id="nicknameModal">
-        <div class="modal">
-            <h3>🐜 개미 등록</h3>
-            <p>관리자가 확인할 수 있는<br>성함 또는 코드를 입력해주세요</p>
-            <input type="text" id="nicknameInput" placeholder="예: Kelly, Cleric">
-            <button class="modal-btn primary" onclick="submitNickname()">등록하기</button>
-            <button class="modal-btn secondary" onclick="closeModal()">취소</button>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    // ============================================================
+    // 유틸
+    // ============================================================
+    const $ = (sel) => document.querySelector(sel);
+    
+    function fmt(val, opts = {}) {
+      if (val === null || val === undefined || val === "") return "—";
+      if (typeof val === "number") {
+        if (Number.isNaN(val)) return "—";
+        if (opts.percent) return (val >= 0 ? "+" : "") + val.toFixed(1) + "%";
+        if (opts.price && val >= 1000) return val.toLocaleString();
+        if (opts.decimals !== undefined) return val.toFixed(opts.decimals);
+        return val.toLocaleString();
+      }
+      return String(val);
+    }
+    
+    function fmtPrice(price, region) {
+      if (price === null || price === undefined) return "—";
+      if (region === "us") return "$" + price.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      return price.toLocaleString();
+    }
+    
+    // 추세 상태 → 화살표/클래스
+    function trendIcon(state, slope) {
+      const slopeStr = (slope !== null && slope !== undefined) 
+        ? (slope >= 0 ? "+" : "") + slope.toFixed(1) + "%" 
+        : "—";
+      
+      switch (state) {
+        case "accelerating":
+          return { arrow: "↑↑", cls: "up-strong", value: slopeStr };
+        case "decelerating":
+          return { arrow: "↑", cls: "up", value: slopeStr };
+        case "reversing":
+          return { arrow: "↓", cls: "down", value: slopeStr };
+        case "declining":
+          return { arrow: "↓↓", cls: "down-strong", value: slopeStr };
+        default:
+      return { arrow: "·", cls: "flat", value: "수집 중" };
+     }
+    }
+    
+    // 시그널 우선순위 → 행 클래스 + 뱃지
+    function getSignalInfo(stock) {
+      const triggers = stock.crisis_triggers || [];
+      const buyLevel = stock.buy_level || "none";
+      const infoLevel = stock.info_level;
+      
+      const badges = [];
+      let rowClass = "";
+      
+      // 위기 (최고 우선순위)
+      if (triggers.includes("company_crisis") || triggers.includes("market_panic")) {
+        rowClass = "signal-crisis";
+        badges.push({ label: "🚨 위기", cls: "crisis" });
+      }
+      // 매수 시그널
+      else if (buyLevel === "strong") {
+        rowClass = "signal-strong";
+        badges.push({ label: "💪 강력 매수", cls: "strong" });
+      }
+      else if (buyLevel === "candidate") {
+        rowClass = "signal-candidate";
+        badges.push({ label: "🟢 매수 후보", cls: "candidate" });
+      }
+      // 정보성 (뱃지로만 표시, 행 색상은 안 바꿈)
+      if (infoLevel === "info_watch") {
+        if (!rowClass) rowClass = "signal-watch";
+        badges.push({ label: "관찰", cls: "watch" });
+      } else if (infoLevel === "info_warn") {
+        if (!rowClass) rowClass = "signal-warn";
+        badges.push({ label: "주의", cls: "warn" });
+      } else if (infoLevel === "info_mild") {
+        badges.push({ label: "정보", cls: "info" });
+      }
+      
+      return { rowClass, badges };
+    }
+    
+    // ============================================================
+    // 매크로 렌더
+    // ============================================================
+    function renderMacro(d) {
+      const vix = d.vix || {};
+      const qqq = d.qqq || {};
+      const kospi = d.kospi || {};
+      
+      // VIX
+      if (vix.current !== undefined) {
+        $("#vix-value").textContent = vix.current.toFixed(2);
+        $("#vix-sub").textContent = "5일 평균 " + (vix.ma5 !== undefined ? vix.ma5.toFixed(2) : "—");
+        
+        const card = $("#macro-vix");
+        const badge = $("#vix-badge");
+        card.classList.remove("alert", "crisis");
+        badge.classList.remove("good", "warn", "bad");
+        if (vix.mode === "level2") {
+          card.classList.add("crisis");
+          badge.classList.add("bad");
+          badge.textContent = "🔴 공포";
+        } else if (vix.mode === "level1") {
+          card.classList.add("alert");
+          badge.classList.add("warn");
+          badge.textContent = "🟠 경계";
+        } else {
+          badge.classList.add("good");
+          badge.textContent = "🟢 평온";
+        }
+        
+        // VIX 게이지 마커 (0~50 스케일)
+        const pct = Math.min(Math.max(vix.current / 50, 0), 1);
+        $("#vix-marker").style.left = (pct * 100) + "%";
+      }
+      
+      // QQQ
+      if (qqq.price !== undefined) {
+        $("#qqq-value").textContent = "$" + qqq.price.toLocaleString();
+        $("#qqq-sub").textContent = "MA20 $" + (qqq.ma20 !== undefined ? qqq.ma20.toLocaleString() : "—");
+        
+        const dev = qqq.deviation_pct;
+        if (dev !== undefined) {
+          const arrow = $("#qqq-arrow");
+          arrow.textContent = dev >= 0 ? "▲" : "▼";
+          arrow.classList.remove("up", "down");
+          arrow.classList.add(dev >= 0 ? "up" : "down");
+          $("#qqq-deviation").textContent = (dev >= 0 ? "+" : "") + dev.toFixed(2) + "%";
+        }
+        
+        const badge = $("#qqq-badge");
+        badge.classList.remove("good", "warn", "bad");
+        if (qqq.above_ma20) {
+          badge.classList.add("good");
+          badge.textContent = "MA↑";
+        } else {
+          badge.classList.add("bad");
+          badge.textContent = "MA↓";
+        }
+      }
+      
+      // KOSPI
+      if (kospi.price !== undefined) {
+        $("#kospi-value").textContent = kospi.price.toLocaleString();
+        $("#kospi-sub").textContent = "MA20 " + (kospi.ma20 !== undefined ? kospi.ma20.toLocaleString() : "—");
+        
+        const dev = kospi.deviation_pct;
+        if (dev !== undefined) {
+          const arrow = $("#kospi-arrow");
+          arrow.textContent = dev >= 0 ? "▲" : "▼";
+          arrow.classList.remove("up", "down");
+          arrow.classList.add(dev >= 0 ? "up" : "down");
+          $("#kospi-deviation").textContent = (dev >= 0 ? "+" : "") + dev.toFixed(2) + "%";
+        }
+        
+        const badge = $("#kospi-badge");
+        badge.classList.remove("good", "warn", "bad");
+        if (kospi.above_ma20) {
+          badge.classList.add("good");
+          badge.textContent = "MA↑";
+        } else {
+          badge.classList.add("bad");
+          badge.textContent = "MA↓";
+        }
+      }
+      
+      // 시장 모드 태그
+      const modeUs = d.market_mode_us || d.market_mode || "normal";
+      const modeKr = d.market_mode_kr || "normal";
+      const modeMap = { normal: "🟢 일반", adjust: "🟡 조정", caution: "🟠 경계", panic: "🔴 공포" };
+      
+      ["#mode-us"].forEach(sel => {
+        const el = $(sel);
+        if (!el) return;
+        el.textContent = modeMap[modeUs] || modeUs;
+        el.className = "mode-tag " + modeUs;
+      });
+      ["#mode-kr", "#mode-etf"].forEach(sel => {
+        const el = $(sel);
+        if (!el) return;
+        el.textContent = modeMap[modeKr] || modeKr;
+        el.className = "mode-tag " + modeKr;
+      });
+      
+      // 업데이트 시각
+      if (d.updated) {
+        $("#updated-time").textContent = d.updated;
+      }
+    }
+    
+    // ============================================================
+    // 종목 행 렌더 — 미국 / 한국 주식
+    // ============================================================
+    function renderStockRow(stock, region) {
+      const { rowClass, badges } = getSignalInfo(stock);
+      
+      const epsTrend = trendIcon(stock.eps_trend_state, stock.trend_slope_mom_pct);
+      const targetTrend = trendIcon(stock.target_trend_state, stock.target_slope_mom_pct);
+      
+      const rsi = stock.rsi !== null && stock.rsi !== undefined ? stock.rsi.toFixed(1) : "—";
+      const peg = stock.peg_fwd !== null && stock.peg_fwd !== undefined ? stock.peg_fwd.toFixed(2) : "—";
+      const surprise = stock.earnings_surprise_pct !== null && stock.earnings_surprise_pct !== undefined 
+        ? (stock.earnings_surprise_pct >= 0 ? "+" : "") + stock.earnings_surprise_pct.toFixed(1) + "%" 
+        : "—";
+      const revGrowth = stock.rev_growth !== null && stock.rev_growth !== undefined 
+        ? (stock.rev_growth >= 0 ? "+" : "") + stock.rev_growth.toFixed(1) + "%" 
+        : "—";
+      
+      const lastCol = region === "us" ? surprise : revGrowth;
+      
+      const badgesHtml = badges.map(b => `<span class="badge ${b.cls}">${b.label}</span>`).join("");
+      
+      // 상세 영역 (탭 시 펼침)
+      const detailItems = [
+        { key: "PER fwd", val: fmt(stock.per_fwd, { decimals: 2 }) },
+        { key: "PBR", val: fmt(stock.pbr, { decimals: 2 }) },
+        { key: "PS", val: fmt(stock.ps, { decimals: 2 }) },
+        { key: "52주 위치", val: fmt(stock.band_pct, { percent: false, decimals: 1 }) + (stock.band_pct !== null && stock.band_pct !== undefined ? "%" : "") },
+        { key: "거래량비", val: fmt(stock.vol_ratio, { decimals: 2 }) + "x" },
+        { key: "목표갭", val: stock.target_gap !== null && stock.target_gap !== undefined ? (stock.target_gap >= 0 ? "+" : "") + stock.target_gap.toFixed(1) + "%" : "—" },
+        { key: "EPS 1W", val: stock.trend_slope_wow_pct !== null && stock.trend_slope_wow_pct !== undefined ? (stock.trend_slope_wow_pct >= 0 ? "+" : "") + stock.trend_slope_wow_pct.toFixed(1) + "%" : "—" },
+        { key: "EPS Raw", val: stock.trend_raw_change_pct !== null && stock.trend_raw_change_pct !== undefined ? (stock.trend_raw_change_pct >= 0 ? "+" : "") + stock.trend_raw_change_pct.toFixed(2) + "%" : "—" },
+        { key: "RSI 임계", val: fmt(stock.rsi_threshold) },
+        { key: "Hits", val: (stock.selection_hits || 0) + "/3" },
+      ];
+      
+      const detailItemsHtml = detailItems.map(item => 
+        `<div class="detail-item"><div class="key">${item.key}</div><div class="val mono">${item.val}</div></div>`
+      ).join("");
+      
+      // 위기/정보성 사유 표시
+      const reasons = [];
+      (stock.crisis_details || []).forEach(d => reasons.push(`<span class="reason-tag">${d}</span>`));
+      (stock.info_reasons || []).forEach(d => reasons.push(`<span class="reason-tag">${d}</span>`));
+      if (stock.skip_reason) reasons.push(`<span class="reason-tag">${stock.skip_reason}</span>`);
+      const reasonsHtml = reasons.length > 0 ? `<div class="detail-reasons">${reasons.join(" ")}</div>` : "";
+      
+      return `
+         <div class="stock-row ${rowClass}" data-code="${stock.code}">
+            <div class="col-name">
+            <div class="name">${stock.name || stock.code}</div>
+            <div class="meta">${stock.code} · ${stock.sector || ""}</div>
+            ${badgesHtml ? `<div class="badges">${badgesHtml}</div>` : ""}
+          </div>
+          <div class="col-numeric primary"><span class="label">RSI</span>${rsi}</div>
+          <div class="col-numeric"><span class="label">PEG</span>${peg}</div>
+          <div class="col-numeric"><span class="label">Px</span>${fmtPrice(stock.price, region)}</div>
+          <div class="col-trend">
+            <span class="label">EPS</span>
+            <span class="value"><span class="arrow ${epsTrend.cls}">${epsTrend.arrow}</span>${epsTrend.value}</span>
+          </div>
+          <div class="col-trend">
+            <span class="label">목표가</span>
+            <span class="value"><span class="arrow ${targetTrend.cls}">${targetTrend.arrow}</span>${targetTrend.value}</span>
+          </div>
+          <div class="col-numeric"><span class="label">${region === "us" ? "서프" : "매출↑"}</span>${lastCol}</div>
+          <div class="row-detail">
+            <div class="detail-grid">${detailItemsHtml}</div>
+            ${reasonsHtml}
+          </div>
         </div>
-    </div>
+      `;
+    }
     
-    <div class="page active" id="page1">
-        <div class="container">
-            <div class="header">
-                <div class="header-icon-wrapper">
-                    <div class="antenna left"></div>
-                    <div class="antenna right"></div>
-                    <div class="header-icon">
-                        <img src="/icon-192.png" alt="사여?!">
-                    </div>
-                </div>
-                <h1>사여?!</h1>
-                <p class="subtitle">개미의 매수 타이밍 알림</p>
-            </div>
-            
-            <div class="card">
-                <div class="notification-status">
-                    <div class="status-badge" id="notifStatus">OFF</div>
-                    <p class="status-msg" id="notifMsg">알림이 꺼져 있어요</p>
-                </div>
-                
-                <div class="intro-box">
-                    <div class="intro-item">
-                        <span class="intro-icon">📊</span>
-                        <span class="intro-text">국내주식, 국내ETF, 미국주식 모니터링</span>
-                    </div>
-                    <div class="intro-item">
-                        <span class="intro-icon">🎯</span>
-                        <span class="intro-text">섹터별 밸류에이션 + 모멘텀 기반 시그널</span>
-                    </div>
-                    <div class="intro-item">
-                        <span class="intro-icon">🚦</span>
-                        <span class="intro-text">VIX + QQQ/KOSPI 20일선 기반 시장 모드</span>
-                    </div>
-                    <div class="intro-item">
-                        <span class="intro-icon">⚡</span>
-                        <span class="intro-text">EPS 컨센서스 추세로 매수/매도 트리거</span>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="btn-primary" id="notifBtn" onclick="openNicknameModal()">알림 켜기</button>
+    // ============================================================
+    // ETF 행 렌더 (더 간소)
+    // ============================================================
+    function renderEtfRow(etf) {
+      const rsi = etf.rsi !== null && etf.rsi !== undefined ? etf.rsi.toFixed(1) : "—";
+      const navDiscount = etf.nav_discount !== null && etf.nav_discount !== undefined 
+        ? (etf.nav_discount >= 0 ? "+" : "") + etf.nav_discount.toFixed(2) + "%" 
+        : "—";
+      const band = etf.band_pct !== null && etf.band_pct !== undefined ? etf.band_pct.toFixed(0) + "%" : "—";
+      const vol = etf.vol_ratio !== null && etf.vol_ratio !== undefined ? etf.vol_ratio.toFixed(1) + "x" : "—";
+      
+      // ETF 시그널: step1 + step2 → 강조
+      let rowClass = "";
+      const badges = [];
+      if (etf.step1 && etf.step2) {
+        rowClass = "signal-candidate";
+        badges.push({ label: "🟢 매수 신호", cls: "candidate" });
+      } else if (etf.step1) {
+        rowClass = "signal-info";
+        badges.push({ label: "관심", cls: "info" });
+      }
+      
+      const badgesHtml = badges.map(b => `<span class="badge ${b.cls}">${b.label}</span>`).join("");
+      
+      const detailItems = [
+        { key: "NAV", val: etf.nav !== null && etf.nav !== undefined ? etf.nav.toLocaleString() : "—" },
+        { key: "RSI 임계", val: fmt(etf.rsi_threshold) },
+        { key: "거래량", val: etf.volume !== null && etf.volume !== undefined ? etf.volume.toLocaleString() : "—" },
+      ];
+      const detailHtml = detailItems.map(item => 
+        `<div class="detail-item"><div class="key">${item.key}</div><div class="val mono">${item.val}</div></div>`
+      ).join("");
+      
+      return `
+         <div class="stock-row ${rowClass}" data-code="${etf.code}">
+            <div class="col-name">
+            <div class="name">${etf.name || etf.code}</div>
+            <div class="meta">${etf.code}</div>
+            ${badgesHtml ? `<div class="badges">${badgesHtml}</div>` : ""}
+          </div>
+          <div class="col-numeric primary"><span class="label">RSI</span>${rsi}</div>
+          <div class="col-numeric"><span class="label">NAV괴리</span>${navDiscount}</div>
+          <div class="col-numeric"><span class="label">Px</span>${fmtPrice(etf.price, "kr")}</div>
+          <div class="col-numeric"><span class="label">52주</span>${band}</div>
+          <div class="col-numeric"><span class="label">거래</span>${vol}</div>
+          <div class="col-numeric"></div>
+          <div class="row-detail">
+            <div class="detail-grid">${detailHtml}</div>
+          </div>
         </div>
-    </div>
+      `;
+    }
     
-    <div class="page" id="page2">
-        <div class="container">
-            <div class="macro-dashboard">
-                <div class="macro-section-title">
-                    <span>🌐 매크로 지표</span>
-                    <span class="reversal-flag" id="vixReversalFlag">⚡ VIX 반전</span>
-                </div>
-                
-                <div class="macro-card">
-                    <div class="macro-card-header">
-                        <span class="macro-card-title">VIX 공포지수</span>
-                        <span class="macro-card-badge good" id="vixBadge">🟢 평온</span>
-                    </div>
-                    <div class="macro-card-value">
-                        <span class="macro-card-main" id="vixVal">-</span>
-                        <span class="macro-card-sub" id="vixSub">MA5 -</span>
-                    </div>
-                    <div class="macro-gauge">
-                        <div class="macro-gauge-fill" id="vixGaugeFill" style="width: 0%;"></div>
-                        <div class="macro-gauge-mark" style="left: 50%"></div>
-                        <div class="macro-gauge-mark" style="left: 70%"></div>
-                        <div class="macro-gauge-dot" id="vixGaugeDot" style="left: 0%;"></div>
-                    </div>
-                    <div class="macro-gauge-scale">
-                        <span>0</span><span>25</span><span>35</span><span>50+</span>
-                    </div>
-                </div>
-                
-                <div class="macro-card">
-                    <div class="macro-card-header">
-                        <span class="macro-card-title">QQQ (나스닥100)</span>
-                        <span class="macro-card-badge good" id="qqqBadge">🟢 MA20↑</span>
-                    </div>
-                    <div class="macro-card-value">
-                        <span class="macro-card-main" id="qqqVal">-</span>
-                        <span class="macro-card-dev good" id="qqqDev">-</span>
-                    </div>
-                    <div class="macro-gauge">
-                        <div class="macro-gauge-center"></div>
-                        <div class="macro-gauge-dot" id="qqqGaugeDot" style="left: 50%;"></div>
-                    </div>
-                    <div class="macro-gauge-scale">
-                        <span>-5%</span><span>MA20</span><span>+5%</span>
-                    </div>
-                    <div class="macro-card-meta" id="qqqMeta">MA20: -</div>
-                </div>
-                
-                <div class="macro-card">
-                    <div class="macro-card-header">
-                        <span class="macro-card-title">KOSPI</span>
-                        <span class="macro-card-badge good" id="kospiBadge">🟢 MA20↑</span>
-                    </div>
-                    <div class="macro-card-value">
-                        <span class="macro-card-main" id="kospiVal">-</span>
-                        <span class="macro-card-dev good" id="kospiDev">-</span>
-                    </div>
-                    <div class="macro-gauge">
-                        <div class="macro-gauge-center"></div>
-                        <div class="macro-gauge-dot" id="kospiGaugeDot" style="left: 50%;"></div>
-                    </div>
-                    <div class="macro-gauge-scale">
-                        <span>-5%</span><span>MA20</span><span>+5%</span>
-                    </div>
-                    <div class="macro-card-meta" id="kospiMeta">MA20: -</div>
-                </div>
-            </div>
-            
-            <div class="section-header">
-                <div class="section-title">주요 지표</div>
-                <div class="section-time" id="updateTime">-</div>
-            </div>
-            
-            <div class="tabs">
-                <div class="tab active" onclick="showMarket('kr_stock', event)">🇰🇷 국내주식</div>
-                <div class="tab" onclick="showMarket('kr_etf', event)">🇰🇷 ETF</div>
-                <div class="tab" onclick="showMarket('us_stock', event)">🇺🇸 미국주식</div>
-            </div>
-            
-            <div id="stockList">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div>데이터 로딩 중...</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    // ============================================================
+    // 시그널 우선 정렬
+    // ============================================================
+    function signalPriority(stock) {
+      const triggers = stock.crisis_triggers || [];
+      const buyLevel = stock.buy_level || "none";
+      const infoLevel = stock.info_level;
+      
+      if (triggers.length > 0) return 0; // 위기 최상단
+      if (buyLevel === "strong") return 1;
+      if (buyLevel === "candidate") return 2;
+      if (infoLevel === "info_watch") return 3;
+      if (infoLevel === "info_warn") return 4;
+      if (infoLevel === "info_mild") return 5;
+      return 9; // 평상
+    }
     
-    <div class="page" id="page3">
-        <div class="container">
-            <div class="section-header">
-                <div class="section-title">가이드</div>
-            </div>
-            
-            <div class="subtabs">
-                <div class="subtab active" onclick="showGuide('market', event)">시장 모드</div>
-                <div class="subtab" onclick="showGuide('signal', event)">매수/매도</div>
-                <div class="subtab" onclick="showGuide('terms', event)">용어</div>
-            </div>
-            
-            <div class="guide-content active" id="guide-market">
-                <div class="card">
-                    <div class="guide-section">
-                        <div class="guide-title">🚦 4단계 시장 모드</div>
-                        <div class="guide-note">
-                            VIX와 QQQ/KOSPI 20일선을 조합해 시장 상황을 판정합니다.
-                            <strong>시장이 어려울수록 RSI 기준이 더 엄격해져</strong>,
-                            같은 종목도 더 싸게 사게 됩니다.
-                        </div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">🟢 일반 (Normal)</span>
-                                <span class="guide-value good">RSI 40 돌파</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">🟡 조정 (Adjust)</span>
-                                <span class="guide-value warn">RSI 35 돌파</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">🟠 경계 (Caution)</span>
-                                <span class="guide-value warn">RSI 30 돌파</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">🔴 공포 (Panic)</span>
-                                <span class="guide-value bad">RSI 25 돌파</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">🌐 매크로 판정 기준</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">VIX &lt; 25 & 지수 &gt; MA20</span>
-                                <span class="guide-value good">일반</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">VIX &lt; 25 & 지수 &lt; MA20</span>
-                                <span class="guide-value warn">조정</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">VIX 25~34</span>
-                                <span class="guide-value warn">경계</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">VIX ≥ 35</span>
-                                <span class="guide-value bad">공포 (최고 기회)</span>
-                            </div>
-                        </div>
-                        <div class="guide-note">
-                            미국 종목은 <strong>QQQ 20일선</strong>, 한국 종목은 <strong>KOSPI 20일선</strong>을 사용합니다.
-                            20일선 이탈은 1% 이상, 2거래일 연속일 때만 확정 (whipsaw 방지).
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="guide-content" id="guide-signal">
-                <div class="card">
-                    <div class="guide-section">
-                        <div class="guide-title">🔔 매수 시그널 (섹터별)</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">반도체</span>
-                                <span class="guide-value">PEG &lt; 0.5 & PBR &lt; 3</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">AI/빅테크</span>
-                                <span class="guide-value">PEG &lt; 1.2 & 매출↑ ≥ 15%</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">방산</span>
-                                <span class="guide-value">(PEG &lt; 1.5 or PER &lt; 15) & 매출↑ ≥ 5%</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">우주항공</span>
-                                <span class="guide-value">PEG &lt; 1.5 (적자 시 PS &lt; 10)</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">공통</span>
-                                <span class="guide-value">거래량 ≥ 1.2x & 서프 ≥ 0% & EPS↑</span>
-                            </div>
-                        </div>
-                        <div class="guide-note">
-                            위 조건 + <strong>RSI가 임계값을 아래에서 위로 상향 돌파</strong>할 때 알림.
-                        </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">📊 ETF 매수 시그널</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">과매도 or 할인</span>
-                                <span class="guide-value">RSI ≤ 임계값 또는 NAV &lt; -0.5%</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">저점 근처</span>
-                                <span class="guide-value">52주 밴드 &lt; 25%</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">🚨 매도 시그널 (단계화)</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">⚡ 경고</span>
-                                <span class="guide-value warn">V_curr &lt; V_wow 1회 or 컨센 -3%</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">⚠️ 절반 매도</span>
-                                <span class="guide-value warn">V_curr &lt; V_wow 2회 연속</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">🚨 전량 매도</span>
-                                <span class="guide-value bad">V_curr &lt; V_mom (추세 파괴)</span>
-                            </div>
-                        </div>
-                        <div class="guide-note">
-                            V_curr = 최근 5일 평균, V_wow = 7~11일 전, V_mom = 28~32일 전 EPS 컨센서스.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="guide-content" id="guide-terms">
-                <div class="card">
-                    <div class="guide-section">
-                        <div class="guide-title">VIX (공포지수)</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">&lt; 25</span>
-                                <span class="guide-value good">평상시</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">25~35</span>
-                                <span class="guide-value warn">시장 스트레스</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">≥ 35</span>
-                                <span class="guide-value bad">패닉 · 최고 매수 기회</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">RSI (14일)</div>
-                        <div class="guide-note">
-                            상승/하락 강도를 0~100으로 수치화. 과매도(낮을수록 반등 가능성) 구간을 <strong>아래에서 위로 돌파</strong>할 때 매수 타이밍.
-                        </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">Forward PEG</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">반도체</span>
-                                <span class="guide-value good">&lt; 0.5 저평가</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">AI/빅테크</span>
-                                <span class="guide-value good">&lt; 1.2 저평가</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">방산/항공</span>
-                                <span class="guide-value good">&lt; 1.5 저평가</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">Earnings Surprise</div>
-                        <div class="guide-note">
-                            최근 분기 실제 EPS vs 컨센서스. +면 서프라이즈, −면 쇼크. 미국 종목만 수집(yfinance).
-                        </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">목표주가 갭</div>
-                        <div class="guide-note">
-                            애널리스트 목표주가 대비 현재가의 상승 여력(%). +면 저평가, −면 고평가.
-                        </div>
-                    </div>
-                    
-                    <div class="guide-section">
-                        <div class="guide-title">NAV 괴리율 (ETF)</div>
-                        <div class="guide-box">
-                            <div class="guide-row">
-                                <span class="guide-label">≤ -0.5%</span>
-                                <span class="guide-value good">할인 거래 (유리)</span>
-                            </div>
-                            <div class="guide-row">
-                                <span class="guide-label">≥ +0.5%</span>
-                                <span class="guide-value bad">프리미엄 (불리)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    function sortStocks(list) {
+      return [...list].sort((a, b) => {
+        const pa = signalPriority(a);
+        const pb = signalPriority(b);
+        if (pa !== pb) return pa - pb;
+        // 동일 우선순위면 RSI 낮은 순 (매수 가까운 종목 우선)
+        const ra = a.rsi ?? 100;
+        const rb = b.rsi ?? 100;
+        return ra - rb;
+      });
+    }
     
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="showPage(1, event)">알림</div>
-        <div class="nav-item" onclick="showPage(2, event)">주요지표</div>
-        <div class="nav-item" onclick="showPage(3, event)">가이드</div>
-    </div>
+    // ============================================================
+    // 메인 렌더
+    // ============================================================
+    function render(data) {
+      if (!data) return;
+      
+      renderMacro(data);
+      
+      // 미국 주식
+      const usList = sortStocks(data.us_stock || []);
+      const usHtml = usList.length > 0 
+        ? usList.map(s => renderStockRow(s, "us")).join("")
+        : `<div class="empty-state">데이터 없음</div>`;
+      $("#us-stock-list").innerHTML = usHtml;
+      
+      // 한국 주식
+      const krList = sortStocks(data.kr_stock || []);
+      const krHtml = krList.length > 0 
+        ? krList.map(s => renderStockRow(s, "kr")).join("")
+        : `<div class="empty-state">데이터 없음</div>`;
+      $("#kr-stock-list").innerHTML = krHtml;
+      
+      // 한국 ETF
+      const etfList = data.kr_etf || [];
+      const etfHtml = etfList.length > 0
+        ? etfList.map(e => renderEtfRow(e)).join("")
+        : `<div class="empty-state">데이터 없음</div>`;
+      $("#kr-etf-list").innerHTML = etfHtml;
+      
+      // 행 클릭 → 확장
+      document.querySelectorAll(".stock-row").forEach(row => {
+        row.addEventListener("click", () => {
+          row.classList.toggle("expanded");
+        });
+      });
+    }
     
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
-            authDomain: "stock-sayo.firebaseapp.com",
-            projectId: "stock-sayo",
-            storageBucket: "stock-sayo.firebasestorage.app",
-            messagingSenderId: "964666304071",
-            appId: "1:964666304071:web:0c806002d44229f71e3362"
-        };
-        firebase.initializeApp(firebaseConfig);
+    // ============================================================
+    // Firestore 실시간 구독
+    // ============================================================
+    const dataDoc = doc(db, "stocks", "data");
+    onSnapshot(dataDoc, (snap) => {
+      if (snap.exists()) {
+        render(snap.data());
+      }
+    }, (err) => {
+      console.error("Firestore 구독 에러:", err);
+    });
+    
+    // ============================================================
+    // FCM 알림 등록
+    // ============================================================
+    const VAPID_KEY = "BO9I9SccNaGjrt1hsIAKoa97zsiNRxBlcJvDCO_-gK5y_T8DlDgPoiF6IKnVGKJyaW0fE16ezmmjmEwTxBxXKRA";
+    let messaging = null;
+    
+    async function setupMessaging() {
+      if (!("serviceWorker" in navigator)) return;
+      if (!("Notification" in window)) return;
+      
+      try {
+        const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+        messaging = getMessaging(app);
         
-        const db = firebase.firestore();
-        let messaging = null;
-        let currentToken = null;
+        // 포그라운드 알림 처리
+        onMessage(messaging, (payload) => {
+          console.log("FCM 메시지:", payload);
+          // 페이지가 열려있을 때 화면 갱신만 자동으로 됨 (Firestore 구독 중)
+        });
         
-        const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
-        
-        const MODE_LABELS = {
-            normal: '🟢 일반',
-            adjust: '🟡 조정',
-            caution: '🟠 경계',
-            panic: '🔴 공포'
-        };
-        
-        let stockData = { kr_stock: [], kr_etf: [], us_stock: [] };
-        let currentMarket = 'kr_stock';
-        
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/firebase-messaging-sw.js')
-                .then(reg => { messaging = firebase.messaging(); })
-                .catch(err => console.log('SW failed', err));
+        // 이전 알림 등록 상태 확인
+        if (Notification.permission === "granted") {
+          const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+          if (token) {
+            markSubscribed();
+          }
+        }
+      } catch (e) {
+        console.error("FCM 셋업 에러:", e);
+      }
+    }
+    
+    async function subscribeNotification() {
+      if (!messaging) {
+        alert("알림을 사용할 수 없는 환경이에요.");
+        return;
+      }
+      
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          alert("알림 권한이 거부됐어요.");
+          return;
         }
         
-        function updateModeBar(modeUs, modeKr) {
-            const usEl = document.getElementById('modeUsPill');
-            const krEl = document.getElementById('modeKrPill');
-            
-            usEl.className = 'mode-pill ' + (modeUs || 'normal');
-            usEl.textContent = '🇺🇸 미국 ' + (MODE_LABELS[modeUs] || MODE_LABELS.normal);
-            
-            krEl.className = 'mode-pill ' + (modeKr || 'normal');
-            krEl.textContent = '🇰🇷 한국 ' + (MODE_LABELS[modeKr] || MODE_LABELS.normal);
-        }
+        const reg = await navigator.serviceWorker.getRegistration("/firebase-messaging-sw.js");
+        const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
         
-        function updateMacroDashboard(data) {
-            const vix = data.vix;
-            if (vix && vix.current != null) {
-                document.getElementById('vixVal').textContent = vix.current;
-                document.getElementById('vixSub').textContent = 'MA5 ' + (vix.ma5 || '-');
-                
-                const pct = Math.min(100, (vix.current / 50) * 100);
-                const color = vix.mode === 'normal' ? '#22c55e' : (vix.mode === 'level1' ? '#f97316' : '#ef4444');
-                
-                const fill = document.getElementById('vixGaugeFill');
-                fill.style.width = pct + '%';
-                fill.style.background = color;
-                
-                const dot = document.getElementById('vixGaugeDot');
-                dot.style.left = pct + '%';
-                dot.style.background = color;
-                
-                const badge = document.getElementById('vixBadge');
-                const badgeText = vix.mode === 'normal' ? '🟢 평온' : (vix.mode === 'level1' ? '🟠 경계' : '🔴 공포');
-                const badgeClass = vix.mode === 'normal' ? 'good' : (vix.mode === 'level1' ? 'warn' : 'bad');
-                badge.textContent = badgeText;
-                badge.className = 'macro-card-badge ' + badgeClass;
-                
-                const flag = document.getElementById('vixReversalFlag');
-                if (vix.reversal) flag.classList.add('active');
-                else flag.classList.remove('active');
-            }
-            
-            updateIndexCard('qqq', data.qqq, '$', 2);
-            updateIndexCard('kospi', data.kospi, '', 0);
+        if (token) {
+          const nickname = prompt("닉네임 (선택)", "재환") || "익명";
+          await setDoc(doc(db, "fcm_tokens", token), {
+            nickname: nickname.slice(0, 30),
+            registered_at: new Date().toISOString(),
+          });
+          markSubscribed();
+          alert("✅ 알림 등록 완료!");
         }
-        
-        function updateIndexCard(key, idx, unit, decimals) {
-            if (!idx || idx.price == null) return;
-            
-            const val = document.getElementById(key + 'Val');
-            const dev = document.getElementById(key + 'Dev');
-            const dot = document.getElementById(key + 'GaugeDot');
-            const badge = document.getElementById(key + 'Badge');
-            const meta = document.getElementById(key + 'Meta');
-            
-            val.textContent = unit + Number(idx.price).toLocaleString(undefined, {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals
-            });
-            
-            const devPct = idx.deviation_pct != null ? idx.deviation_pct : 0;
-            const devText = (devPct > 0 ? '+' : '') + devPct.toFixed(2) + '%';
-            dev.textContent = devText;
-            dev.className = 'macro-card-dev ' + (devPct >= 0 ? 'good' : 'bad');
-            
-            const clipped = Math.max(-5, Math.min(5, devPct));
-            const leftPct = 50 + (clipped / 5) * 50;
-            dot.style.left = leftPct + '%';
-            dot.style.background = idx.above_ma20 ? '#22c55e' : '#ef4444';
-            
-            badge.textContent = idx.above_ma20 ? '🟢 MA20↑' : '🔴 MA20↓';
-            badge.className = 'macro-card-badge ' + (idx.above_ma20 ? 'good' : 'bad');
-            
-            meta.textContent = 'MA20: ' + unit + Number(idx.ma20).toLocaleString(undefined, {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals
-            });
-        }
-        
-        function openNicknameModal() { document.getElementById('nicknameModal').classList.add('show'); }
-        function closeModal() { document.getElementById('nicknameModal').classList.remove('show'); }
-        
-        async function submitNickname() {
-            const nickname = document.getElementById('nicknameInput').value.trim();
-            if (!nickname) { alert('닉네임을 입력해주세요!'); return; }
-            closeModal();
-            await requestNotification(nickname);
-        }
-        
-        async function requestNotification(nickname) {
-            if (!('Notification' in window)) {
-                alert('이 브라우저는 알림을 지원하지 않습니다.');
-                return;
-            }
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    if (!messaging) messaging = firebase.messaging();
-                    const token = await messaging.getToken({ vapidKey: VAPID_KEY });
-                    currentToken = token;
-                    await db.collection('fcm_tokens').doc(token).set({
-                        token: token,
-                        nickname: nickname,
-                        approved: false,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        platform: navigator.platform
-                    });
-                    localStorage.setItem('fcm_token', token);
-                    updateStatusPending();
-                    new Notification('사여?!', {
-                        body: '알림 신청 완료! 관리자 승인을 기다려주세요.',
-                        icon: '/icon-192.png'
-                    });
-                }
-            } catch (err) {
-                console.error('알림 설정 실패:', err);
-                alert('알림 설정 중 오류: ' + err.message);
-            }
-        }
-        
-        function updateStatusPending() {
-            document.getElementById('notifStatus').innerHTML = '<span class="status-spinner"></span> 심사중';
-            document.getElementById('notifStatus').className = 'status-badge pending';
-            document.getElementById('notifMsg').textContent = '개미 알림 서비스 심사중';
-            document.getElementById('notifBtn').textContent = '신청 완료';
-            document.getElementById('notifBtn').disabled = true;
-        }
-        
-        function updateStatusApproved() {
-            document.getElementById('notifStatus').innerHTML = '<span class="status-spinner active"></span> ON';
-            document.getElementById('notifStatus').className = 'status-badge on';
-            document.getElementById('notifMsg').textContent = '매수 타이밍 감지 중';
-            document.getElementById('notifBtn').textContent = '알림 켜짐 ✓';
-            document.getElementById('notifBtn').disabled = true;
-        }
-        
-        function watchApprovalStatus() {
-            const savedToken = localStorage.getItem('fcm_token');
-            if (!savedToken) return;
-            db.collection('fcm_tokens').doc(savedToken).onSnapshot(doc => {
-                if (doc.exists) {
-                    if (doc.data().approved) updateStatusApproved();
-                    else updateStatusPending();
-                }
-            }, err => console.log('Status watch error:', err));
-        }
-        watchApprovalStatus();
-        
-        function showPage(num, ev) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('page' + num).classList.add('active');
-            if (ev && ev.target) ev.target.classList.add('active');
-            else document.querySelectorAll('.nav-item')[num - 1].classList.add('active');
-            
-            if (num === 2 && stockData.kr_stock.length === 0) loadData();
-        }
-        
-        function showMarket(market, ev) {
-            currentMarket = market;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            if (ev && ev.target) ev.target.classList.add('active');
-            renderStocks();
-        }
-        
-        function showGuide(type, ev) {
-            document.querySelectorAll('.subtab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.guide-content').forEach(c => c.classList.remove('active'));
-            if (ev && ev.target) ev.target.classList.add('active');
-            document.getElementById('guide-' + type).classList.add('active');
-        }
-        
-        function renderStocks() {
-            const list = stockData[currentMarket];
-            if (!list || list.length === 0) {
-                document.getElementById('stockList').innerHTML = '<div class="loading">데이터가 없습니다.</div>';
-                return;
-            }
-            
-            let html = '';
-            list.forEach(s => {
-                const isEtf = currentMarket === 'kr_etf';
-                const isUs = currentMarket === 'us_stock';
-                
-                let cardClass = '';
-                if (s.exit_level === 'sell_full') cardClass = 'alert';
-                else if (s.exit_level === 'sell_half' || s.exit_level === 'warn') cardClass = 'exit';
-                else if (s.step2) cardClass = 'alert';
-                else if (s.step1) cardClass = 'buy';
-                
-                let priceStr = '-';
-                if (s.price) {
-                    priceStr = isUs ? '$' + Number(s.price).toFixed(2) : Number(s.price).toLocaleString() + '원';
-                }
-                
-                let badges = '';
-                if (s.exit_level === 'sell_full') badges += '<span class="badge red">🚨 매도</span>';
-                else if (s.exit_level === 'sell_half') badges += '<span class="badge orange">⚠️ 절반매도</span>';
-                else if (s.exit_level === 'warn') badges += '<span class="badge yellow">⚡ 경고</span>';
-                
-                if (s.step1 && !s.exit_level) badges += '<span class="badge green">매수</span>';
-                if (s.step2 && !s.exit_level) badges += '<span class="badge red">지금 매수!</span>';
-                
-                const rsiThreshold = s.rsi_threshold || (isEtf ? 30 : 40);
-                const rsiClass = s.rsi == null ? '' : (s.rsi < rsiThreshold ? 'bad' : (s.rsi < rsiThreshold + 5 ? 'warn' : ''));
-                
-                html += `<div class="stock-card ${cardClass}">
-                    <div class="stock-header">
-                        <div class="stock-name">${s.name}${badges}</div>
-                        <div class="stock-price">${priceStr}</div>
-                    </div>`;
-                
-                if (isEtf) {
-                    const navClass = s.nav_discount == null ? '' : (s.nav_discount < -0.5 ? 'good' : (s.nav_discount > 0.5 ? 'bad' : ''));
-                    const volClass = s.vol_ratio && s.vol_ratio >= 2 ? 'warn' : '';
-                    const bandClass = s.band_pct == null ? '' : (s.band_pct < 20 ? 'good' : (s.band_pct > 80 ? 'bad' : ''));
-                    
-                    html += `<div class="metrics-grid">
-                        <div class="metric"><div class="metric-label">RSI</div><div class="metric-value ${rsiClass}">${s.rsi != null ? s.rsi : '-'}</div></div>
-                        <div class="metric"><div class="metric-label">NAV괴리</div><div class="metric-value ${navClass}">${s.nav_discount != null ? s.nav_discount.toFixed(1) + '%' : '-'}</div></div>
-                        <div class="metric"><div class="metric-label">거래량</div><div class="metric-value ${volClass}">${s.vol_ratio != null ? s.vol_ratio + 'x' : '-'}</div></div>
-                        <div class="metric"><div class="metric-label">밴드</div><div class="metric-value ${bandClass}">${s.band_pct != null ? s.band_pct + '%' : '-'}</div></div>
-                    </div>`;
-                } else {
-                    const peg = s.peg_fwd;
-                    const pegClass = peg == null ? '' : (peg < 0.8 ? 'good' : (peg > 1.5 ? 'bad' : ''));
-                    const revClass = s.rev_growth == null ? '' : (s.rev_growth >= 15 ? 'good' : (s.rev_growth < 5 ? 'bad' : ''));
-                    const surprise = s.earnings_surprise_pct;
-                    const surpriseClass = surprise == null ? '' : (surprise > 0 ? 'good' : 'bad');
-                    const gap = s.target_gap;
-                    const gapClass = gap == null ? '' : (gap > 20 ? 'good' : (gap < 0 ? 'bad' : ''));
-                    
-                    html += `<div class="metrics-grid cols-5">
-                        <div class="metric"><div class="metric-label">RSI</div><div class="metric-value ${rsiClass}">${s.rsi != null ? s.rsi : '-'}</div></div>
-                        <div class="metric"><div class="metric-label">PEG</div><div class="metric-value ${pegClass}">${peg != null ? peg : '-'}</div></div>
-                        <div class="metric"><div class="metric-label">매출↑</div><div class="metric-value ${revClass}">${s.rev_growth != null ? s.rev_growth + '%' : '-'}</div></div>
-                        <div class="metric"><div class="metric-label">서프</div><div class="metric-value ${surpriseClass}">${surprise != null ? (surprise > 0 ? '+' : '') + surprise + '%' : '-'}</div></div>
-                        <div class="metric"><div class="metric-label">목표갭</div><div class="metric-value ${gapClass}">${gap != null ? (gap > 0 ? '+' : '') + gap + '%' : '-'}</div></div>
-                    </div>`;
-                }
-                html += '</div>';
-            });
-            document.getElementById('stockList').innerHTML = html;
-        }
-        
-        function updateTickerBar() {
-            const all = [
-                ...stockData.kr_stock.filter(s => s.step1),
-                ...stockData.kr_etf.filter(s => s.step1),
-                ...stockData.us_stock.filter(s => s.step1)
-            ];
-            if (all.length === 0) {
-                document.getElementById('tickerBar').innerHTML = '<span class="ticker-empty">📡 매수 조건 충족 종목 스캔중...</span>';
-                return;
-            }
-            let items = '';
-            all.forEach(s => {
-                const isEtf = stockData.kr_etf.includes(s);
-                const label = isEtf ? 'NAV' : 'PEG';
-                const value = isEtf ? (s.nav_discount != null ? s.nav_discount.toFixed(1) + '%' : '-') : (s.peg_fwd != null ? s.peg_fwd : '-');
-                items += `<span class="ticker-item"><span class="name">${s.name}</span><span class="value">${label} ${value}</span></span>`;
-            });
-            document.getElementById('tickerBar').innerHTML = `<div class="ticker-track">${items}${items}</div>`;
-        }
-        
-        function loadData() {
-            document.getElementById('stockList').innerHTML = `<div class="loading"><div class="loading-spinner"></div><div>데이터 로딩 중...</div></div>`;
-            db.collection("stocks").doc("data").get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        stockData.kr_stock = data.kr_stock || [];
-                        stockData.kr_etf = data.kr_etf || [];
-                        stockData.us_stock = data.us_stock || [];
-                        document.getElementById('updateTime').textContent = data.updated || '-';
-                        updateModeBar(data.market_mode_us || data.market_mode, data.market_mode_kr);
-                        updateMacroDashboard(data);
-                        renderStocks();
-                        updateTickerBar();
-                    } else {
-                        document.getElementById('stockList').innerHTML = '<div class="loading">데이터가 없습니다.</div>';
-                    }
-                })
-                .catch(err => {
-                    document.getElementById('stockList').innerHTML = `<div class="loading">에러: ${err.message}</div>`;
-                });
-        }
-        loadData();
+      } catch (e) {
+        console.error(e);
+        alert("등록 실패: " + e.message);
+      }
+    }
+    
+    function markSubscribed() {
+      const btn = $("#btn-subscribe");
+      btn.classList.add("active");
+      btn.textContent = "알림 ON";
+    }
+    
+    $("#btn-subscribe").addEventListener("click", () => {
+      if ($("#btn-subscribe").classList.contains("active")) {
+        if (confirm("알림을 다시 등록할까요?")) subscribeNotification();
+      } else {
+        subscribeNotification();
+      }
+    });
+    
+    setupMessaging();
+    
+    // 푸터 상태 표시
+    setInterval(() => {
+      const dot = $("#footer-status");
+      if (dot) dot.style.color = "var(--signal-strong)";
+    }, 2000);
+    
     </script>
 </body>
 </html>
