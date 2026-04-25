@@ -1,5 +1,5 @@
 """
-사여?! - 통합 설정 (v3: 섹터별 Earnings Surprise 공통화)
+사여?! - 통합 설정 (v4: PBR 재배치 + 기울기 민감도 + 매수 3단계)
 ==================================================
 국내주식 + 국내ETF + 미국주식
 섹터별 매수/매도 임계값을 SECTOR_CRITERIA에서 일괄 관리
@@ -49,27 +49,30 @@ KR_ETFS = [
 ]
 
 # ============================================================
-# 섹터별 임계값 (v3: consensus_gap_min 모든 섹터 추가)
+# 섹터별 임계값 (v4: PBR 재배치 + 필수/선택 구조)
 # ============================================================
 # 필드 설명:
-#   peg_max               : PEG fwd 상한 (이하일 때 매수 후보)
-#   valuation_metric      : 5년 밸류 위치 지표 ("pbr_5y_pct"/"per_5y_pct"/"evebitda_5y_pct")
-#                           → P1에서 히스토리 데이터 연동 후 실제 작동
-#   valuation_threshold   : 밸류 위치 상단 임계값 (이 이상이면 "가속도 점검" 구간)
-#   pbr_max, per_max      : fallback 또는 OR 조건용 단순 상한
-#   rev_growth_min        : 매출 성장률 하한 (%)
-#   consensus_gap_min     : Earnings Surprise (%) 하한 — 실제 EPS vs 직전 분기 컨센
-#                           0 = "플러스 서프라이즈만 통과", -10 = "10% 쇼크까진 허용"
-#   ps_max, band_max      : 적자기업 대안 지표 (우주항공)
-#   rsi_*                 : 시장 모드별 RSI 돌파 임계값 (아래→위 상향 돌파 기준)
+#   peg_max               : PEG fwd 상한 (필수)
+#   pbr_max               : PBR 상한 (방산만 필수, 나머지 없음)
+#   per_max               : OR 조건용 PER 상한 (방산)
+#   rev_growth_min        : 매출 성장률 하한 (선택 조건)
+#   consensus_gap_min     : Earnings Surprise 하한 (선택 조건)
+#   ps_max, band_max      : 적자기업 대안 (우주항공)
+#   volume_min_ratio      : 거래량 / 20일 평균 최소 배수 (완화됨 1.0)
+#   rsi_*                 : 시장 모드별 RSI 임계값
 # ============================================================
 SECTOR_CRITERIA = {
     "semiconductor": {
-        "peg_max": 0.5,
-        "valuation_metric": "pbr_5y_pct",
-        "valuation_threshold": 0.8,
-        "pbr_max": 3.0,
-        "consensus_gap_min": 0,      # 플러스 서프라이즈만
+        # 필수: PEG
+        "peg_max": 0.8,              # 0.5 → 0.8 완화
+        # PBR 제거 (사이클 상승장 영구 탈락 방지)
+        # 선택 조건 (2/3 이상 충족)
+        "rev_growth_min": 5,         # 반도체는 성장률 유연
+        "consensus_gap_min": 0,
+        "target_gap_min": 0,         # 목표주가 갭 > 0%
+        # 거래량
+        "volume_min_ratio": 1.0,     # 1.2 → 1.0 완화
+        # RSI
         "rsi_normal": 40,
         "rsi_adjust": 35,
         "rsi_caution": 30,
@@ -77,34 +80,42 @@ SECTOR_CRITERIA = {
     },
     "ai_bigtech": {
         "peg_max": 1.2,
-        "valuation_metric": "per_5y_pct",   # 빅테크는 PBR 부적합 → PER 5년 위치
-        "valuation_threshold": 0.8,
+        # PBR 제거
         "rev_growth_min": 15,
-        "consensus_gap_min": -10,    # 빅테크는 변동성 커서 -10%까지 허용
+        "consensus_gap_min": -10,    # 빅테크 유연
+        "target_gap_min": 0,
+        "volume_min_ratio": 1.0,
         "rsi_normal": 40,
         "rsi_adjust": 35,
         "rsi_caution": 30,
         "rsi_panic": 25,
     },
     "defense": {
+        # 필수: PEG or PER (PBR 제거 — 방산은 자사주매입/배당으로 PBR 구조적 높음)
         "peg_max": 1.5,
-        "valuation_metric": "pbr_5y_pct",
-        "valuation_threshold": 0.8,
         "per_max": 15,
+        # 선택 조건
         "rev_growth_min": 5,
-        "consensus_gap_min": 0,      # 플러스 서프라이즈만
+        "consensus_gap_min": 0,
+        "target_gap_min": 0,
+        "volume_min_ratio": 1.0,
         "rsi_normal": 40,
         "rsi_adjust": 35,
         "rsi_caution": 30,
         "rsi_panic": 25,
     },
     "aerospace": {
+        # 흑자 기업 필수
         "peg_max": 1.5,
-        "valuation_metric": "pbr_5y_pct",
-        "valuation_threshold": 0.8,
+        # 적자 기업 대체
         "ps_max": 10,
         "band_max": 30,
-        "consensus_gap_min": 0,      # 플러스 서프라이즈만
+        # PBR 제거 (적자 많아 참고 어려움)
+        # 선택 조건
+        "rev_growth_min": 5,
+        "consensus_gap_min": 0,
+        "target_gap_min": 0,
+        "volume_min_ratio": 1.0,
         "rsi_normal": 40,
         "rsi_adjust": 35,
         "rsi_caution": 30,
@@ -121,31 +132,64 @@ SECTOR_CRITERIA = {
 }
 
 # ============================================================
-# EPS 추세 / Slope 계산 파라미터
+# 기울기 (Slope) 민감도 — EPS 컨센 + 목표주가 공통
+# ============================================================
+SLOPE_RULES = {
+    # 매수 조건
+    "required_mom_min": -1.0,    # slope_mom_pct ≥ -1% (필수, 매우 관대)
+    # 가점 (강력 매수 승격 조건)
+    "bonus_mom_min": 3.0,        # slope_mom_pct > +3%
+    # 매도 트리거 (기업 위기)
+    "crisis_eps_mom": -5.0,      # EPS slope_mom < -5% 2주 연속
+    "crisis_target_mom": -3.0,   # 목표주가 slope_mom < -3% 2주 연속
+    "crisis_consecutive_weeks": 2,
+    # 정보성 알림 경고
+    "raw_drop_pct": -3.0,        # raw 일별 변화 -3% 이상 급락 시 긴급 알림
+}
+
+# ============================================================
+# EPS 추세 / Slope 계산 파라미터 (기존 유지)
 # ============================================================
 TREND_WINDOWS = {
     "curr_days": 5,    # V_curr: 최근 5거래일 평균
-    "wow_offset": 7,   # V_wow: 7~11일 전 (5일 윈도우)
+    "wow_offset": 7,   # V_wow: 7~11일 전
     "wow_days": 5,
     "mom_offset": 28,  # V_mom: 28~32일 전
     "mom_days": 5,
 }
 
-# 매도 단계화 (V_curr < V_wow 카운터)
-EXIT_RULES = {
-    "wow_warn_count": 1,   # 1회 하회 = 경고 알림
-    "wow_sell_count": 2,   # 2회 연속 하회 = 절반 매도 알림
-    "mom_sell": True,      # V_curr < V_mom = 즉시 전량 매도
-    "raw_drop_pct": -3.0,  # 하루 raw 컨센 -3% 이상 급락 시 긴급 알림
+# ============================================================
+# 매수 시그널 3단계
+# ============================================================
+BUY_LEVELS = {
+    # 🟢 매수 후보: Step 1 통과 + RSI 매수 구간 (임계값 ~ 임계값+10)
+    "candidate_rsi_upper_offset": 10,
+    # 🟢🟢 강력 매수: Step 1 + 가점 2개 충족 (EPS slope > +3% AND 목표주가 slope > +3%)
+    # 🚨 지금 매수: 매수 구간 + RSI 상향 돌파 (10분마다 체크, 돌파마다 발동)
+    # 매수 후보 유효 기간
+    "candidate_valid_days": 3,
 }
 
 # ============================================================
-# 매크로 안전장치
+# 매도 트리거 — 3대 트리거 외엔 정보성만
+# ============================================================
+EXIT_TRIGGERS = {
+    # 기업 위기: 모두 AND
+    "crisis_market_drop_pct": -20.0,    # 지수 고점 대비 -20%
+    "crisis_vix_panic": 40,             # VIX 40 이상
+    # 물타기 기준
+    "dca_drop_pct": -10.0,              # 평균 매수가 대비 -10% 하락 시 물타기 알림
+}
+
+# ============================================================
+# 매크로 안전장치 (기존 유지)
 # ============================================================
 MACRO_GUARDS = {
-    "qqq_ma_period": 20,        # QQQ 이동평균 기간
-    "qqq_whipsaw_buffer": 0.01, # MA20 대비 -1% 이상 이탈해야 유효
-    "qqq_confirm_days": 2,      # 2거래일 연속 하회 확인
-    "kospi_ticker": "^KS11",    # KOSPI 종합 (또는 "069500.KS" KODEX200)
+    "qqq_ma_period": 20,
+    "qqq_whipsaw_buffer": 0.01,
+    "qqq_confirm_days": 2,
+    "kospi_ticker": "^KS11",
     "kospi_ma_period": 20,
+    # 시장 위기 트리거용 MA50
+    "crisis_ma_period": 50,
 }
