@@ -32,9 +32,16 @@ def _mode_emoji(mode):
 
 
 def send_push(title, body, tag=None, data=None):
-    """등록된 모든 FCM 토큰으로 푸시 발송."""
     tokens_ref = db.collection("fcm_tokens").stream()
-    tokens = [doc.id for doc in tokens_ref]
+    tokens = []
+    for doc in tokens_ref:
+        data = doc.to_dict()
+        # 미승인 또는 알림 OFF는 제외
+        if data.get("approved") is not True:
+            continue
+        if data.get("notifications_enabled") is False:
+            continue
+        tokens.append(doc.id)
     
     if not tokens:
         print(f"   ⚠️  토큰 없음: {title}")

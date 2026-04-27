@@ -4,8 +4,8 @@
   "description": "섹터별 PEG/EPS 추세 기반 매수 타이밍 알림",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0e13",
-  "theme_color": "#0a0e13",
+  "background_color": "#1a1816",
+  "theme_color": "#221f1d",
   "icons": [
     {
       "src": "/icon-192.png",

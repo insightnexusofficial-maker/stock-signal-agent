@@ -632,6 +632,25 @@ def check_stock_signal(data, sector, macro, region="us"):
             band_ok = band_pct is not None and band_pct < criteria.get("band_max", 30)
             val_ok = ps_ok and band_ok
     
+    elif sector == "industrial":
+        # 산업재/중공업: 사이클 종목. PBR 제외, PER < 12 (저점 진입 기준)
+        peg_ok = peg is not None and peg < criteria.get("peg_max", 1.2)
+        per_ok = per is not None and per < criteria.get("per_max", 12)
+        val_ok = peg_ok or per_ok
+    
+    elif sector == "growth":
+        # 그로스주 (쿠팡/유니티/테슬라): 흑자면 PEG, 적자면 PS+밴드
+        # 우주항공(aerospace)과 유사한 패턴
+        eps_fwd = data.get("eps_fwd", 0) or 0
+        if eps_fwd > 0:
+            # 흑자: PEG 기준
+            val_ok = peg is not None and peg < criteria.get("peg_max", 2.0)
+        else:
+            # 적자: PS + 52주 밴드 위치
+            ps_ok = ps is not None and ps < criteria.get("ps_max", 8)
+            band_ok = band_pct is not None and band_pct < criteria.get("band_max", 40)
+            val_ok = ps_ok and band_ok
+    
     # === 선택 조건 2/3 체크 ===
     hits = 0
     
@@ -1008,8 +1027,7 @@ def upload_data():
     }
     
     # numpy 타입 정제 (Firestore는 numpy 타입 거부)
-    payload = _sanitize_for_firestore(payload)
-    
+    payload = _sanitize_for_firestore(payload)    
     db.collection("stocks").document("data").set(payload)
     
     print(f"\n✅ 완료! ({updated})")

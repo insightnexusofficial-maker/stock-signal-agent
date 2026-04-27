@@ -9,43 +9,39 @@
 # 국내 주식 (KIS API + FnGuide)
 # ============================================================
 KR_STOCKS = {
-    "005930": {"name": "삼성전자",   "sector": "semiconductor"},
-    "000660": {"name": "SK하이닉스", "sector": "semiconductor"},
-    "012450": {"name": "한화에어로", "sector": "defense"},
-    "047810": {"name": "한국항공우주","sector": "aerospace"},
-    "064350": {"name": "현대로템",   "sector": "defense"},
-    "035420": {"name": "LIG넥스원",  "sector": "defense"},
-}
+    "005930": {"name": "삼성전자",         "sector": "semiconductor"},
+    "000660": {"name": "SK하이닉스",       "sector": "semiconductor"},
+    "267270": {"name": "HD현대건설기계",   "sector": "industrial"},
+    "034020": {"name": "두산에너빌리티",   "sector": "industrial"},
+    "010120": {"name": "LS ELECTRIC",      "sector": "industrial"},
+    "251270": {"name": "넷마블",           "sector": "growth"},
+}   
 
 # ============================================================
 # 미국 주식 (yfinance)
 # ============================================================
 US_STOCKS = {
-    "NVDA": {"name": "엔비디아",       "sector": "ai_bigtech"},
-    "AVGO": {"name": "브로드컴",       "sector": "ai_bigtech"},
-    "TSM":  {"name": "TSMC",           "sector": "ai_bigtech"},
-    "MU":   {"name": "마이크론",       "sector": "semiconductor"},
-    "AMD":  {"name": "AMD",            "sector": "semiconductor"},
-    "INTC": {"name": "인텔",           "sector": "semiconductor"},
-    "LMT":  {"name": "록히드마틴",     "sector": "defense"},
-    "RTX":  {"name": "RTX",            "sector": "defense"},
-    "NOC":  {"name": "노스롭그루먼",   "sector": "aerospace"},
-    "ATI":  {"name": "ATI",            "sector": "aerospace"},
+    "NVDA":  {"name": "엔비디아",       "sector": "ai_bigtech"},
+    "AVGO":  {"name": "브로드컴",       "sector": "ai_bigtech"},
+    "MU":    {"name": "마이크론",       "sector": "semiconductor"},
+    "MSFT":  {"name": "마이크로소프트", "sector": "ai_bigtech"},
+    "GOOGL": {"name": "구글",           "sector": "ai_bigtech"},
+    "CPNG":  {"name": "쿠팡",           "sector": "growth"},
+    "U":     {"name": "유니티 소프트웨어","sector": "growth"},
+    "TSLA":  {"name": "테슬라",         "sector": "growth"},
 }
 
 # ============================================================
 # 국내 ETF (yfinance + 네이버 NAV)
 # ============================================================
 KR_ETFS = [
-    {"name": "KODEX 미국S&P500",              "ticker_krx": "379800", "ticker_yf": "379800.KS"},
-    {"name": "KODEX 200",                      "ticker_krx": "069500", "ticker_yf": "069500.KS"},
-    {"name": "KODEX 반도체",                   "ticker_krx": "091160", "ticker_yf": "091160.KS"},
-    {"name": "KODEX 미국우주항공",             "ticker_krx": "0167Z0", "ticker_yf": "0167Z0.KS"},
-    {"name": "KODEX 미국AI테크TOP10",          "ticker_krx": "485540", "ticker_yf": "485540.KS"},
-    {"name": "KODEX 미국AI테크TOP10타겟커버드콜","ticker_krx": "483280", "ticker_yf": "483280.KS"},
-    {"name": "KODEX 200타겟위클리커버드콜",    "ticker_krx": "498400", "ticker_yf": "498400.KS"},
-    {"name": "TIGER 반도체TOP10",              "ticker_krx": "396500", "ticker_yf": "396500.KS"},
-    {"name": "TIGER 미국배당다우존스",         "ticker_krx": "458730", "ticker_yf": "458730.KS"},
+    {"name": "Kodex 미국우주항공", "ticker_krx": "0167Z0", "ticker_yf": "0167Z0.KS"},
+    {"name": "Kodex 200타겟위클리커버드콜", "ticker_krx": "456600", "ticker_yf": "456600.KS"},
+    {"name": "Tiger 반도체", "ticker_krx": "091230", "ticker_yf": "091230.KS"},
+    {"name": "Kodex 미국AI테크TOP10", "ticker_krx": "478150", "ticker_yf": "478150.KS"},
+    {"name": "Kodex 방산Top10", "ticker_krx": "0080G0", "ticker_yf": "0080G0.KS"},
+    {"name": "Kodex 미국AI광통신", "ticker_krx": "0173Y0", "ticker_yf": "0173Y0.KS"},
+    {"name": "ACE 미국S&P500", "ticker_krx": "360200", "ticker_yf": "360200.KS"},
 ]
 
 # ============================================================
@@ -120,6 +116,21 @@ SECTOR_CRITERIA = {
         "rsi_adjust": 35,
         "rsi_caution": 30,
         "rsi_panic": 25,
+    },
+    "industrial": {
+        "peg_max": 1.2,
+        "per_max": 12,
+        "rev_growth_min": 5,
+        "consensus_gap_min": 0,
+        "rsi_normal": 40, "rsi_adjust": 35, "rsi_caution": 30, "rsi_panic": 25,
+    },
+    "growth": {
+        "peg_max": 2.0,                    # 흑자 그로스주: PEG 관대
+        "ps_max": 8,                       # 적자 그로스주: PS < 8
+        "band_max": 40,                    # 52주 밴드 < 40%
+        "rev_growth_min": 15,              # 매출 성장 핵심
+        "consensus_gap_min": -10,          # 서프라이즈 -10% 까지 허용
+        "rsi_normal": 40, "rsi_adjust": 35, "rsi_caution": 30, "rsi_panic": 25,
     },
     "etf": {
         "rsi_normal": 30,
