@@ -405,12 +405,14 @@ def get_kr_valuation(code):
         result["peg_fwd"] = round(result["per_fwd"] / result["eps_growth"], 2)
     
     try:
-        consensus_section = soup.select_one("div.corp_group2")
-        if consensus_section:
-            target_text = consensus_section.get_text()
-            match = re.search(r'목표주가[^\d]*(\d[\d,]*)', target_text)
-            if match:
-                result["target_price"] = float(match.group(1).replace(",", ""))
+        # 투자의견/목표주가 테이블 (5 cells: 투자의견/목표주가/EPS/PER/추정기관수)
+        for row in soup.select("tr.rwc_g"):
+            cells = row.select("td")
+            if len(cells) == 5:
+                target_text = cells[1].get_text(strip=True).replace(",", "")
+                if target_text and target_text.replace(".", "").isdigit():
+                    result["target_price"] = float(target_text)
+                break
     except: pass
     
     return result
@@ -677,7 +679,7 @@ def check_stock_signal(data, sector, macro, region="us"):
     vol_ok = vol_ratio >= vol_min
     
     # === Step 1 통과 판정 ===
-    step1 = val_ok and eps_trend_ok and hits >= 2 and vol_ok
+    step1 = val_ok and eps_trend_ok and hits >= 2
     
     # === RSI 매수 구간 판정 ===
     zone_upper = rsi_threshold + BUY_LEVELS.get("candidate_rsi_upper_offset", 10)

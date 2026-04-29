@@ -21,9 +21,10 @@ service cloud.firestore {
       allow read: if true;
       allow update, delete: if true;
       
-      allow create: if request.resource.data.keys().hasAll(['token', 'nickname'])
-                   && request.resource.data.nickname is string
-                   && request.resource.data.nickname.size() <= 30;
+      allow create: if request.resource.data.keys().hasAll(['token', 'nickname', 'approved'])
+                  && request.resource.data.nickname is string
+                  && request.resource.data.nickname.size() <= 30
+                  && request.resource.data.approved == false;
     }
   }
 }
