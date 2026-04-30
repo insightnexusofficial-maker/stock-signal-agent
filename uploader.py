@@ -725,15 +725,31 @@ def check_etf_signal(data, macro):
     nav_discount = data.get("nav_discount")
     band_pct = data.get("band_pct")
     
-    rsi_ok = rsi is not None and rsi <= rsi_threshold
+    # 매수 구간 판정
+    zone_upper = rsi_threshold + BUY_LEVELS.get("candidate_rsi_upper_offset", 10)
+    rsi_in_zone = rsi is not None and rsi <= zone_upper          # 임계값+10 이하 = 워치 구간
+    rsi_strong = rsi is not None and rsi <= rsi_threshold        # 임계값 이하 = 강한 매수
     nav_ok = nav_discount is not None and nav_discount < criteria["nav_discount_threshold"]
     band_ok = band_pct is not None and band_pct < criteria["band_threshold"]
     
-    step1 = (rsi_ok or nav_ok) and band_ok
-    step2 = rsi_ok
-    
     data["market_mode"] = market_mode
     data["rsi_threshold"] = rsi_threshold
+    data["in_buy_zone"] = rsi_strong  # notifier가 RSI 돌파 감지용
+    
+    # === 매수 레벨 판정 ===
+    # candidate: RSI 워치 구간 OR NAV 할인 OR 밴드 하단
+    # strong:    candidate + RSI 임계값 이하 (실제 과매도)
+    buy_level = "none"
+    
+    if rsi_in_zone or nav_ok or band_ok:
+        buy_level = "candidate"
+        if rsi_strong and (nav_ok or band_ok):
+            buy_level = "strong"
+    
+    data["buy_level"] = buy_level
+    
+    step1 = buy_level != "none"
+    step2 = rsi_strong  # notifier에서 "RSI 돌파" 감지용
     
     return step1, step2, None
 

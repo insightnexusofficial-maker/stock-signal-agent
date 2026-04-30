@@ -135,12 +135,12 @@ SECTOR_CRITERIA = {
         "rsi_normal": 40, "rsi_adjust": 35, "rsi_caution": 30, "rsi_panic": 25,
     },
     "etf": {
-        "rsi_normal": 30,
-        "rsi_adjust": 28,
-        "rsi_caution": 25,
-        "rsi_panic": 20,
+        "rsi_normal": 40,
+        "rsi_adjust": 35,
+        "rsi_caution": 30,
+        "rsi_panic": 25,
         "nav_discount_threshold": -0.5,
-        "band_threshold": 25,
+        "band_threshold": 50,        # 25 → 50 완화
     },
 }
 
