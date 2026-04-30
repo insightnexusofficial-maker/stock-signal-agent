@@ -607,7 +607,8 @@ def check_stock_signal(data, sector, macro, region="us"):
     
     # === EPS 기울기 필수 조건 (매우 관대: slope_mom ≥ -1%) ===
     slope_mom = eps_trend.get("slope_mom_pct")
-    slope_required = SLOPE_RULES.get("required_mom_min", -1.0)
+    # 섹터별 임계값 (사이클 섹터는 0 이상 강화, 그 외 -1.0 관대)
+    slope_required = criteria.get("slope_mom_min", SLOPE_RULES.get("required_mom_min", -1.0))
     # 데이터 부족 시 유예 (초기 도입 단계)
     eps_trend_ok = slope_mom is None or slope_mom >= slope_required
     
@@ -641,14 +642,16 @@ def check_stock_signal(data, sector, macro, region="us"):
         val_ok = peg_ok or per_ok
     
     elif sector == "growth":
-        # 그로스주 (쿠팡/유니티/테슬라): 흑자면 PEG, 적자면 PS+밴드
-        # 우주항공(aerospace)과 유사한 패턴
+        # 흑자/적자 + PEG 데이터 유무로 분기
+        # PEG 잡히면 PEG 기준, 못 잡히면 PS+밴드 fallback
         eps_fwd = data.get("eps_fwd", 0) or 0
-        if eps_fwd > 0:
-            # 흑자: PEG 기준
-            val_ok = peg is not None and peg < criteria.get("peg_max", 2.0)
+        peg_available = peg is not None
+        
+        if eps_fwd > 0 and peg_available:
+            # 흑자 + PEG 정상 → PEG 기준
+            val_ok = peg < criteria.get("peg_max", 2.0)
         else:
-            # 적자: PS + 52주 밴드 위치
+            # 적자거나 PEG 못 잡은 경우 → PS + 밴드 fallback
             ps_ok = ps is not None and ps < criteria.get("ps_max", 8)
             band_ok = band_pct is not None and band_pct < criteria.get("band_max", 40)
             val_ok = ps_ok and band_ok
@@ -687,24 +690,26 @@ def check_stock_signal(data, sector, macro, region="us"):
     data["in_buy_zone"] = in_zone
     
     # === 매수 레벨 판정 (candidate / strong) ===
+    # candidate: 펀더멘털 통과 (RSI 무관) — 관심 종목 워치리스트
+    # strong:    candidate + 이익/목표가 가속 + RSI 매수 구간 안
     buy_level = "none"
-    if step1 and in_zone:
-        # 가점: EPS slope > +3% AND 목표주가 slope > +3%
+    
+    if step1:
+        buy_level = "candidate"  # 🟢 매수 후보 (RSI 무관)
+        
+        # 가점: EPS slope > +3% AND 목표주가 slope > +3% AND RSI 매수 구간
         eps_bonus_min = SLOPE_RULES.get("bonus_mom_min", 3.0)
         eps_bonus = (slope_mom is not None and slope_mom > eps_bonus_min)
         target_slope_mom = target_trend.get("slope_mom_pct")
         target_bonus = (target_slope_mom is not None and target_slope_mom > eps_bonus_min)
         
-        if eps_bonus and target_bonus:
-            buy_level = "strong"  # 🟢🟢 강력 매수
-        else:
-            buy_level = "candidate"  # 🟢 매수 후보
+        if eps_bonus and target_bonus and in_zone:
+            buy_level = "strong"  # 🟢🟢 강력 매수 (RSI 적정 + 이익 가속)
     
     data["buy_level"] = buy_level
     
-    # Step 2: 매수 구간 안이면 True (notifier.py에서 "돌파" 감지)
+    # Step 2: 매수 구간 + 펀더멘털 통과 → "지금 매수" 후보 (notifier에서 돌파 감지)
     step2 = in_zone and step1
-    
     return step1, step2, None
 
 

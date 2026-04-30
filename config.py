@@ -73,6 +73,7 @@ SECTOR_CRITERIA = {
         "rsi_adjust": 35,
         "rsi_caution": 30,
         "rsi_panic": 25,
+        "slope_mom_min": 0,
     },
     "ai_bigtech": {
         "peg_max": 1.2,
@@ -123,6 +124,7 @@ SECTOR_CRITERIA = {
         "rev_growth_min": 5,
         "consensus_gap_min": 0,
         "rsi_normal": 40, "rsi_adjust": 35, "rsi_caution": 30, "rsi_panic": 25,
+        "slope_mom_min": 0,
     },
     "growth": {
         "peg_max": 2.0,                    # 흑자 그로스주: PEG 관대
