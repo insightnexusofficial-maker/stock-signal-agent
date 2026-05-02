@@ -29,6 +29,10 @@ US_STOCKS = {
     "CPNG":  {"name": "쿠팡",           "sector": "growth"},
     "U":     {"name": "유니티 소프트웨어","sector": "growth"},
     "TSLA":  {"name": "테슬라",         "sector": "growth"},
+    "AMD":   {"name": "AMD",            "sector": "semiconductor"},
+    "ASML":  {"name": "ASML",           "sector": "semiconductor"},
+    "AMZN":  {"name": "아마존",         "sector": "ai_bigtech"},
+    "ANET":  {"name": "아리스타 네트웍스", "sector": "ai_bigtech"},
 }
 
 # ============================================================
@@ -42,6 +46,8 @@ KR_ETFS = [
     {"name": "Kodex 방산Top10", "ticker_krx": "0080G0", "ticker_yf": "0080G0.KS"},
     {"name": "Kodex 미국AI광통신", "ticker_krx": "0173Y0", "ticker_yf": "0173Y0.KS"},
     {"name": "ACE 미국S&P500", "ticker_krx": "360200", "ticker_yf": "360200.KS"},
+    {"name": "ACE 미국S&P500", "ticker_krx": "360200", "ticker_yf": "360200.KS"},
+    {"name": "TIGER 반도체TOP10커버드콜액티브", "ticker_krx": "0177R0", "ticker_yf": "0177R0.KS"},
 ]
 
 # ============================================================
