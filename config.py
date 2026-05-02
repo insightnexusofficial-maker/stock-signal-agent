@@ -40,7 +40,7 @@ US_STOCKS = {
 # ============================================================
 KR_ETFS = [
     {"name": "Kodex 미국우주항공", "ticker_krx": "0167Z0", "ticker_yf": "0167Z0.KS"},
-    {"name": "Kodex 200타겟위클리커버드콜", "ticker_krx": "456600", "ticker_yf": "456600.KS"},
+    {"name": "Kodex 200타겟위클리커버드콜", "ticker_krx": "498400", "ticker_yf": "498400.KS"},
     {"name": "Tiger 반도체", "ticker_krx": "091230", "ticker_yf": "091230.KS"},
     {"name": "Kodex 미국AI테크TOP10", "ticker_krx": "478150", "ticker_yf": "478150.KS"},
     {"name": "Kodex 방산Top10", "ticker_krx": "0080G0", "ticker_yf": "0080G0.KS"},
@@ -131,12 +131,16 @@ SECTOR_CRITERIA = {
         "rsi_normal": 40, "rsi_adjust": 35, "rsi_caution": 30, "rsi_panic": 25,
         "slope_mom_min": 0,
     },
-    "growth": {
-        "peg_max": 1.5,                    # 흑자 그로스주: PEG 관대 (PEG < 1.5)
-        "ps_max": 8,                       # 적자 그로스주: PS < 8
-        "band_max": 40,                    # 52주 밴드 < 40%
-        "rev_growth_min": 15,              # 매출 성장 핵심
-        "consensus_gap_min": -10,          # 서프라이즈 -10% 까지 허용
+     "growth": {
+        "peg_max": 1.5,                    # 흑자: PEG < 1.5
+        # 적자/PEG 없음: 4중 fallback (모두 충족 필요)
+        "ps_max": 5,                       # 8 → 5 강화
+        "band_max": 30,                    # 40 → 30 강화
+        "fallback_surprise_min": 5,        # 신규: 어닝 서프라이즈 ≥ 5%
+        "fallback_target_gap_min": 20,     # 신규: 목표가 갭 ≥ 20%
+        # Step1 hits 계산용 (기존 유지)
+        "rev_growth_min": 15,
+        "consensus_gap_min": -10,
         "rsi_normal": 40, "rsi_adjust": 35, "rsi_caution": 30, "rsi_panic": 25,
     },
     "etf": {

@@ -1602,6 +1602,37 @@ button {
   border-radius: 6px;
 }
 
+.signal-section { margin-bottom: 14px; }
+.signal-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--bg-2);
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 6px;
+}
+.signal-section-header:hover { background: var(--bg-3); }
+.signal-section-title { flex: 1; font-weight: 600; font-size: 14px; color: var(--fg-1); }
+.signal-section-count {
+    font-size: 12px;
+    color: var(--fg-2);
+    background: var(--bg-0);
+    padding: 2px 8px;
+    border-radius: 10px;
+    min-width: 24px;
+    text-align: center;
+}
+.signal-section-toggle {
+    color: var(--fg-2);
+    font-size: 12px;
+    transition: transform 0.15s;
+}
+.signal-section.collapsed .signal-section-toggle { transform: rotate(-90deg); }
+.signal-section.collapsed .signal-section-body { display: none; }
+
 /* 빈 상태 */
 .empty-state, .empty-tab {
   padding: 40px 16px;
@@ -1878,7 +1909,30 @@ button {
                 <div>지표</div>
             </div>
             <div id="all-signal-list">
-                <div class="empty-tab">시그널 종목이 없어요. 시장이 평온한 상태예요. 🟢</div>
+                <div class="signal-section" data-region="us">
+                    <div class="signal-section-header">
+                        <span class="signal-section-title">🇺🇸 미국 주식</span>
+                        <span class="signal-section-count" id="sig-count-us">0</span>
+                        <span class="signal-section-toggle">▾</span>
+                    </div>
+                    <div class="signal-section-body" id="sig-list-us"></div>
+                </div>
+                <div class="signal-section" data-region="kr">
+                    <div class="signal-section-header">
+                        <span class="signal-section-title">🇰🇷 한국 주식</span>
+                        <span class="signal-section-count" id="sig-count-kr">0</span>
+                        <span class="signal-section-toggle">▾</span>
+                    </div>
+                    <div class="signal-section-body" id="sig-list-kr"></div>
+                </div>
+                <div class="signal-section" data-region="etf">
+                    <div class="signal-section-header">
+                        <span class="signal-section-title">🇰🇷 한국 ETF</span>
+                        <span class="signal-section-count" id="sig-count-etf">0</span>
+                        <span class="signal-section-toggle">▾</span>
+                    </div>
+                    <div class="signal-section-body" id="sig-list-etf"></div>
+                </div>
             </div>
             </div>
         </section>
@@ -2495,7 +2549,7 @@ button {
         badges.push({ label: "🟢 매수 신호", cls: "candidate" });
     } else if (etf.step1) {
         rowClass = "signal-info";
-        badges.push({ label: "관심", cls: "info" });
+        badges.push({ label: "매수 후보", cls: "info" });
     }
     
     const badgesHtml = badges.map(b => `<span class="badge ${b.cls}">${b.label}</span>`).join("");
@@ -2575,7 +2629,13 @@ button {
         
         // 정보성 알림 (400~600점)
         else if (infoLevel === "info_watch") score = 600;
-        else if (infoLevel === "info_warn")  score = 500;
+        else if (infoLevel === "info_warn") {
+            score = 500;
+            // 사이클 섹터 (반도체/산업재) info_warn 가점 — 정점 꺾임 우선 노출
+            if (stock.sector === "semiconductor" || stock.sector === "industrial") {
+                score += 50;
+            }
+        }
         else if (infoLevel === "info_mild")  score = 400;
         
         // 평상시 (0~400점, RSI 낮을수록 우선)
@@ -2639,7 +2699,7 @@ button {
       // 한국 ETF
       const etfList = data.kr_etf || [];
       const etfHtml = etfList.length > 0
-        ? etfList.map(e => renderEtfRow(e)).join("")
+      ? etfList.map(e => renderStockRow(e, "etf")).join("")
         : `<div class="empty-state">데이터 없음</div>`;
       $("#kr-etf-list").innerHTML = etfHtml;
       
@@ -2651,31 +2711,55 @@ button {
         });
         });
         // ============================================================
-        // "전체" 탭 — 시그널 발생 종목만
+        // "전체" 탭 — 시그널 발생 종목만 (국장/미장/ETF 분할)
         // ============================================================
-        const allSignalStocks = [...usList, ...krList].filter(s => {
+        const filterSignal = (s) => {
             const triggers = s.crisis_triggers || [];
             const buyLevel = s.buy_level || "none";
             const infoLevel = s.info_level;
             return triggers.length > 0 || buyLevel !== "none" || infoLevel;
+        };
+        
+        const usSignals = usList.filter(filterSignal);
+        const krSignals = krList.filter(filterSignal);
+        const etfSignals = (data.kr_etf || []).filter(filterSignal);
+        
+        const renderSection = (list, region, listId, countId) => {
+            const html = list.length > 0
+                ? list.map(s => renderStockRow(s, region)).join("")
+                : `<div class="empty-tab">시그널 없음</div>`;
+            $(listId).innerHTML = html;
+            $(countId).textContent = list.length;
+        };
+        
+        renderSection(usSignals, "us", "#sig-list-us", "#sig-count-us");
+        renderSection(krSignals, "kr", "#sig-list-kr", "#sig-count-kr");
+        renderSection(etfSignals, "etf", "#sig-list-etf", "#sig-count-etf");
+        
+        // 종목 카드 펼침
+        $("#all-signal-list").querySelectorAll(".stock-row-header").forEach(header => {
+            header.addEventListener("click", () => {
+                const row = header.closest(".stock-row");
+                if (row) row.classList.toggle("expanded");
+            });
         });
         
-        const allHtml = allSignalStocks.length > 0
-            ? allSignalStocks.map(s => {
-                const region = (s.code || "").match(/^[0-9]+$/) ? "kr" : "us";
-                return renderStockRow(s, region);
-            }).join("")
-            : `<div class="empty-tab">시그널 종목이 없어요. 시장이 평온한 상태예요. 🟢</div>`;
-        $("#all-signal-list").innerHTML = allHtml;
+        // 섹션 헤더 접기/펼치기
+        $("#all-signal-list").querySelectorAll(".signal-section-header").forEach(header => {
+            header.addEventListener("click", () => {
+                const section = header.closest(".signal-section");
+                if (section) section.classList.toggle("collapsed");
+            });
+        });
         
         // 탭 카운트 뱃지
-        const allCount = allSignalStocks.length;
+        const allCount = usSignals.length + krSignals.length + etfSignals.length;
         const countBadge = $("#tab-count-all");
         if (countBadge) {
             if (allCount > 0) {
             countBadge.textContent = allCount;
             countBadge.style.display = "inline-block";
-            const hasCrisis = allSignalStocks.some(s => (s.crisis_triggers || []).length > 0);
+            const hasCrisis = [...usSignals, ...krSignals, ...etfSignals].some(s => (s.crisis_triggers || []).length > 0);
             countBadge.classList.toggle("crisis", hasCrisis);
             } else {
             countBadge.style.display = "none";

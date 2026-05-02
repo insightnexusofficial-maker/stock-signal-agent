@@ -24,6 +24,12 @@ except ValueError:
 
 db = firestore.client()
 
+# Snapshot 캐시 (실행당 1번만 조회)
+_snapshot_cache = {}
+_read_counter = {"calls": 0, "cache_hits": 0, "actual_reads": 0}
+
+
+
 APP_KEY = os.getenv("KIS_APP_KEY")
 APP_SECRET = os.getenv("KIS_APP_SECRET")
 BASE_URL = "https://openapi.koreainvestment.com:9443"
@@ -231,6 +237,12 @@ def save_snapshot(code, data):
     doc_ref.set(_sanitize_for_firestore(data))
 
 def get_snapshot_history(code, days=35):
+    _read_counter["calls"] += 1
+    cache_key = f"{code}_{days}"
+    if cache_key in _snapshot_cache:
+        _read_counter["cache_hits"] += 1
+        return _snapshot_cache[cache_key]
+    
     snapshots = []
     base_date = datetime.now(KST)
     
@@ -240,6 +252,7 @@ def get_snapshot_history(code, days=35):
         
         try:
             doc = db.collection("snapshots").document(date_str).collection("stocks").document(code).get()
+            _read_counter["actual_reads"] += 1
             if doc.exists:
                 data = doc.to_dict()
                 data["date"] = date_str
@@ -247,6 +260,7 @@ def get_snapshot_history(code, days=35):
         except:
             pass
     
+    _snapshot_cache[cache_key] = snapshots
     return snapshots
 
 
@@ -643,18 +657,21 @@ def check_stock_signal(data, sector, macro, region="us"):
     
     elif sector == "growth":
         # 흑자/적자 + PEG 데이터 유무로 분기
-        # PEG 잡히면 PEG 기준, 못 잡히면 PS+밴드 fallback
         eps_fwd = data.get("eps_fwd", 0) or 0
         peg_available = peg is not None
         
         if eps_fwd > 0 and peg_available:
             # 흑자 + PEG 정상 → PEG 기준
-            val_ok = peg < criteria.get("peg_max", 2.0)
+            val_ok = peg < criteria.get("peg_max", 1.5)
         else:
-            # 적자거나 PEG 못 잡은 경우 → PS + 밴드 fallback
-            ps_ok = ps is not None and ps < criteria.get("ps_max", 8)
-            band_ok = band_pct is not None and band_pct < criteria.get("band_max", 40)
-            val_ok = ps_ok and band_ok
+            # 적자거나 PEG 못 잡은 경우 → 4중 fallback (모두 충족)
+            ps_ok = ps is not None and ps < criteria.get("ps_max", 5)
+            band_ok = band_pct is not None and band_pct < criteria.get("band_max", 30)
+            surprise_ok = (earnings_surprise is not None 
+                           and earnings_surprise >= criteria.get("fallback_surprise_min", 5))
+            target_ok = (target_gap is not None 
+                         and target_gap >= criteria.get("fallback_target_gap_min", 20))
+            val_ok = ps_ok and band_ok and surprise_ok and target_ok
     
     # === 선택 조건 2/3 체크 ===
     hits = 0
@@ -1053,6 +1070,10 @@ def upload_data():
     payload = _sanitize_for_firestore(payload)    
     db.collection("stocks").document("data").set(payload)
     
+    print(f"\n📊 Read 통계:")
+    print(f"   호출 횟수: {_read_counter['calls']}")
+    print(f"   캐시 적중: {_read_counter['cache_hits']}")
+    print(f"   실제 read: {_read_counter['actual_reads']}")
     print(f"\n✅ 완료! ({updated})")
     print(f"   국내 주식: {len(kr_stock_list)}개")
     print(f"   국내 ETF: {len(kr_etf_list)}개")
