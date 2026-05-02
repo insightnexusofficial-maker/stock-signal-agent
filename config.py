@@ -46,7 +46,6 @@ KR_ETFS = [
     {"name": "Kodex 방산Top10", "ticker_krx": "0080G0", "ticker_yf": "0080G0.KS"},
     {"name": "Kodex 미국AI광통신", "ticker_krx": "0173Y0", "ticker_yf": "0173Y0.KS"},
     {"name": "ACE 미국S&P500", "ticker_krx": "360200", "ticker_yf": "360200.KS"},
-    {"name": "ACE 미국S&P500", "ticker_krx": "360200", "ticker_yf": "360200.KS"},
     {"name": "TIGER 반도체TOP10커버드콜액티브", "ticker_krx": "0177R0", "ticker_yf": "0177R0.KS"},
 ]
 
@@ -133,7 +132,7 @@ SECTOR_CRITERIA = {
         "slope_mom_min": 0,
     },
     "growth": {
-        "peg_max": 2.0,                    # 흑자 그로스주: PEG 관대
+        "peg_max": 1.5,                    # 흑자 그로스주: PEG 관대 (PEG < 1.5)
         "ps_max": 8,                       # 적자 그로스주: PS < 8
         "band_max": 40,                    # 52주 밴드 < 40%
         "rev_growth_min": 15,              # 매출 성장 핵심
@@ -195,7 +194,7 @@ BUY_LEVELS = {
 EXIT_TRIGGERS = {
     # 기업 위기: 모두 AND
     "crisis_market_drop_pct": -20.0,    # 지수 고점 대비 -20%
-    "crisis_vix_panic": 40,             # VIX 40 이상
+    "crisis_vix_panic": 35,             # VIX 35 이상
     # 물타기 기준
     "dca_drop_pct": -10.0,              # 평균 매수가 대비 -10% 하락 시 물타기 알림
 }

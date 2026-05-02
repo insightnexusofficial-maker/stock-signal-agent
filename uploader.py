@@ -199,19 +199,19 @@ def get_macro_data():
 
 
 def determine_market_mode(macro, region="us"):
-    """region='us' → VIX+QQQ / region='kr' → VIX+KOSPI."""
     vix_data = macro.get("vix") or {}
     idx_data = macro.get("kospi") if region == "kr" else macro.get("qqq")
     idx_data = idx_data or {}
     
-    vix_mode = vix_data.get("mode", "normal")
+    vix_current = vix_data.get("current", 0)
     idx_above = idx_data.get("above_ma20", True)
     
-    if vix_mode == "level2":
+    # 우선순위: panic > caution > adjust > normal
+    if vix_current >= 35:
         return "panic"
-    elif vix_mode == "level1":
+    elif vix_current >= 25:
         return "caution"
-    elif not idx_above:
+    elif vix_current >= 20 or not idx_above:
         return "adjust"
     else:
         return "normal"
