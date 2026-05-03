@@ -41,18 +41,29 @@ KST = timezone(timedelta(hours=9))
 # 공통 유틸
 # ============================================================
 def calculate_rsi(prices, period=14):
+    """표준 RSI (Wilder smoothing)."""
     if len(prices) < period + 1:
         return None
+    
     gains, losses = [], []
     for i in range(1, len(prices)):
         change = prices[i] - prices[i-1]
         gains.append(change if change > 0 else 0)
         losses.append(abs(change) if change < 0 else 0)
+    
+    # 1) 첫 14일 단순 평균
     avg_gain = sum(gains[:period]) / period
     avg_loss = sum(losses[:period]) / period
+    
+    # 2) 15일째부터 Wilder smoothing (EMA-style)
+    for i in range(period, len(gains)):
+        avg_gain = (avg_gain * (period - 1) + gains[i]) / period
+        avg_loss = (avg_loss * (period - 1) + losses[i]) / period
+    
     if avg_loss == 0:
         return 100
-    return round(100 - (100 / (1 + avg_gain / avg_loss)), 2)
+    rs = avg_gain / avg_loss
+    return round(100 - (100 / (1 + rs)), 2)
 
 
 def get_date_str():

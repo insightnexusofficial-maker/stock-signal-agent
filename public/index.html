@@ -2475,7 +2475,17 @@ button {
     const reasonsHtml = reasons.length > 0 ? `<div class="detail-reasons">${reasons.join(" ")}</div>` : "";
     
     // 펼침 영역의 모든 지표 항목
-    const detailItems = [
+    const detailItems = region === "etf" ? [
+        { key: "NAV 할인", val: stock.nav_discount !== null && stock.nav_discount !== undefined 
+            ? (stock.nav_discount >= 0 ? "+" : "") + stock.nav_discount.toFixed(2) + "%" : "—", hl: true },
+        { key: "NAV", val: stock.nav !== null && stock.nav !== undefined 
+            ? Math.round(stock.nav).toLocaleString() : "—" },
+        { key: "52주 위치", val: stock.band_pct !== null && stock.band_pct !== undefined 
+            ? stock.band_pct.toFixed(0) + "%" : "—" },
+        { key: "거래량 비율", val: stock.vol_ratio !== null && stock.vol_ratio !== undefined 
+            ? stock.vol_ratio.toFixed(2) + "x" : "—" },
+        { key: "RSI 매수 임계", val: fmt(stock.rsi_threshold) },
+    ] : [
         { key: "PEG", val: peg, hl: true },
         { key: "PER (예상)", val: fmt(stock.per_fwd, { decimals: 2 }) },
         { key: "PBR", val: fmt(stock.pbr, { decimals: 2 }) },
