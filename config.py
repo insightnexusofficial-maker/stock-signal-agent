@@ -27,7 +27,6 @@ US_STOCKS = {
     "MSFT":  {"name": "마이크로소프트", "sector": "ai_bigtech"},
     "GOOGL": {"name": "구글",           "sector": "ai_bigtech"},
     "CPNG":  {"name": "쿠팡",           "sector": "growth"},
-    "U":     {"name": "유니티 소프트웨어","sector": "growth"},
     "TSLA":  {"name": "테슬라",         "sector": "growth"},
     "AMD":   {"name": "AMD",            "sector": "semiconductor"},
     "ASML":  {"name": "ASML",           "sector": "semiconductor"},
