@@ -46,6 +46,7 @@ KR_ETFS = [
     {"name": "Kodex 미국AI광통신", "ticker_krx": "0173Y0", "ticker_yf": "0173Y0.KS"},
     {"name": "ACE 미국S&P500", "ticker_krx": "360200", "ticker_yf": "360200.KS"},
     {"name": "TIGER 반도체TOP10커버드콜액티브", "ticker_krx": "0177R0", "ticker_yf": "0177R0.KS"},
+    {"name": "TIGER 미국우주테크", "ticker_krx": "0183J0", "ticker_yf": "0183J0.KS"},
 ]
 
 # ============================================================
