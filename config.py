@@ -47,6 +47,10 @@ KR_ETFS = [
     {"name": "ACE 미국S&P500", "ticker_krx": "360200", "ticker_yf": "360200.KS"},
     {"name": "TIGER 반도체TOP10커버드콜액티브", "ticker_krx": "0177R0", "ticker_yf": "0177R0.KS"},
     {"name": "TIGER 미국우주테크", "ticker_krx": "0183J0", "ticker_yf": "0183J0.KS"},
+    {"name": "TIGER 미국우주테크", "ticker_krx": "0183J0", "ticker_yf": "0183J0.KS"},
+    {"name": "KODEX AI전력핵심설비", "ticker_krx": "487240", "ticker_yf": "487240.KS"},
+    {"name": "KODEX 자율주행액티브", "ticker_krx": "385520", "ticker_yf": "385520.KS"},
+    {"name": "KODEX 로봇액티브", "ticker_krx": "445290", "ticker_yf": "445290.KS"},
 ]
 
 # ============================================================
