@@ -2549,6 +2549,7 @@ button {
         { key: "목표가 추세", val: `${targetTrend.arrow} ${targetTrend.value}`, trendCls: targetTrend.cls },
         { key: "RSI 매수 임계", val: fmt(stock.rsi_threshold) },
         { key: "PER 출처", val: stock.per_source || "—" },
+        { key: "데이터 기준", val: stock.stale_as_of || "최신" },
     ];
     
     const detailItemsHtml = detailItems.map(item => 
@@ -2622,6 +2623,7 @@ button {
         { key: "거래량 비율", val: vol },
         { key: "RSI 임계", val: fmt(etf.rsi_threshold) },
         { key: "당일 거래량", val: etf.volume !== null && etf.volume !== undefined ? etf.volume.toLocaleString() : "—" },
+        { key: "데이터 기준", val: etf.stale_as_of || "최신" },
     ];
     const detailHtml = detailItems.map(item => 
         `<div class="detail-item"><div class="key">${item.key}</div><div class="val mono">${item.val}</div></div>`

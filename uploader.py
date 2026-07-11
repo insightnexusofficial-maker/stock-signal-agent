@@ -310,6 +310,9 @@ def save_snapshot(code, data):
     date_str = get_date_str()
     doc_ref = db.collection("snapshots").document(date_str).collection("stocks").document(code)
     doc_ref.set(_sanitize_for_firestore(data))
+    for key in list(_snapshot_cache.keys()):
+        if key.startswith(f"{code}_"):
+            del _snapshot_cache[key]
 
 def get_snapshot_history(code, days=35):
     _read_counter["calls"] += 1
@@ -337,6 +340,53 @@ def get_snapshot_history(code, days=35):
     
     _snapshot_cache[cache_key] = snapshots
     return snapshots
+
+
+def _is_missing_value(value):
+    return value is None or value == ""
+
+
+def get_latest_valid_snapshot(code, days=35, required_fields=("price",)):
+    """최근 유효 스냅샷. 휴장/주말 빈 응답 시 마지막 장중 데이터를 유지하는 용도."""
+    snapshots = get_snapshot_history(code, days)
+    snapshots.sort(key=lambda x: x["date"], reverse=True)
+    
+    for snapshot in snapshots:
+        if any(not _is_missing_value(snapshot.get(field)) for field in required_fields):
+            return snapshot
+    return None
+
+
+def merge_missing_from_snapshot(code, data, fields, required_fields=("price",)):
+    fallback = get_latest_valid_snapshot(code, required_fields=required_fields)
+    if not fallback:
+        return data
+    
+    filled = []
+    for field in fields:
+        if _is_missing_value(data.get(field)) and not _is_missing_value(fallback.get(field)):
+            data[field] = fallback.get(field)
+            filled.append(field)
+    
+    if filled:
+        data["is_stale"] = True
+        data["stale_as_of"] = fallback.get("data_as_of") or fallback.get("date")
+        data["stale_filled_fields"] = filled
+    return data
+
+
+KR_STOCK_SNAPSHOT_FIELDS = (
+    "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
+    "eps_fwd", "eps_ttm", "eps_growth", "eps_growth_raw", "eps_growth_source",
+    "peg_fwd", "pbr", "per_fwd", "per_ttm", "div_yield", "dps", "bps",
+    "target_price", "target_gap", "investment_opinion_score",
+    "per_source", "eps_source", "target_price_source", "trailing_source",
+)
+
+KR_ETF_SNAPSHOT_FIELDS = (
+    "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
+    "nav", "nav_discount", "band_pct",
+)
 
 
 # ============================================================
@@ -1138,14 +1188,12 @@ def upload_data():
         sector = info["sector"]
         print(f"   {name} ({sector})...")
         try:
-            if not token:
-                continue
-            
-            kis_data = get_kr_stock_data(token, code)
+            kis_data = get_kr_stock_data(token, code) if token else {}
             fn_data = get_kr_valuation(code)
             time.sleep(0.5)
             
             merged = {**kis_data, **fn_data, "code": code, "name": name, "sector": sector}
+            merged = merge_missing_from_snapshot(code, merged, KR_STOCK_SNAPSHOT_FIELDS)
             
             # target_gap 먼저 계산 (check_stock_signal에서 참조하기 위해)
             if merged.get("target_price") and merged.get("price"):
@@ -1155,16 +1203,9 @@ def upload_data():
             
             # 스냅샷 저장
             save_snapshot(code, {
-                "eps_fwd": merged.get("eps_fwd"),
-                "eps_ttm": merged.get("eps_ttm"),
-                "peg_fwd": merged.get("peg_fwd"),
-                "pbr": merged.get("pbr"),
-                "per_fwd": merged.get("per_fwd"),
-                "per_ttm": merged.get("per_ttm"),
-                "div_yield": merged.get("div_yield"),
-                "target_price": merged.get("target_price"),
-                "price": merged.get("price"),
-                "rsi": merged.get("rsi"),
+                **{field: merged.get(field) for field in KR_STOCK_SNAPSHOT_FIELDS},
+                "data_as_of": merged.get("stale_as_of") or get_date_str(),
+                "is_stale": merged.get("is_stale", False),
             })
             
             # 매수 시그널
@@ -1199,13 +1240,29 @@ def upload_data():
         try:
             data = get_etf_data(etf)
             if not data:
-                continue
+                fallback = get_latest_valid_snapshot(etf["ticker_krx"], required_fields=("price",))
+                if not fallback:
+                    continue
+                data = {field: fallback.get(field) for field in KR_ETF_SNAPSHOT_FIELDS}
+                data["is_stale"] = True
+                data["stale_as_of"] = fallback.get("data_as_of") or fallback.get("date")
+                data["stale_filled_fields"] = [field for field in KR_ETF_SNAPSHOT_FIELDS if data.get(field) is not None]
+                data["name"] = etf["name"]
+                data["code"] = etf["ticker_krx"]
+            else:
+                data = merge_missing_from_snapshot(etf["ticker_krx"], data, KR_ETF_SNAPSHOT_FIELDS)
             
             step1, step2, reason = check_etf_signal(data, macro)
             data["step1"] = step1
             data["step2"] = step2
             if reason:
                 data["skip_reason"] = reason
+            
+            save_snapshot(etf["ticker_krx"], {
+                **{field: data.get(field) for field in KR_ETF_SNAPSHOT_FIELDS},
+                "data_as_of": data.get("stale_as_of") or get_date_str(),
+                "is_stale": data.get("is_stale", False),
+            })
             
             kr_etf_list.append(data)
         except Exception as e:
