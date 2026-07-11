@@ -125,6 +125,16 @@ def _to_float(value):
     except (TypeError, ValueError):
         return None
 
+
+def _get_row_values(table, label):
+    for row in table.select("tr"):
+        header = row.select_one("th")
+        if not header:
+            continue
+        if label in header.get_text(" ", strip=True):
+            return [_to_float(td.get_text(" ", strip=True)) for td in row.select("td")]
+    return []
+
 # ============================================================
 # 매크로 지표 (VIX, QQQ, KOSPI, USD/KRW)
 # ============================================================
@@ -307,6 +317,15 @@ def get_rsi_threshold(criteria, market_mode):
 # 스냅샷 저장/조회
 # ============================================================
 def save_snapshot(code, data):
+    meaningful = [
+        value for key, value in data.items()
+        if key not in ("data_as_of", "is_stale", "stale_as_of", "stale_filled_fields")
+        and not _is_missing_value(value)
+    ]
+    if not meaningful:
+        print(f"   스냅샷 생략 ({code}): 유효 데이터 없음")
+        return
+    
     date_str = get_date_str()
     doc_ref = db.collection("snapshots").document(date_str).collection("stocks").document(code)
     doc_ref.set(_sanitize_for_firestore(data))
@@ -377,8 +396,10 @@ def merge_missing_from_snapshot(code, data, fields, required_fields=("price",)):
 
 KR_STOCK_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
-    "eps_fwd", "eps_ttm", "eps_growth", "eps_growth_raw", "eps_growth_source",
+    "eps_fwd", "eps_ttm", "eps_growth", "eps_growth_raw", "eps_growth_source", "eps_growth_quality",
+    "annual_eps_prev", "annual_eps_fwd", "annual_eps_growth",
     "peg_fwd", "pbr", "per_fwd", "per_ttm", "div_yield", "dps", "bps",
+    "peg_source", "peg_quality", "annual_per_fwd", "annual_pbr_fwd",
     "target_price", "target_gap", "investment_opinion_score",
     "per_source", "eps_source", "target_price_source", "trailing_source",
 )
@@ -394,7 +415,11 @@ KR_ETF_SNAPSHOT_FIELDS = (
 # ============================================================
 def _calculate_trend_generic(code, field_name):
     snapshots = get_snapshot_history(code, 35)
-    if len(snapshots) < 2:
+    snapshots = [
+        snapshot for snapshot in snapshots
+        if not _is_missing_value(snapshot.get(field_name))
+    ]
+    if not snapshots:
         return {}
     
     snapshots.sort(key=lambda x: x["date"], reverse=True)
@@ -402,6 +427,19 @@ def _calculate_trend_generic(code, field_name):
     raw_today = snapshots[0].get(field_name) if snapshots else None
     raw_yesterday = snapshots[1].get(field_name) if len(snapshots) >= 2 else None
     raw_change_pct = _slope_pct(raw_today, raw_yesterday)
+    if len(snapshots) < 2:
+        return {
+            "v_curr": raw_today,
+            "v_wow": None,
+            "v_mom": None,
+            "slope_wow_pct": None,
+            "slope_mom_pct": None,
+            "raw_today": raw_today,
+            "raw_yesterday": None,
+            "raw_change_pct": None,
+            "wow_violated": False,
+            "mom_violated": False,
+        }
     
     cw = TREND_WINDOWS["curr_days"]
     wo = TREND_WINDOWS["wow_offset"]
@@ -549,6 +587,39 @@ def get_naver_consensus(code):
     if pbr is not None and pbr > 0:
         result["naver_pbr"] = pbr
     
+    finance_table = None
+    for table in soup.select("table"):
+        if table.select_one("th.th_cop_anal17"):
+            finance_table = table
+            break
+    
+    if finance_table:
+        eps_values = _get_row_values(finance_table, "EPS")
+        per_values = _get_row_values(finance_table, "PER")
+        pbr_values = _get_row_values(finance_table, "PBR")
+        bps_values = _get_row_values(finance_table, "BPS")
+        dps_values = _get_row_values(finance_table, "주당배당금")
+        div_values = _get_row_values(finance_table, "시가배당률")
+        
+        if len(eps_values) >= 4:
+            prev_eps = eps_values[2]
+            fwd_eps = eps_values[3]
+            result["annual_eps_prev"] = prev_eps
+            result["annual_eps_fwd"] = fwd_eps
+            if prev_eps and fwd_eps and prev_eps != 0:
+                result["annual_eps_growth"] = round((fwd_eps - prev_eps) / abs(prev_eps) * 100, 1)
+        
+        if len(per_values) >= 4 and per_values[3] and per_values[3] > 0:
+            result["annual_per_fwd"] = per_values[3]
+        if len(pbr_values) >= 4 and pbr_values[3] and pbr_values[3] > 0:
+            result["annual_pbr_fwd"] = pbr_values[3]
+        if len(bps_values) >= 4 and bps_values[3] and bps_values[3] > 0:
+            result["annual_bps_fwd"] = bps_values[3]
+        if len(dps_values) >= 3 and dps_values[2] and dps_values[2] > 0:
+            result["annual_dps_latest"] = dps_values[2]
+        if len(div_values) >= 3 and div_values[2] and div_values[2] > 0:
+            result["annual_div_yield_latest"] = div_values[2]
+    
     return result
 
 
@@ -613,26 +684,48 @@ def get_kr_valuation(code):
         result["eps_ttm"] = result.get("naver_eps_ttm")
     if result.get("pbr") is None:
         result["pbr"] = result.get("naver_pbr")
+    if result.get("bps") is None:
+        result["bps"] = result.get("annual_bps_fwd")
+    if result.get("dps") is None:
+        result["dps"] = result.get("annual_dps_latest")
+    if result.get("div_yield") is None:
+        result["div_yield"] = result.get("annual_div_yield_latest")
     if result.get("trailing_source") is None and any(result.get(k) is not None for k in ("per_ttm", "eps_ttm", "pbr")):
         result["trailing_source"] = "naver_trailing_fallback"
     
-    if result.get("eps_growth") is None and result.get("eps_fwd") and result.get("eps_ttm"):
+    if result.get("eps_growth") is None and result.get("annual_eps_growth") is not None:
+        result["eps_growth"] = result["annual_eps_growth"]
+        result["eps_growth_raw"] = result["annual_eps_growth"]
+        result["eps_growth_source"] = "naver_annual_consensus_yoy"
+        if not (5 <= result["eps_growth"] <= 200):
+            result["eps_growth_quality"] = "extreme_growth_not_for_signal"
+        else:
+            result["eps_growth_quality"] = "normal"
+    elif result.get("eps_growth") is None and result.get("eps_fwd") and result.get("eps_ttm"):
         eps_growth = round((result["eps_fwd"] - result["eps_ttm"]) / abs(result["eps_ttm"]) * 100, 1)
+        result["eps_growth"] = eps_growth
         result["eps_growth_raw"] = eps_growth
+        result["eps_growth_source"] = "naver_consensus_vs_trailing"
         if 5 <= eps_growth <= 200:
-            result["eps_growth"] = eps_growth
-            result["eps_growth_source"] = "naver_consensus_vs_trailing"
+            result["eps_growth_quality"] = "normal"
+        else:
+            result["eps_growth_quality"] = "extreme_growth_not_for_signal"
     
     if result.get("per_fwd") is None:
-        result["per_fwd"] = result.get("per_ttm")
-        result["per_source"] = "pykrx_trailing_fallback"
+        result["per_fwd"] = result.get("annual_per_fwd") or result.get("per_ttm")
+        result["per_source"] = "naver_annual_consensus" if result.get("annual_per_fwd") else "pykrx_trailing_fallback"
     if result.get("eps_fwd") is None:
-        result["eps_fwd"] = result.get("eps_ttm")
-        result["eps_source"] = "pykrx_trailing_fallback"
+        result["eps_fwd"] = result.get("annual_eps_fwd") or result.get("eps_ttm")
+        result["eps_source"] = "naver_annual_consensus" if result.get("annual_eps_fwd") else "pykrx_trailing_fallback"
     
     # 4) PEG 계산 (PER + EPS 성장률)
-    if result.get("per_fwd") and result.get("eps_growth") and 5 <= result["eps_growth"] <= 200:
+    if result.get("per_fwd") and result.get("eps_growth") and result["eps_growth"] > 0:
         result["peg_fwd"] = round(result["per_fwd"] / result["eps_growth"], 2)
+        result["peg_source"] = result.get("eps_growth_source")
+        if result.get("eps_growth_quality") == "extreme_growth_not_for_signal":
+            result["peg_quality"] = "extreme_growth_not_for_signal"
+        else:
+            result["peg_quality"] = "normal"
     
     return result
 
@@ -816,11 +909,13 @@ def check_stock_signal(data, sector, macro, region="us"):
     # === 지표 변수 정리 (거래량 체크는 hits 계산 후로 연기) ===
     rsi = data.get("rsi")
     peg = data.get("peg_fwd")
+    peg_for_signal = None if data.get("peg_quality") == "extreme_growth_not_for_signal" else peg
     pbr = data.get("pbr")
     per = data.get("per_fwd") or data.get("per_ttm")
     ps = data.get("ps")
     rev_growth = data.get("rev_growth")
     eps_growth = data.get("eps_growth")
+    eps_growth_for_signal = None if data.get("eps_growth_quality") == "extreme_growth_not_for_signal" else eps_growth
     band_pct = data.get("band_pct")
     earnings_surprise = data.get("earnings_surprise_pct")
     target_gap = data.get("target_gap")
@@ -837,20 +932,20 @@ def check_stock_signal(data, sector, macro, region="us"):
     val_ok = False
     
     if sector == "semiconductor":
-        val_ok = peg is not None and peg < criteria.get("peg_max", 0.8)
+        val_ok = peg_for_signal is not None and peg_for_signal < criteria.get("peg_max", 0.8)
     
     elif sector == "ai_bigtech":
-        val_ok = peg is not None and peg < criteria.get("peg_max", 1.2)
+        val_ok = peg_for_signal is not None and peg_for_signal < criteria.get("peg_max", 1.2)
     
     elif sector == "defense":
-        peg_ok = peg is not None and peg < criteria.get("peg_max", 1.5)
+        peg_ok = peg_for_signal is not None and peg_for_signal < criteria.get("peg_max", 1.5)
         per_ok = per is not None and per < criteria.get("per_max", 15)
         val_ok = peg_ok or per_ok
     
     elif sector == "aerospace":
         eps_fwd = data.get("eps_fwd", 0) or 0
         if eps_fwd > 0:
-            val_ok = peg is not None and peg < criteria.get("peg_max", 1.5)
+            val_ok = peg_for_signal is not None and peg_for_signal < criteria.get("peg_max", 1.5)
         else:
             ps_ok = ps is not None and ps < criteria.get("ps_max", 10)
             band_ok = band_pct is not None and band_pct < criteria.get("band_max", 30)
@@ -858,18 +953,18 @@ def check_stock_signal(data, sector, macro, region="us"):
     
     elif sector == "industrial":
         # 산업재/중공업: 사이클 종목. PBR 제외, PER < 12 (저점 진입 기준)
-        peg_ok = peg is not None and peg < criteria.get("peg_max", 1.2)
+        peg_ok = peg_for_signal is not None and peg_for_signal < criteria.get("peg_max", 1.2)
         per_ok = per is not None and per < criteria.get("per_max", 12)
         val_ok = peg_ok or per_ok
     
     elif sector == "growth":
         # 흑자/적자 + PEG 데이터 유무로 분기
         eps_fwd = data.get("eps_fwd", 0) or 0
-        peg_available = peg is not None
+        peg_available = peg_for_signal is not None
         
         if eps_fwd > 0 and peg_available:
             # 흑자 + PEG 정상 → PEG 기준
-            val_ok = peg < criteria.get("peg_max", 1.5)
+            val_ok = peg_for_signal < criteria.get("peg_max", 1.5)
         else:
             # 적자거나 PEG 못 잡은 경우 → 4중 fallback (모두 충족)
             ps_ok = ps is not None and ps < criteria.get("ps_max", 5)
@@ -880,7 +975,7 @@ def check_stock_signal(data, sector, macro, region="us"):
                          and target_gap >= criteria.get("fallback_target_gap_min", 20))
             val_ok = ps_ok and band_ok and surprise_ok and target_ok
     
-    if region == "kr" and not val_ok and peg is None:
+    if region == "kr" and not val_ok and peg_for_signal is None:
         per_fallback_max = criteria.get("kr_per_fallback_max")
         per_source = data.get("per_source")
         if (
@@ -905,7 +1000,7 @@ def check_stock_signal(data, sector, macro, region="us"):
             hit_details.append("target_gap")
         
         eps_growth_min = criteria.get("kr_eps_growth_min", criteria.get("rev_growth_min", 5))
-        if eps_growth_min is not None and eps_growth is not None and eps_growth >= eps_growth_min:
+        if eps_growth_min is not None and eps_growth_for_signal is not None and eps_growth_for_signal >= eps_growth_min:
             hits += 1
             hit_details.append("eps_growth")
         
@@ -1355,8 +1450,11 @@ def upload_data():
     print(f"   스냅샷 저장: {date_str}")
     
     try:
-        from notifier import check_and_notify
-        check_and_notify(macro.get("vix"), macro.get("qqq"), macro.get("kospi"))
+        if os.getenv("SAYO_SKIP_NOTIFY") == "1":
+            print("   알림 스킵: SAYO_SKIP_NOTIFY=1")
+        else:
+            from notifier import check_and_notify
+            check_and_notify(macro.get("vix"), macro.get("qqq"), macro.get("kospi"))
     except Exception as e:
         print(f"   알림 에러: {e}")
 
