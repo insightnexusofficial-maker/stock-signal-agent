@@ -75,6 +75,10 @@ SECTOR_CRITERIA = {
         "rev_growth_min": 5,         # 반도체는 성장률 유연
         "consensus_gap_min": 0,
         "target_gap_min": 0,         # 목표주가 갭 > 0%
+        "kr_eps_growth_min": 5,
+        "kr_per_fallback_max": 10,
+        "kr_pbr_max": 4.0,
+        "kr_div_yield_min": 0.5,
         # 거래량
         "volume_min_ratio": 1.0,     # 1.2 → 1.0 완화
         # RSI
@@ -132,6 +136,11 @@ SECTOR_CRITERIA = {
         "per_max": 12,
         "rev_growth_min": 5,
         "consensus_gap_min": 0,
+        "target_gap_min": 0,
+        "kr_eps_growth_min": 5,
+        "kr_per_fallback_max": 12,
+        "kr_pbr_max": 2.5,
+        "kr_div_yield_min": 0.8,
         "rsi_normal": 40, "rsi_adjust": 35, "rsi_caution": 30, "rsi_panic": 25,
         "slope_mom_min": 0,
     },
@@ -145,6 +154,10 @@ SECTOR_CRITERIA = {
         # Step1 hits 계산용 (기존 유지)
         "rev_growth_min": 15,
         "consensus_gap_min": -10,
+        "target_gap_min": 0,
+        "kr_eps_growth_min": 15,
+        "kr_per_fallback_max": 15,
+        "kr_pbr_max": 3.0,
         "rsi_normal": 40, "rsi_adjust": 35, "rsi_caution": 30, "rsi_panic": 25,
     },
     "etf": {

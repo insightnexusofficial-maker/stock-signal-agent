@@ -107,8 +107,26 @@ def _sanitize_for_firestore(obj):
         return [_sanitize_for_firestore(x) for x in obj]
     return obj
 
+
+def _to_float(value):
+    """쉼표/단위가 섞인 숫자를 float로 변환. 실패/NaN은 None."""
+    if value is None:
+        return None
+    try:
+        if isinstance(value, str):
+            cleaned = re.sub(r"[^0-9.\-]", "", value)
+            if cleaned in ("", "-", ".", "-."):
+                return None
+            value = cleaned
+        num = float(value)
+        if num != num:
+            return None
+        return num
+    except (TypeError, ValueError):
+        return None
+
 # ============================================================
-# 매크로 지표 (VIX, QQQ, KOSPI)
+# 매크로 지표 (VIX, QQQ, KOSPI, USD/KRW)
 # ============================================================
 def _calc_ma_status(hist, period=20, buffer_pct=0.01, confirm_days=2):
     """MA 이탈 판정 (whipsaw 완충 포함)."""
@@ -149,8 +167,29 @@ def _calc_ma_status(hist, period=20, buffer_pct=0.01, confirm_days=2):
     }
 
 
+def _get_usdkrw_from_naver():
+    url = "https://finance.naver.com/marketindex/"
+    res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+    res.raise_for_status()
+    soup = BeautifulSoup(res.text, "html.parser")
+    block = soup.select_one("div.market1 div.head_info")
+    if not block:
+        return None
+    current = _to_float(block.select_one(".value").get_text(" ", strip=True))
+    change = _to_float(block.select_one(".change").get_text(" ", strip=True))
+    blind = block.select_one(".blind")
+    direction_text = blind.get_text(" ", strip=True) if blind else ""
+    if current is None or change is None:
+        return None
+    if "하락" in direction_text:
+        change = -abs(change)
+    prev = current - change
+    change_pct = round(change / prev * 100, 2) if prev > 0 else 0
+    return {"current": current, "prev": round(prev, 2), "change_pct": change_pct}
+
+
 def get_macro_data():
-    result = {"vix": None, "qqq": None, "kospi": None}
+    result = {"vix": None, "qqq": None, "kospi": None, "usdkrw": None}
     
     buf = MACRO_GUARDS.get("qqq_whipsaw_buffer", 0.01)
     confirm = MACRO_GUARDS.get("qqq_confirm_days", 2)
@@ -212,7 +251,32 @@ def get_macro_data():
     except Exception as e:
         print(f"   KOSPI 에러: {e}")
     
+    # 환율 (USD/KRW): yfinance 우선, 실패 시 네이버 금융 폴백
+    try:
+        usdkrw = yf.Ticker("KRW=X")
+        hist = usdkrw.history(period="1mo")
+        if not hist.empty:
+            current = round(float(hist["Close"].iloc[-1]), 2)
+            prev = round(float(hist["Close"].iloc[-2]), 2) if len(hist) >= 2 else current
+            change_pct = round((current - prev) / prev * 100, 2) if prev > 0 else 0
+            
+            result["usdkrw"] = {
+                "current": current,
+                "prev": prev,
+                "change_pct": change_pct,
+            }
+    except Exception as e:
+        print(f"   USD/KRW 에러: {e}")
+
+    if not result["usdkrw"]:
+        try:
+            result["usdkrw"] = _get_usdkrw_from_naver()
+        except Exception as e:
+            print(f"   USD/KRW 네이버 폴백 에러: {e}")
+        
     return result
+
+    
 
 
 def determine_market_mode(macro, region="us"):
@@ -385,60 +449,140 @@ def get_kr_stock_data(token, code):
     return result
 
 
+def get_naver_consensus(code):
+    """
+    네이버 증권의 투자의견/목표주가 및 추정 PER/EPS 컨센서스.
+    추정 EPS는 네이버 페이지 안내상 FnGuide 컨센서스(증권사 3곳 이상) 기반이다.
+    """
+    url = f"https://finance.naver.com/item/main.naver?code={code}"
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    }
+    res = requests.get(url, headers=headers, timeout=12)
+    res.raise_for_status()
+    soup = BeautifulSoup(res.text, "html.parser")
+    result = {}
+    
+    opinion_table = soup.find("table", attrs={"summary": "투자의견 정보"})
+    if opinion_table:
+        for row in opinion_table.select("tr"):
+            header = row.select_one("th")
+            if not header:
+                continue
+            if "투자의견" in header.get_text(" ", strip=True) and "목표주가" in header.get_text(" ", strip=True):
+                ems = [_to_float(em.get_text(" ", strip=True)) for em in row.select("td em")]
+                ems = [v for v in ems if v is not None]
+                if ems:
+                    result["investment_opinion_score"] = ems[0]
+                if len(ems) >= 2 and ems[1] > 0:
+                    result["target_price"] = ems[1]
+                    result["target_price_source"] = "naver_consensus"
+                break
+    
+    cns_per = _to_float(soup.select_one("#_cns_per").get_text(" ", strip=True)) if soup.select_one("#_cns_per") else None
+    cns_eps = _to_float(soup.select_one("#_cns_eps").get_text(" ", strip=True)) if soup.select_one("#_cns_eps") else None
+    if cns_per is not None and cns_per > 0:
+        result["per_fwd"] = cns_per
+        result["per_source"] = "naver_consensus"
+    if cns_eps is not None and cns_eps > 0:
+        result["eps_fwd"] = cns_eps
+        result["eps_source"] = "naver_consensus"
+    
+    per_ttm = _to_float(soup.select_one("#_per").get_text(" ", strip=True)) if soup.select_one("#_per") else None
+    eps_ttm = _to_float(soup.select_one("#_eps").get_text(" ", strip=True)) if soup.select_one("#_eps") else None
+    pbr = _to_float(soup.select_one("#_pbr").get_text(" ", strip=True)) if soup.select_one("#_pbr") else None
+    if per_ttm is not None and per_ttm > 0:
+        result["naver_per_ttm"] = per_ttm
+    if eps_ttm is not None and eps_ttm > 0:
+        result["naver_eps_ttm"] = eps_ttm
+    if pbr is not None and pbr > 0:
+        result["naver_pbr"] = pbr
+    
+    return result
+
+
 def get_kr_valuation(code):
-    session = requests.Session()
-    url = f"https://comp.fnguide.com/SVO2/ASP/SVD_Main.asp?pGB=1&gicode=A{code}"
-    res = session.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
-    soup = BeautifulSoup(res.text, "lxml")
-    session.close()
+    from pykrx import stock
+    from datetime import datetime, timedelta
     
     result = {}
-    tables = soup.select("table")
-    if len(tables) < 12:
-        return result
     
+    # 1) pykrx: PER/PBR/EPS/BPS (최근 14일 범위 조회 후 마지막 유효값 사용)
     try:
-        snap_table = soup.select("div.corp_group1 table")
-        if snap_table:
-            for row in snap_table[0].select("tr"):
-                cells = [c.get_text(strip=True) for c in row.select("th, td")]
-                if cells and "PBR" in cells[0]:
-                    result["pbr"] = float(cells[1].replace(",", ""))
-                    break
-    except: pass
+        end = datetime.now().strftime("%Y%m%d")
+        start = (datetime.now() - timedelta(days=14)).strftime("%Y%m%d")
+        df = stock.get_market_fundamental_by_date(start, end, code)
+        if not df.empty:
+            latest = df.iloc[-1]
+            result["per_ttm"] = _to_float(latest.get("PER"))
+            result["pbr"] = _to_float(latest.get("PBR"))
+            result["eps_ttm"] = _to_float(latest.get("EPS"))
+            result["div_yield"] = _to_float(latest.get("DIV"))
+            result["dps"] = _to_float(latest.get("DPS"))
+            result["bps"] = _to_float(latest.get("BPS"))
+            result["trailing_source"] = "pykrx"
+    except Exception as e:
+        print(f"   pykrx fundamental 에러 ({code}): {e}")
     
-    for row in tables[11].select("tr"):
-        cells = [c.get_text(strip=True) for c in row.select("th, td")]
-        if cells and cells[0] == "매출액":
-            try:
-                r26, r27 = float(cells[6].replace(",", "")), float(cells[7].replace(",", ""))
-                result["rev_growth"] = round((r27 - r26) / r26 * 100, 1)
-            except: pass
-        if cells and "EPS" in cells[0] and "지배주주" in cells[0]:
-            try:
-                result["eps_fwd"] = float(cells[7].replace(",", ""))
-                e26, e27 = float(cells[6].replace(",", "")), float(cells[7].replace(",", ""))
-                result["eps_growth"] = round((e27 - e26) / e26 * 100, 1)
-            except: pass
-        if cells and "PER" in cells[0] and "수정주가" in cells[0]:
-            try:
-                result["per_fwd"] = float(cells[6].replace(",", ""))
-                result["per_ttm"] = float(cells[5].replace(",", ""))
-            except: pass
+    # 2) EPS 성장률 (작년 vs 올해 동일 시점 비교)
+    try:
+        from datetime import datetime, timedelta
+        today = datetime.now()
+        this_year_date = today.strftime("%Y%m%d")
+        last_year_date = (today - timedelta(days=365)).strftime("%Y%m%d")
+        
+        # 최근 유효 거래일 찾기 위해 앞뒤 10일 범위로 조회
+        def get_nearest_eps(target_date_str):
+            target = datetime.strptime(target_date_str, "%Y%m%d")
+            start = (target - timedelta(days=10)).strftime("%Y%m%d")
+            end = (target + timedelta(days=10)).strftime("%Y%m%d")
+            df = stock.get_market_fundamental_by_date(start, end, code)
+            if df.empty:
+                return None
+            return _to_float(df["EPS"].iloc[-1])
+        
+        eps_now = get_nearest_eps(this_year_date)
+        eps_prev = get_nearest_eps(last_year_date)
+        
+        if eps_now and eps_prev and eps_prev != 0:
+            result["eps_growth"] = round((eps_now - eps_prev) / abs(eps_prev) * 100, 1)
+    except Exception as e:
+        print(f"   EPS 성장률 계산 에러 ({code}): {e}")
     
+    # 3) 네이버 증권: 목표주가/추정 PER/EPS 컨센서스.
+    # comp.fnguide.com SVD_Main.asp는 gicode 유실 리다이렉트가 있어 사용하지 않는다.
+    try:
+        result.update(get_naver_consensus(code))
+    except Exception as e:
+        print(f"   네이버 컨센서스 에러 ({code}): {e}")
+    
+    if result.get("per_ttm") is None:
+        result["per_ttm"] = result.get("naver_per_ttm")
+    if result.get("eps_ttm") is None:
+        result["eps_ttm"] = result.get("naver_eps_ttm")
+    if result.get("pbr") is None:
+        result["pbr"] = result.get("naver_pbr")
+    if result.get("trailing_source") is None and any(result.get(k) is not None for k in ("per_ttm", "eps_ttm", "pbr")):
+        result["trailing_source"] = "naver_trailing_fallback"
+    
+    if result.get("eps_growth") is None and result.get("eps_fwd") and result.get("eps_ttm"):
+        eps_growth = round((result["eps_fwd"] - result["eps_ttm"]) / abs(result["eps_ttm"]) * 100, 1)
+        result["eps_growth_raw"] = eps_growth
+        if 5 <= eps_growth <= 200:
+            result["eps_growth"] = eps_growth
+            result["eps_growth_source"] = "naver_consensus_vs_trailing"
+    
+    if result.get("per_fwd") is None:
+        result["per_fwd"] = result.get("per_ttm")
+        result["per_source"] = "pykrx_trailing_fallback"
+    if result.get("eps_fwd") is None:
+        result["eps_fwd"] = result.get("eps_ttm")
+        result["eps_source"] = "pykrx_trailing_fallback"
+    
+    # 4) PEG 계산 (PER + EPS 성장률)
     if result.get("per_fwd") and result.get("eps_growth") and 5 <= result["eps_growth"] <= 200:
         result["peg_fwd"] = round(result["per_fwd"] / result["eps_growth"], 2)
-    
-    try:
-        # 투자의견/목표주가 테이블 (5 cells: 투자의견/목표주가/EPS/PER/추정기관수)
-        for row in soup.select("tr.rwc_g"):
-            cells = row.select("td")
-            if len(cells) == 5:
-                target_text = cells[1].get_text(strip=True).replace(",", "")
-                if target_text and target_text.replace(".", "").isdigit():
-                    result["target_price"] = float(target_text)
-                break
-    except: pass
     
     return result
 
@@ -626,9 +770,11 @@ def check_stock_signal(data, sector, macro, region="us"):
     per = data.get("per_fwd") or data.get("per_ttm")
     ps = data.get("ps")
     rev_growth = data.get("rev_growth")
+    eps_growth = data.get("eps_growth")
     band_pct = data.get("band_pct")
     earnings_surprise = data.get("earnings_surprise_pct")
     target_gap = data.get("target_gap")
+    div_yield = data.get("div_yield")
     
     # === EPS 기울기 필수 조건 (매우 관대: slope_mom ≥ -1%) ===
     slope_mom = eps_trend.get("slope_mom_pct")
@@ -684,25 +830,75 @@ def check_stock_signal(data, sector, macro, region="us"):
                          and target_gap >= criteria.get("fallback_target_gap_min", 20))
             val_ok = ps_ok and band_ok and surprise_ok and target_ok
     
-    # === 선택 조건 2/3 체크 ===
+    if region == "kr" and not val_ok and peg is None:
+        per_fallback_max = criteria.get("kr_per_fallback_max")
+        per_source = data.get("per_source")
+        if (
+            per_fallback_max is not None
+            and per is not None
+            and per_source == "naver_consensus"
+            and per < per_fallback_max
+        ):
+            val_ok = True
+            data["valuation_basis"] = "kr_consensus_per_fallback"
+    
+    # === 선택 조건 체크 ===
     hits = 0
+    hit_details = []
     
-    # 선택 1: 매출 성장률
-    rev_min = criteria.get("rev_growth_min")
-    if rev_min is not None and rev_growth is not None and rev_growth >= rev_min:
-        hits += 1
-    
-    # 선택 2: Earnings Surprise
-    surprise_min = criteria.get("consensus_gap_min")
-    if surprise_min is not None and earnings_surprise is not None and earnings_surprise >= surprise_min:
-        hits += 1
-    
-    # 선택 3: 목표주가 갭
-    target_min = criteria.get("target_gap_min", 0)
-    if target_gap is not None and target_gap >= target_min:
-        hits += 1
+    if region == "kr":
+        # 한국 주식은 rev_growth/earnings_surprise가 안정적으로 제공되지 않는다.
+        # Valuation 게이트는 별도로 유지하고, 국내에서 확보 가능한 보조 조건으로 hits를 구성한다.
+        target_min = criteria.get("target_gap_min", 0)
+        if target_gap is not None and target_gap >= target_min:
+            hits += 1
+            hit_details.append("target_gap")
+        
+        eps_growth_min = criteria.get("kr_eps_growth_min", criteria.get("rev_growth_min", 5))
+        if eps_growth_min is not None and eps_growth is not None and eps_growth >= eps_growth_min:
+            hits += 1
+            hit_details.append("eps_growth")
+        
+        per_fallback_max = criteria.get("kr_per_fallback_max")
+        if (
+            per_fallback_max is not None
+            and per is not None
+            and data.get("per_source") == "naver_consensus"
+            and per < per_fallback_max
+        ):
+            hits += 1
+            hit_details.append("consensus_per")
+        
+        pbr_max = criteria.get("kr_pbr_max")
+        if pbr_max is not None and pbr is not None and 0 < pbr <= pbr_max:
+            hits += 1
+            hit_details.append("pbr")
+        
+        div_min = criteria.get("kr_div_yield_min")
+        if div_min is not None and div_yield is not None and div_yield >= div_min:
+            hits += 1
+            hit_details.append("div_yield")
+    else:
+        # 선택 1: 매출 성장률
+        rev_min = criteria.get("rev_growth_min")
+        if rev_min is not None and rev_growth is not None and rev_growth >= rev_min:
+            hits += 1
+            hit_details.append("rev_growth")
+        
+        # 선택 2: Earnings Surprise
+        surprise_min = criteria.get("consensus_gap_min")
+        if surprise_min is not None and earnings_surprise is not None and earnings_surprise >= surprise_min:
+            hits += 1
+            hit_details.append("earnings_surprise")
+        
+        # 선택 3: 목표주가 갭
+        target_min = criteria.get("target_gap_min", 0)
+        if target_gap is not None and target_gap >= target_min:
+            hits += 1
+            hit_details.append("target_gap")
     
     data["selection_hits"] = hits
+    data["selection_hit_details"] = hit_details
     
     # === 유동성 체크 (hits 계산 후, step1 판정 전) ===
     vol_ratio = data.get("vol_ratio", 0) or 0
@@ -907,6 +1103,8 @@ def upload_data():
     vix_info = macro.get("vix")
     qqq_info = macro.get("qqq")
     kospi_info = macro.get("kospi")
+    usdkrw_info = macro.get("usdkrw")
+
     
     if vix_info:
         print(f"   VIX: {vix_info['current']} | 모드: 🟢 {vix_info['mode'].upper()}")
@@ -916,6 +1114,10 @@ def upload_data():
     if kospi_info:
         arrow = "🟢 상승" if kospi_info["above_ma20"] else "🔴 하락"
         print(f"   KOSPI: {kospi_info['price']} | MA20: {kospi_info['ma20']} ({kospi_info['deviation_pct']}%) | {arrow}")
+    if usdkrw_info:
+        arrow = "🔴 상승" if usdkrw_info["change_pct"] >= 0 else "🟢 하락"
+        print(f"   USD/KRW: {usdkrw_info['current']} ({usdkrw_info['change_pct']:+.2f}%) | {arrow}")
+    
     
     mode_us = determine_market_mode(macro, region="us")
     mode_kr = determine_market_mode(macro, region="kr")
@@ -954,9 +1156,12 @@ def upload_data():
             # 스냅샷 저장
             save_snapshot(code, {
                 "eps_fwd": merged.get("eps_fwd"),
+                "eps_ttm": merged.get("eps_ttm"),
                 "peg_fwd": merged.get("peg_fwd"),
                 "pbr": merged.get("pbr"),
                 "per_fwd": merged.get("per_fwd"),
+                "per_ttm": merged.get("per_ttm"),
+                "div_yield": merged.get("div_yield"),
                 "target_price": merged.get("target_price"),
                 "price": merged.get("price"),
                 "rsi": merged.get("rsi"),
@@ -1071,6 +1276,7 @@ def upload_data():
         "vix": macro.get("vix"),
         "qqq": macro.get("qqq"),
         "kospi": macro.get("kospi"),
+        "usdkrw": macro.get("usdkrw"),
         "market_mode": mode_us,       # 하위호환 (기존 PWA)
         "market_mode_us": mode_us,
         "market_mode_kr": mode_kr,
