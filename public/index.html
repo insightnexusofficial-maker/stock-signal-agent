@@ -143,7 +143,7 @@ button {
 .brand-logo {
   min-width: 0;
   height: 112px;
-  background: var(--bg-2);
+  background: #050505;
   border: 1px solid var(--border-2);
   overflow: hidden;
 }
@@ -152,7 +152,7 @@ button {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -1022,7 +1022,7 @@ button {
   height: 164px;
   margin-bottom: 24px;
   border-radius: 8px;
-  background: var(--bg-2);
+  background: #050505;
   padding: 0;
   box-shadow: 0 8px 32px rgba(0, 214, 143, 0.12);
   display: flex;
@@ -1034,7 +1034,7 @@ button {
   width: 100%;
   height: 100%;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .gate-title {
@@ -2311,7 +2311,7 @@ button {
         case "declining":
           return { arrow: "↓↓", cls: "down-strong", value: slopeStr };
         default:
-      return { arrow: "·", cls: "flat", value: "수집 중" };
+      return { arrow: "", cls: "flat", value: "—" };
      }
     }
     
@@ -2508,10 +2508,8 @@ button {
     const revGrowth = stock.rev_growth !== null && stock.rev_growth !== undefined 
         ? (stock.rev_growth >= 0 ? "+" : "") + stock.rev_growth.toFixed(1) + "%" 
         : "—";
-    const selectionHits = stock.selection_hits !== null && stock.selection_hits !== undefined ? stock.selection_hits : 0;
-    const selectionDetails = Array.isArray(stock.selection_hit_details) && stock.selection_hit_details.length > 0
-        ? stock.selection_hit_details.join(" · ")
-        : selectionHits + "개";
+    const epsTrendText = epsTrend.arrow ? `${epsTrend.arrow} ${epsTrend.value}` : epsTrend.value;
+    const targetTrendText = targetTrend.arrow ? `${targetTrend.arrow} ${targetTrend.value}` : targetTrend.value;
     
     const badgesHtml = badges.map(b => `<span class="badge ${b.cls}">${b.label}</span>`).join("");
     
@@ -2532,25 +2530,18 @@ button {
             ? stock.band_pct.toFixed(0) + "%" : "—" },
         { key: "거래량 비율", val: stock.vol_ratio !== null && stock.vol_ratio !== undefined 
             ? stock.vol_ratio.toFixed(2) + "x" : "—" },
-        { key: "RSI 매수 임계", val: fmt(stock.rsi_threshold) },
     ] : [
         { key: "PEG", val: peg, hl: true },
-        { key: "PEG 품질", val: stock.peg_quality || "normal" },
         { key: "PER (예상)", val: fmt(stock.per_fwd, { decimals: 2 }) },
         { key: "PBR", val: fmt(stock.pbr, { decimals: 2 }) },
-        { key: "배당수익률", val: stock.div_yield !== null && stock.div_yield !== undefined ? stock.div_yield.toFixed(2) + "%" : "—" },
         { key: "PS", val: fmt(stock.ps, { decimals: 2 }) },
         { key: "52주 위치", val: stock.band_pct !== null && stock.band_pct !== undefined ? stock.band_pct.toFixed(0) + "%" : "—" },
         { key: "거래량 비율", val: stock.vol_ratio !== null && stock.vol_ratio !== undefined ? stock.vol_ratio.toFixed(2) + "x" : "—" },
         { key: "목표가 갭", val: stock.target_gap !== null && stock.target_gap !== undefined ? (stock.target_gap >= 0 ? "+" : "") + stock.target_gap.toFixed(1) + "%" : "—" },
-        { key: region === "us" ? "어닝 서프라이즈" : "선택 조건", val: region === "us" ? surprise : selectionDetails },
-        { key: "매출 성장률", val: revGrowth },
-        { key: "EPS 추세", val: `${epsTrend.arrow} ${epsTrend.value}`, trendCls: epsTrend.cls },
+        { key: region === "us" ? "어닝 서프라이즈" : "매출 성장률", val: region === "us" ? surprise : revGrowth },
+        { key: "EPS 추세", val: epsTrendText, trendCls: epsTrend.cls },
         { key: "EPS (1주)", val: stock.trend_slope_wow_pct !== null && stock.trend_slope_wow_pct !== undefined ? (stock.trend_slope_wow_pct >= 0 ? "+" : "") + stock.trend_slope_wow_pct.toFixed(1) + "%" : "—" },
-        { key: "목표가 추세", val: `${targetTrend.arrow} ${targetTrend.value}`, trendCls: targetTrend.cls },
-        { key: "RSI 매수 임계", val: fmt(stock.rsi_threshold) },
-        { key: "PER 출처", val: stock.per_source || "—" },
-        { key: "데이터 기준", val: stock.stale_as_of || "최신" },
+        { key: "목표가 추세", val: targetTrendText, trendCls: targetTrend.cls },
     ];
     
     const detailItemsHtml = detailItems.map(item => 
@@ -2622,9 +2613,7 @@ button {
         { key: "NAV", val: etf.nav !== null && etf.nav !== undefined ? etf.nav.toLocaleString() : "—" },
         { key: "52주 위치", val: band },
         { key: "거래량 비율", val: vol },
-        { key: "RSI 임계", val: fmt(etf.rsi_threshold) },
         { key: "당일 거래량", val: etf.volume !== null && etf.volume !== undefined ? etf.volume.toLocaleString() : "—" },
-        { key: "데이터 기준", val: etf.stale_as_of || "최신" },
     ];
     const detailHtml = detailItems.map(item => 
         `<div class="detail-item"><div class="key">${item.key}</div><div class="val mono">${item.val}</div></div>`
