@@ -6,6 +6,7 @@ import yfinance as yf
 import re
 import os
 import time
+from copy import deepcopy
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from config import (
@@ -68,6 +69,10 @@ def calculate_rsi(prices, period=14):
 
 def get_date_str():
     return datetime.now(KST).strftime("%Y%m%d")
+
+
+def get_month_str():
+    return datetime.now(KST).strftime("%Y%m")
 
 
 def _avg(values):
@@ -135,6 +140,44 @@ def _get_row_values(table, label):
             return [_to_float(td.get_text(" ", strip=True)) for td in row.select("td")]
     return []
 
+
+def _extract_target_distribution_yield(text):
+    if not text:
+        return None
+    patterns = (
+        r"타겟\s*([0-9]+(?:\.[0-9]+)?)\s*%",
+        r"목표\s*(?:연\s*)?([0-9]+(?:\.[0-9]+)?)\s*%",
+        r"연\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*(?:분배|배당)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            return _to_float(match.group(1))
+    return None
+
+
+def _has_valid_rate(value):
+    return _to_float(value) is not None
+
+
+def _make_exchange_rate(current, prev=None, change_pct=None, source=None):
+    """환율 공급원별 응답을 Firestore 공통 형식으로 정규화한다."""
+    current = _to_float(current)
+    prev = _to_float(prev)
+    change_pct = _to_float(change_pct)
+    if current is None or current <= 0:
+        return None
+    if prev is None and change_pct is not None and change_pct > -100:
+        prev = current / (1 + change_pct / 100)
+    if change_pct is None and prev is not None and prev > 0:
+        change_pct = (current - prev) / prev * 100
+    return {
+        "current": round(current, 2),
+        "prev": round(prev, 2) if prev is not None else round(current, 2),
+        "change_pct": round(change_pct, 2) if change_pct is not None else 0,
+        "source": source,
+    }
+
 # ============================================================
 # 매크로 지표 (VIX, QQQ, KOSPI, USD/KRW)
 # ============================================================
@@ -143,7 +186,9 @@ def _calc_ma_status(hist, period=20, buffer_pct=0.01, confirm_days=2):
     if hist is None or hist.empty or len(hist) < period:
         return None
     
-    closes = hist["Close"]
+    closes = hist["Close"].dropna()
+    if len(closes) < period:
+        return None
     current_price = float(closes.iloc[-1])
     ma_current = float(closes.iloc[-period:].mean())
     deviation_pct = round((current_price - ma_current) / ma_current * 100, 2)
@@ -177,25 +222,96 @@ def _calc_ma_status(hist, period=20, buffer_pct=0.01, confirm_days=2):
     }
 
 
-def _get_usdkrw_from_naver():
+def _get_usdkrw_from_naver_api():
+    url = (
+        "https://m.stock.naver.com/front-api/marketIndex/productDetail"
+        "?category=exchange&reutersCode=FX_USDKRW"
+    )
+    res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+    res.raise_for_status()
+    payload = res.json()
+    data = payload.get("result") or payload.get("data") or {}
+
+    current = data.get("closePrice") or data.get("currentPrice") or data.get("now")
+    change_pct = (
+        data.get("fluctuationsRatio")
+        or data.get("fluctuationRate")
+        or data.get("changeRate")
+    )
+    change = _to_float(
+        data.get("compareToPreviousClosePrice")
+        or data.get("changePrice")
+        or data.get("change")
+    )
+    direction = data.get("compareToPreviousPrice") or data.get("direction") or {}
+    if isinstance(direction, dict):
+        direction = " ".join(str(direction.get(key, "")) for key in ("text", "name", "code"))
+    if change is not None and any(word in str(direction).lower() for word in ("하락", "falling", "down")):
+        change = -abs(change)
+    current_num = _to_float(current)
+    prev = current_num - change if current_num is not None and change is not None else None
+    return _make_exchange_rate(current_num, prev, change_pct, "naver_mobile")
+
+
+def _get_usdkrw_from_yahoo_chart():
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/KRW=X"
+    params = {"range": "1mo", "interval": "1d"}
+    res = requests.get(url, params=params, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+    res.raise_for_status()
+    chart = (res.json().get("chart") or {}).get("result") or []
+    if not chart:
+        return None
+    closes = (((chart[0].get("indicators") or {}).get("quote") or [{}])[0].get("close") or [])
+    closes = [_to_float(value) for value in closes]
+    closes = [value for value in closes if value is not None]
+    if not closes:
+        return None
+    current = closes[-1]
+    prev = closes[-2] if len(closes) >= 2 else current
+    return _make_exchange_rate(current, prev, source="yahoo_chart")
+
+
+def _get_usdkrw_from_naver_html():
     url = "https://finance.naver.com/marketindex/"
     res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
     res.raise_for_status()
     soup = BeautifulSoup(res.text, "html.parser")
-    block = soup.select_one("div.market1 div.head_info")
+    block = soup.select_one("#exchangeList .head_info, .market1 .head_info")
     if not block:
         return None
-    current = _to_float(block.select_one(".value").get_text(" ", strip=True))
-    change = _to_float(block.select_one(".change").get_text(" ", strip=True))
-    blind = block.select_one(".blind")
-    direction_text = blind.get_text(" ", strip=True) if blind else ""
+    value_el = block.select_one(".value")
+    change_el = block.select_one(".change")
+    if not value_el or not change_el:
+        return None
+    current = _to_float(value_el.get_text(" ", strip=True))
+    change = _to_float(change_el.get_text(" ", strip=True))
+    direction_text = block.get_text(" ", strip=True)
     if current is None or change is None:
         return None
     if "하락" in direction_text:
         change = -abs(change)
     prev = current - change
-    change_pct = round(change / prev * 100, 2) if prev > 0 else 0
-    return {"current": current, "prev": round(prev, 2), "change_pct": change_pct}
+    return _make_exchange_rate(current, prev, source="naver_html")
+
+
+def _get_cached_macro_value(field):
+    """외부 공급원이 모두 실패해도 직전 정상값을 지우지 않는다."""
+    try:
+        snapshot = db.collection("stocks").document("data").get()
+        if not snapshot.exists:
+            return None
+        payload = snapshot.to_dict() or {}
+        value = payload.get(field)
+        if not isinstance(value, dict) or value.get("current") is None:
+            return None
+        cached = deepcopy(value)
+        cached["source"] = "firestore_cache"
+        cached["is_stale"] = True
+        cached["stale_as_of"] = payload.get("updated")
+        return cached
+    except Exception as e:
+        print(f"   {field} 직전값 조회 에러: {e}")
+        return None
 
 
 def get_macro_data():
@@ -261,28 +377,22 @@ def get_macro_data():
     except Exception as e:
         print(f"   KOSPI 에러: {e}")
     
-    # 환율 (USD/KRW): yfinance 우선, 실패 시 네이버 금융 폴백
-    try:
-        usdkrw = yf.Ticker("KRW=X")
-        hist = usdkrw.history(period="1mo")
-        if not hist.empty:
-            current = round(float(hist["Close"].iloc[-1]), 2)
-            prev = round(float(hist["Close"].iloc[-2]), 2) if len(hist) >= 2 else current
-            change_pct = round((current - prev) / prev * 100, 2) if prev > 0 else 0
-            
-            result["usdkrw"] = {
-                "current": current,
-                "prev": prev,
-                "change_pct": change_pct,
-            }
-    except Exception as e:
-        print(f"   USD/KRW 에러: {e}")
+    # 환율 (USD/KRW): HTML 구조나 단일 공급원 장애에 묶이지 않도록 순차 폴백.
+    rate_providers = (
+        ("네이버 모바일", _get_usdkrw_from_naver_api),
+        ("Yahoo chart", _get_usdkrw_from_yahoo_chart),
+        ("네이버 HTML", _get_usdkrw_from_naver_html),
+    )
+    for provider_name, provider in rate_providers:
+        try:
+            result["usdkrw"] = provider()
+            if result["usdkrw"]:
+                break
+        except Exception as e:
+            print(f"   USD/KRW {provider_name} 에러: {e}")
 
     if not result["usdkrw"]:
-        try:
-            result["usdkrw"] = _get_usdkrw_from_naver()
-        except Exception as e:
-            print(f"   USD/KRW 네이버 폴백 에러: {e}")
+        result["usdkrw"] = _get_cached_macro_value("usdkrw")
         
     return result
 
@@ -398,7 +508,7 @@ KR_STOCK_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
     "eps_fwd", "eps_ttm", "eps_growth", "eps_growth_raw", "eps_growth_source", "eps_growth_quality",
     "annual_eps_prev", "annual_eps_fwd", "annual_eps_growth",
-    "peg_fwd", "pbr", "per_fwd", "per_ttm", "div_yield", "dps", "bps",
+    "peg_fwd", "peg_raw", "pbr", "per_fwd", "per_ttm", "div_yield", "dps", "bps",
     "peg_source", "peg_quality", "annual_per_fwd", "annual_pbr_fwd",
     "target_price", "target_gap", "investment_opinion_score",
     "per_source", "eps_source", "target_price_source", "trailing_source",
@@ -407,6 +517,10 @@ KR_STOCK_SNAPSHOT_FIELDS = (
 KR_ETF_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
     "nav", "nav_discount", "band_pct",
+    "distribution_yield_ttm", "distribution_yield_monthly",
+    "distribution_target_yield_annual", "distribution_target_yield_monthly",
+    "distribution_target_source", "distribution_target_checked_month",
+    "expected_dividend_5m", "expected_monthly_dividend_5m", "expected_dividend_source",
 )
 
 
@@ -498,10 +612,43 @@ def calculate_target_trend(code):
 # 국내 주식 (KIS API + FnGuide)
 # ============================================================
 def get_kis_token():
+    if not APP_KEY or not APP_SECRET:
+        raise RuntimeError("KIS_APP_KEY 또는 KIS_APP_SECRET이 없습니다")
     url = f"{BASE_URL}/oauth2/tokenP"
     body = {"grant_type": "client_credentials", "appkey": APP_KEY, "appsecret": APP_SECRET}
-    res = requests.post(url, headers={"content-type": "application/json"}, json=body)
-    return res.json().get("access_token")
+    res = requests.post(url, headers={"content-type": "application/json"}, json=body, timeout=12)
+    res.raise_for_status()
+    payload = res.json()
+    token = payload.get("access_token")
+    if not token:
+        raise RuntimeError(payload.get("error_description") or payload.get("msg1") or "KIS 토큰 응답에 access_token이 없습니다")
+    return token
+
+
+def _get_kis_json(url, headers, params, label, attempts=3):
+    """KIS의 일시적 호출 제한은 재시도하고 최종 실패는 종목 누락 대신 빈 응답으로 돌린다."""
+    for attempt in range(1, attempts + 1):
+        try:
+            res = requests.get(url, headers=headers, params=params, timeout=12)
+            res.raise_for_status()
+            payload = res.json()
+        except (requests.RequestException, ValueError) as e:
+            if attempt == attempts:
+                print(f"   KIS {label} 요청 에러: {e}")
+                return {}
+            time.sleep(0.7 * attempt)
+            continue
+
+        if payload.get("rt_cd") == "0":
+            return payload
+
+        message = payload.get("msg1") or payload.get("message") or "알 수 없는 오류"
+        code = payload.get("msg_cd") or payload.get("error_code") or payload.get("rt_cd")
+        if attempt == attempts:
+            print(f"   KIS {label} 실패 [{code}]: {message}")
+            return payload
+        time.sleep(0.7 * attempt)
+    return {}
 
 
 def get_kr_stock_data(token, code):
@@ -510,11 +657,11 @@ def get_kr_stock_data(token, code):
     
     url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price"
     params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code}
-    res = requests.get(url, headers=headers, params=params)
-    if res.json()["rt_cd"] == "0":
-        output = res.json()["output"]
-        result["price"] = int(output["stck_prpr"])
-        result["volume"] = int(output.get("acml_vol", 0))
+    payload = _get_kis_json(url, headers, params, f"현재가 {code}")
+    if payload.get("rt_cd") == "0":
+        output = payload.get("output") or {}
+        result["price"] = int(output["stck_prpr"]) if output.get("stck_prpr") else None
+        result["volume"] = int(output.get("acml_vol", 0) or 0)
     
     time.sleep(0.5)
     
@@ -522,16 +669,21 @@ def get_kr_stock_data(token, code):
     url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice"
     today = datetime.now(KST).strftime("%Y%m%d")
     params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code, "FID_INPUT_DATE_1": "20250101", "FID_INPUT_DATE_2": today, "FID_PERIOD_DIV_CODE": "D", "FID_ORG_ADJ_PRC": "0"}
-    res = requests.get(url, headers=headers, params=params)
-    if res.json().get("rt_cd") == "0":
-        candles = res.json()["output2"]
+    payload = _get_kis_json(url, headers, params, f"일봉 {code}")
+    if payload.get("rt_cd") == "0":
+        candles = [d for d in (payload.get("output2") or []) if d.get("stck_clpr")]
         prices = [int(d["stck_clpr"]) for d in reversed(candles)]
         result["rsi"] = calculate_rsi(prices)
+
+        # 현재가 호출만 실패해도 일봉의 최신 종가/거래량으로 종목을 유지한다.
+        if candles:
+            result["price"] = result.get("price") or int(candles[0]["stck_clpr"])
+            result["volume"] = result.get("volume") or int(candles[0].get("acml_vol", 0) or 0)
         
         if len(candles) >= 20:
             vol_20 = [int(d.get("acml_vol", 0)) for d in candles[:20]]
             result["vol_avg_20"] = sum(vol_20) / 20
-            if result["vol_avg_20"] > 0:
+            if result["vol_avg_20"] > 0 and result.get("volume") is not None:
                 result["vol_ratio"] = round(result["volume"] / result["vol_avg_20"], 2)
     
     return result
@@ -624,52 +776,58 @@ def get_naver_consensus(code):
 
 
 def get_kr_valuation(code):
-    from pykrx import stock
     from datetime import datetime, timedelta
     
     result = {}
+    stock = None
+    if os.getenv("SAYO_USE_PYKRX") == "1":
+        try:
+            from pykrx import stock
+        except (ImportError, RuntimeError) as e:
+            print(f"   pykrx 사용 불가 ({code}), 네이버 폴백 사용: {e}")
     
     # 1) pykrx: PER/PBR/EPS/BPS (최근 14일 범위 조회 후 마지막 유효값 사용)
-    try:
-        end = datetime.now().strftime("%Y%m%d")
-        start = (datetime.now() - timedelta(days=14)).strftime("%Y%m%d")
-        df = stock.get_market_fundamental_by_date(start, end, code)
-        if not df.empty:
-            latest = df.iloc[-1]
-            result["per_ttm"] = _to_float(latest.get("PER"))
-            result["pbr"] = _to_float(latest.get("PBR"))
-            result["eps_ttm"] = _to_float(latest.get("EPS"))
-            result["div_yield"] = _to_float(latest.get("DIV"))
-            result["dps"] = _to_float(latest.get("DPS"))
-            result["bps"] = _to_float(latest.get("BPS"))
-            result["trailing_source"] = "pykrx"
-    except Exception as e:
-        print(f"   pykrx fundamental 에러 ({code}): {e}")
+    if stock is not None:
+        try:
+            end = datetime.now().strftime("%Y%m%d")
+            start = (datetime.now() - timedelta(days=14)).strftime("%Y%m%d")
+            df = stock.get_market_fundamental_by_date(start, end, code)
+            if not df.empty:
+                latest = df.iloc[-1]
+                result["per_ttm"] = _to_float(latest.get("PER"))
+                result["pbr"] = _to_float(latest.get("PBR"))
+                result["eps_ttm"] = _to_float(latest.get("EPS"))
+                result["div_yield"] = _to_float(latest.get("DIV"))
+                result["dps"] = _to_float(latest.get("DPS"))
+                result["bps"] = _to_float(latest.get("BPS"))
+                result["trailing_source"] = "pykrx"
+        except Exception as e:
+            print(f"   pykrx fundamental 에러 ({code}): {e}")
     
     # 2) EPS 성장률 (작년 vs 올해 동일 시점 비교)
-    try:
-        from datetime import datetime, timedelta
-        today = datetime.now()
-        this_year_date = today.strftime("%Y%m%d")
-        last_year_date = (today - timedelta(days=365)).strftime("%Y%m%d")
-        
-        # 최근 유효 거래일 찾기 위해 앞뒤 10일 범위로 조회
-        def get_nearest_eps(target_date_str):
-            target = datetime.strptime(target_date_str, "%Y%m%d")
-            start = (target - timedelta(days=10)).strftime("%Y%m%d")
-            end = (target + timedelta(days=10)).strftime("%Y%m%d")
-            df = stock.get_market_fundamental_by_date(start, end, code)
-            if df.empty:
-                return None
-            return _to_float(df["EPS"].iloc[-1])
-        
-        eps_now = get_nearest_eps(this_year_date)
-        eps_prev = get_nearest_eps(last_year_date)
-        
-        if eps_now and eps_prev and eps_prev != 0:
-            result["eps_growth"] = round((eps_now - eps_prev) / abs(eps_prev) * 100, 1)
-    except Exception as e:
-        print(f"   EPS 성장률 계산 에러 ({code}): {e}")
+    if stock is not None:
+        try:
+            today = datetime.now()
+            this_year_date = today.strftime("%Y%m%d")
+            last_year_date = (today - timedelta(days=365)).strftime("%Y%m%d")
+
+            # 최근 유효 거래일 찾기 위해 앞뒤 10일 범위로 조회
+            def get_nearest_eps(target_date_str):
+                target = datetime.strptime(target_date_str, "%Y%m%d")
+                start = (target - timedelta(days=10)).strftime("%Y%m%d")
+                end = (target + timedelta(days=10)).strftime("%Y%m%d")
+                df = stock.get_market_fundamental_by_date(start, end, code)
+                if df.empty:
+                    return None
+                return _to_float(df["EPS"].iloc[-1])
+
+            eps_now = get_nearest_eps(this_year_date)
+            eps_prev = get_nearest_eps(last_year_date)
+
+            if eps_now and eps_prev and eps_prev != 0:
+                result["eps_growth"] = round((eps_now - eps_prev) / abs(eps_prev) * 100, 1)
+        except Exception as e:
+            print(f"   EPS 성장률 계산 에러 ({code}): {e}")
     
     # 3) 네이버 증권: 목표주가/추정 PER/EPS 컨센서스.
     # comp.fnguide.com SVD_Main.asp는 gicode 유실 리다이렉트가 있어 사용하지 않는다.
@@ -718,13 +876,23 @@ def get_kr_valuation(code):
         result["eps_fwd"] = result.get("annual_eps_fwd") or result.get("eps_ttm")
         result["eps_source"] = "naver_annual_consensus" if result.get("annual_eps_fwd") else "pykrx_trailing_fallback"
     
+    if result.get("eps_growth") is not None and result.get("eps_growth_quality") is None:
+        if 5 <= result["eps_growth"] <= 200:
+            result["eps_growth_quality"] = "normal"
+        else:
+            result["eps_growth_quality"] = "extreme_growth_not_for_signal"
+            result["eps_growth_raw"] = result["eps_growth"]
+
     # 4) PEG 계산 (PER + EPS 성장률)
     if result.get("per_fwd") and result.get("eps_growth") and result["eps_growth"] > 0:
-        result["peg_fwd"] = round(result["per_fwd"] / result["eps_growth"], 2)
+        peg_raw = round(result["per_fwd"] / result["eps_growth"], 2)
+        result["peg_raw"] = peg_raw
         result["peg_source"] = result.get("eps_growth_source")
         if result.get("eps_growth_quality") == "extreme_growth_not_for_signal":
+            result["peg_fwd"] = None
             result["peg_quality"] = "extreme_growth_not_for_signal"
         else:
+            result["peg_fwd"] = peg_raw
             result["peg_quality"] = "normal"
     
     return result
@@ -808,34 +976,174 @@ def get_us_stock_data(ticker):
 # ============================================================
 # 국내 ETF
 # ============================================================
+def get_naver_etf_metrics(code):
+    result = {}
+    try:
+        url = f"https://m.stock.naver.com/api/stock/{code}/integration"
+        res = requests.get(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json",
+            },
+            timeout=10,
+        )
+        res.raise_for_status()
+        payload = res.json()
+
+        if payload.get("stockName"):
+            result["name"] = payload["stockName"]
+
+        target_source_text = ""
+        total_infos = payload.get("totalInfos") or []
+        has_one_year_return = False
+        for item in total_infos:
+            key = item.get("code")
+            if key == "etfBaseIdx":
+                target_source_text = f"{target_source_text} {item.get('value') or ''}"
+            elif key == "oneYearEarnRate":
+                has_one_year_return = _has_valid_rate(item.get("value"))
+            val = _to_float(item.get("value"))
+            if val is None:
+                continue
+            if key == "accumulatedTradingVolume":
+                result["volume"] = int(val)
+            elif key == "nav":
+                result["nav"] = val
+
+        stock_name = payload.get("stockName") or ""
+        description = payload.get("description") or ""
+        target_source_text = f"{target_source_text} {description}"
+        is_covered_call = "커버드콜" in f"{stock_name} {description}"
+        target_yield = _extract_target_distribution_yield(target_source_text)
+        if target_yield is not None and target_yield > 0:
+            result["distribution_target_yield_annual"] = target_yield
+            result["distribution_target_yield_monthly"] = round(target_yield / 12, 2)
+            result["distribution_target_source"] = "naver_etf_description"
+            result["distribution_target_checked_month"] = get_month_str()
+
+        deal_infos = payload.get("dealTrendInfos") or []
+        if deal_infos:
+            latest = deal_infos[0]
+            price = _to_float(latest.get("closePrice"))
+            volume = _to_float(latest.get("accumulatedTradingVolume"))
+            if price is not None:
+                result["price"] = price
+            if volume is not None and result.get("volume") is None:
+                result["volume"] = int(volume)
+
+        key_indicator = payload.get("etfKeyIndicator") or {}
+        if _to_float(key_indicator.get("returnRate1y")) is not None:
+            has_one_year_return = True
+        nav = _to_float(key_indicator.get("nav"))
+        if nav is not None:
+            result["nav"] = nav
+        deviation = _to_float(key_indicator.get("deviationRate"))
+        if deviation is not None:
+            sign = key_indicator.get("deviationSign")
+            result["nav_discount"] = round(-deviation if sign == "-" else deviation, 2)
+        use_recent_monthly_distribution = False
+        distribution_yield = _to_float(key_indicator.get("dividendYieldTtm"))
+        if distribution_yield is not None and distribution_yield > 0:
+            result["distribution_yield_ttm"] = distribution_yield
+            use_recent_monthly_distribution = (
+                is_covered_call
+                and not result.get("distribution_target_yield_annual")
+                and not has_one_year_return
+                and distribution_yield < 6
+            )
+            monthly_distribution_yield = distribution_yield / 12
+            if use_recent_monthly_distribution:
+                monthly_distribution_yield = distribution_yield
+            result["distribution_yield_monthly"] = round(monthly_distribution_yield, 2)
+            result["expected_dividend_5m"] = int(round(5_000_000 * distribution_yield / 100, 0))
+
+        if result.get("distribution_target_yield_annual"):
+            expected_monthly_yield = result["distribution_target_yield_annual"] / 12
+            result["expected_dividend_source"] = "target_distribution_yield"
+        else:
+            expected_monthly_yield = result.get("distribution_yield_monthly")
+            if expected_monthly_yield is not None:
+                result["expected_dividend_source"] = (
+                    "recent_monthly_distribution_yield"
+                    if use_recent_monthly_distribution
+                    else "ttm_distribution_yield"
+                )
+        if expected_monthly_yield is not None and expected_monthly_yield > 0:
+            result["expected_monthly_dividend_5m"] = int(round(5_000_000 * expected_monthly_yield / 100, 0))
+    except Exception as e:
+        print(f"   네이버 ETF 지표 에러 ({code}): {e}")
+    return result
+
+
+def apply_configured_etf_distribution_target(etf, result):
+    """설정에 명시한 목표 분배율을 월 기준 계산값으로 적용한다."""
+    monthly_yield = _to_float(etf.get("distribution_target_yield_monthly"))
+    annual_yield = _to_float(etf.get("distribution_target_yield_annual"))
+    if monthly_yield is not None and monthly_yield > 0:
+        annual_yield = monthly_yield * 12
+    elif annual_yield is not None and annual_yield > 0:
+        monthly_yield = annual_yield / 12
+    else:
+        return result
+
+    result["distribution_target_yield_annual"] = round(annual_yield, 2)
+    result["distribution_target_yield_monthly"] = round(monthly_yield, 2)
+    result["distribution_target_source"] = "config_override"
+    result["distribution_target_checked_month"] = get_month_str()
+    result["expected_dividend_source"] = "target_distribution_yield"
+    result["expected_dividend_5m"] = int(round(5_000_000 * annual_yield / 100, 0))
+    result["expected_monthly_dividend_5m"] = int(round(5_000_000 * monthly_yield / 100, 0))
+    return result
+
+
 def get_etf_data(etf):
     ticker = etf["ticker_yf"]
     result = {"name": etf["name"], "code": etf["ticker_krx"]}
+    naver_metrics = get_naver_etf_metrics(etf["ticker_krx"])
     
     try:
         stock = yf.Ticker(ticker)
         hist = stock.history(period="3mo")
-        if hist.empty or len(hist) < 15:
-            return None
-        
-        result["price"] = round(float(hist["Close"].iloc[-1]), 0)
-        result["rsi"] = calculate_rsi(hist["Close"].tolist())
-        result["volume"] = int(hist["Volume"].iloc[-1])
-        
-        if len(hist) >= 20:
-            vol_avg = hist["Volume"].iloc[-20:].mean()
-            if vol_avg > 0:
-                result["vol_ratio"] = round(result["volume"] / vol_avg, 2)
-        
-        info = stock.info
-        low52 = info.get("fiftyTwoWeekLow")
-        high52 = info.get("fiftyTwoWeekHigh")
-        if low52 and high52 and high52 > low52:
-            result["band_pct"] = round((result["price"] - low52) / (high52 - low52) * 100, 1)
+        if not hist.empty:
+            result["price"] = round(float(hist["Close"].iloc[-1]), 0)
+            result["volume"] = int(hist["Volume"].iloc[-1])
+            if len(hist) >= 15:
+                result["rsi"] = calculate_rsi(hist["Close"].tolist())
+
+            if len(hist) >= 20:
+                vol_avg = hist["Volume"].iloc[-20:].mean()
+                if vol_avg > 0:
+                    result["vol_avg_20"] = float(vol_avg)
+                    result["vol_ratio"] = round(result["volume"] / vol_avg, 2)
+
+            info = stock.info
+            low52 = info.get("fiftyTwoWeekLow")
+            high52 = info.get("fiftyTwoWeekHigh")
+            if low52 and high52 and high52 > low52:
+                result["band_pct"] = round((result["price"] - low52) / (high52 - low52) * 100, 1)
         
     except Exception as e:
         print(f"   ETF 에러 ({etf['name']}): {e}")
-        return None
+
+    for key, value in naver_metrics.items():
+        if value is not None and (
+            result.get(key) is None
+            or key in (
+                "nav",
+                "nav_discount",
+                "distribution_yield_ttm",
+                "distribution_yield_monthly",
+                "distribution_target_yield_annual",
+                "distribution_target_yield_monthly",
+                "distribution_target_source",
+                "distribution_target_checked_month",
+                "expected_dividend_5m",
+                "expected_monthly_dividend_5m",
+                "expected_dividend_source",
+            )
+        ):
+            result[key] = value
     
     try:
         url = f"https://finance.naver.com/item/sise.naver?code={etf['ticker_krx']}"
@@ -853,6 +1161,14 @@ def get_etf_data(etf):
                 result["nav_discount"] = round((result["price"] - nav) / nav * 100, 2)
     except: pass
     
+    apply_configured_etf_distribution_target(etf, result)
+
+    # 상장 전 시세가 없어도 설정된 커버드콜 목표 분배금은 계산기에 노출한다.
+    if result.get("price") is None and result.get("expected_monthly_dividend_5m") is None:
+        return None
+    if result.get("nav") and result.get("price") and result.get("nav_discount") is None:
+        result["nav_discount"] = round((result["price"] - result["nav"]) / result["nav"] * 100, 2)
+
     return result
 
 # ============================================================
@@ -1100,9 +1416,21 @@ def check_etf_signal(data, macro):
     rsi_strong = rsi is not None and rsi <= rsi_threshold        # 임계값 이하 = 강한 매수
     nav_ok = nav_discount is not None and nav_discount < criteria["nav_discount_threshold"]
     band_ok = band_pct is not None and band_pct < criteria["band_threshold"]
+
+    hit_details = []
+    if rsi_in_zone:
+        hit_details.append("rsi_watch")
+    if nav_ok:
+        hit_details.append("nav_discount")
+    if band_ok:
+        hit_details.append("band_position")
     
     data["market_mode"] = market_mode
     data["rsi_threshold"] = rsi_threshold
+    data["nav_discount_threshold"] = criteria["nav_discount_threshold"]
+    data["band_threshold"] = criteria["band_threshold"]
+    data["selection_hits"] = len(hit_details)
+    data["selection_hit_details"] = hit_details
     data["in_buy_zone"] = rsi_strong  # notifier가 RSI 돌파 감지용
     
     # === 매수 레벨 판정 ===
@@ -1236,6 +1564,14 @@ def check_crisis_trigger(data, macro):
     
     return triggers, details
 
+
+def publish_payload_patch(payload):
+    """긴 수집 작업의 앞 단계 결과를 먼저 공개해 뒷 단계 장애의 영향을 격리한다."""
+    db.collection("stocks").document("data").set(
+        _sanitize_for_firestore(payload),
+        merge=True,
+    )
+
 # ============================================================
 # 메인 업로드 함수
 # ============================================================
@@ -1268,6 +1604,21 @@ def upload_data():
     mode_kr = determine_market_mode(macro, region="kr")
     mode_map = {"normal": "🟢 일반", "adjust": "🟡 조정", "caution": "🟠 경계", "panic": "🔴 공포"}
     print(f"   미국 모드: {mode_map.get(mode_us, mode_us)} | 한국 모드: {mode_map.get(mode_kr, mode_kr)}")
+
+    updated = datetime.now(KST).strftime("%m월 %d일 %H:%M")
+    try:
+        publish_payload_patch({
+            "vix": macro.get("vix"),
+            "qqq": macro.get("qqq"),
+            "kospi": macro.get("kospi"),
+            "usdkrw": macro.get("usdkrw"),
+            "market_mode": mode_us,
+            "market_mode_us": mode_us,
+            "market_mode_kr": mode_kr,
+            "updated": updated,
+        })
+    except Exception as e:
+        print(f"   매크로 중간 업로드 에러: {e}")
     
     # === 국내 주식 ===
     print("\n🇰🇷 국내 주식...")
@@ -1289,6 +1640,8 @@ def upload_data():
             
             merged = {**kis_data, **fn_data, "code": code, "name": name, "sector": sector}
             merged = merge_missing_from_snapshot(code, merged, KR_STOCK_SNAPSHOT_FIELDS)
+            if merged.get("peg_quality") == "extreme_growth_not_for_signal":
+                merged["peg_fwd"] = None
             
             # target_gap 먼저 계산 (check_stock_signal에서 참조하기 위해)
             if merged.get("target_price") and merged.get("price"):
@@ -1326,6 +1679,12 @@ def upload_data():
         except Exception as e:
             print(f"   에러: {e}")
             continue
+
+    try:
+        publish_payload_patch({"kr_stock": kr_stock_list, "updated": updated})
+        print(f"   국내 주식 중간 업로드: {len(kr_stock_list)}개")
+    except Exception as e:
+        print(f"   국내 주식 중간 업로드 에러: {e}")
     
     # === 국내 ETF ===
     print("\n🇰🇷 국내 ETF...")
@@ -1419,7 +1778,6 @@ def upload_data():
     # === Firestore ===
     print("\n☁️ Firestore 업로드...")
     date_str = get_date_str()
-    updated = datetime.now(KST).strftime("%m월 %d일 %H:%M")
     
     payload = {
         "kr_stock": kr_stock_list,

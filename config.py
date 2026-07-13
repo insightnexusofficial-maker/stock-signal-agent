@@ -39,16 +39,23 @@ US_STOCKS = {
 # ============================================================
 KR_ETFS = [
     {"name": "Kodex 미국우주항공", "ticker_krx": "0167Z0", "ticker_yf": "0167Z0.KS"},
-    {"name": "Kodex 200타겟위클리커버드콜", "ticker_krx": "498400", "ticker_yf": "498400.KS"},
+    {"name": "KODEX 200타겟위클리커버드콜", "ticker_krx": "498400", "ticker_yf": "498400.KS"},
+    {
+        "name": "KODEX 200커버드콜액티브",
+        "ticker_krx": "0219E0",
+        "ticker_yf": "0219E0.KS",
+        "distribution_target_yield_monthly": 2.0,
+    },
     {"name": "Tiger 반도체", "ticker_krx": "091230", "ticker_yf": "091230.KS"},
     {"name": "Kodex 미국AI테크TOP10", "ticker_krx": "478150", "ticker_yf": "478150.KS"},
     {"name": "Kodex 방산Top10", "ticker_krx": "0080G0", "ticker_yf": "0080G0.KS"},
-    {"name": "Kodex 미국AI광통신", "ticker_krx": "0173Y0", "ticker_yf": "0173Y0.KS"},
+    {"name": "KODEX 미국AI광통신네트워크", "ticker_krx": "0173Y0", "ticker_yf": "0173Y0.KS"},
     {"name": "ACE 미국S&P500", "ticker_krx": "360200", "ticker_yf": "360200.KS"},
     {"name": "TIGER 반도체TOP10커버드콜액티브", "ticker_krx": "0177R0", "ticker_yf": "0177R0.KS"},
     {"name": "TIGER 미국우주테크", "ticker_krx": "0183J0", "ticker_yf": "0183J0.KS"},
-    {"name": "TIGER 미국우주테크", "ticker_krx": "0183J0", "ticker_yf": "0183J0.KS"},
     {"name": "KODEX AI전력핵심설비", "ticker_krx": "487240", "ticker_yf": "487240.KS"},
+    {"name": "KODEX AI반도체TOP2플러스", "ticker_krx": "395160", "ticker_yf": "395160.KS"},
+    {"name": "KoAct 미국나스닥성장기업액티브", "ticker_krx": "0015B0", "ticker_yf": "0015B0.KS"},
     {"name": "KODEX 자율주행액티브", "ticker_krx": "385520", "ticker_yf": "385520.KS"},
     {"name": "KODEX 로봇액티브", "ticker_krx": "445290", "ticker_yf": "445290.KS"},
 ]
