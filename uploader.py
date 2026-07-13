@@ -427,10 +427,13 @@ def get_rsi_threshold(criteria, market_mode):
 # 스냅샷 저장/조회
 # ============================================================
 def save_snapshot(code, data):
+    clean_data = {
+        key: value for key, value in data.items()
+        if not _is_missing_value(value)
+    }
     meaningful = [
-        value for key, value in data.items()
+        value for key, value in clean_data.items()
         if key not in ("data_as_of", "is_stale", "stale_as_of", "stale_filled_fields")
-        and not _is_missing_value(value)
     ]
     if not meaningful:
         print(f"   스냅샷 생략 ({code}): 유효 데이터 없음")
@@ -438,7 +441,8 @@ def save_snapshot(code, data):
     
     date_str = get_date_str()
     doc_ref = db.collection("snapshots").document(date_str).collection("stocks").document(code)
-    doc_ref.set(_sanitize_for_firestore(data))
+    # 공급원 일부가 실패한 실행에서 None으로 같은 날의 정상 필드를 지우지 않는다.
+    doc_ref.set(_sanitize_for_firestore(clean_data), merge=True)
     for key in list(_snapshot_cache.keys()):
         if key.startswith(f"{code}_"):
             del _snapshot_cache[key]
@@ -487,21 +491,51 @@ def get_latest_valid_snapshot(code, days=35, required_fields=("price",)):
 
 
 def merge_missing_from_snapshot(code, data, fields, required_fields=("price",)):
-    fallback = get_latest_valid_snapshot(code, required_fields=required_fields)
-    if not fallback:
+    """각 누락 필드를 서로 다른 날짜의 최근 정상 스냅샷으로 보완한다."""
+    snapshots = get_snapshot_history(code, 35)
+    snapshots.sort(key=lambda snapshot: snapshot.get("date", ""), reverse=True)
+    if not snapshots:
         return data
     
     filled = []
+    field_sources = {}
     for field in fields:
-        if _is_missing_value(data.get(field)) and not _is_missing_value(fallback.get(field)):
-            data[field] = fallback.get(field)
+        if not _is_missing_value(data.get(field)):
+            continue
+        for snapshot in snapshots:
+            if _is_missing_value(snapshot.get(field)):
+                continue
+            data[field] = snapshot.get(field)
             filled.append(field)
+            field_sources[field] = snapshot.get("data_as_of") or snapshot.get("date")
+            break
     
     if filled:
         data["is_stale"] = True
-        data["stale_as_of"] = fallback.get("data_as_of") or fallback.get("date")
+        source_dates = [value for value in field_sources.values() if value]
+        data["stale_as_of"] = max(source_dates) if source_dates else None
         data["stale_filled_fields"] = filled
+        data["stale_field_sources"] = field_sources
     return data
+
+
+def dedupe_records(records, code_key="code", name_key="name"):
+    """동일 코드 또는 정규화한 동일 이름의 중복 종목을 첫 항목만 남긴다."""
+    unique = []
+    seen_codes = set()
+    seen_names = set()
+    for record in records:
+        code = str(record.get(code_key) or "").strip().casefold()
+        name = re.sub(r"\s+", "", str(record.get(name_key) or "")).casefold()
+        if (code and code in seen_codes) or (name and name in seen_names):
+            print(f"   중복 종목 제거: {record.get(name_key)} ({record.get(code_key)})")
+            continue
+        if code:
+            seen_codes.add(code)
+        if name:
+            seen_names.add(name)
+        unique.append(record)
+    return unique
 
 
 KR_STOCK_SNAPSHOT_FIELDS = (
@@ -1680,6 +1714,7 @@ def upload_data():
             print(f"   에러: {e}")
             continue
 
+    kr_stock_list = dedupe_records(kr_stock_list)
     try:
         publish_payload_patch({"kr_stock": kr_stock_list, "updated": updated})
         print(f"   국내 주식 중간 업로드: {len(kr_stock_list)}개")
@@ -1689,7 +1724,7 @@ def upload_data():
     # === 국내 ETF ===
     print("\n🇰🇷 국내 ETF...")
     kr_etf_list = []
-    for etf in KR_ETFS:
+    for etf in dedupe_records(KR_ETFS, code_key="ticker_krx"):
         print(f"   {etf['name']}...")
         try:
             data = get_etf_data(etf)
@@ -1723,6 +1758,8 @@ def upload_data():
             print(f"   에러 ({etf['name']}): {e}")
             continue
     
+    kr_etf_list = dedupe_records(kr_etf_list)
+
     # === 미국 주식 ===
     print("\n🇺🇸 미국 주식...")
     us_stock_list = []
@@ -1775,6 +1812,8 @@ def upload_data():
             print(f"   에러: {e}")
             continue
     
+    us_stock_list = dedupe_records(us_stock_list)
+
     # === Firestore ===
     print("\n☁️ Firestore 업로드...")
     date_str = get_date_str()

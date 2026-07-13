@@ -18,6 +18,54 @@ class FakeResponse:
 
 
 class UploaderRegressionTests(unittest.TestCase):
+    @patch("uploader.get_snapshot_history")
+    def test_snapshot_fallback_searches_each_field_across_dates(self, history):
+        history.return_value = [
+            {"date": "20260714", "price": 100},
+            {"date": "20260713", "eps_fwd": 20},
+            {"date": "20260712", "target_price": 130},
+        ]
+        data = {"price": 101, "eps_fwd": None, "target_price": None}
+
+        result = uploader.merge_missing_from_snapshot(
+            "005930", data, ("price", "eps_fwd", "target_price")
+        )
+
+        self.assertEqual(result["price"], 101)
+        self.assertEqual(result["eps_fwd"], 20)
+        self.assertEqual(result["target_price"], 130)
+        self.assertEqual(result["stale_field_sources"]["eps_fwd"], "20260713")
+        self.assertEqual(result["stale_field_sources"]["target_price"], "20260712")
+
+    @patch("uploader.db")
+    def test_snapshot_save_merges_only_non_missing_fields(self, firestore_db):
+        document = Mock()
+        firestore_db.collection.return_value.document.return_value.collection.return_value.document.return_value = document
+
+        uploader.save_snapshot("005930", {
+            "price": 100,
+            "eps_fwd": None,
+            "data_as_of": "20260714",
+            "is_stale": False,
+        })
+
+        saved, = document.set.call_args.args
+        self.assertEqual(saved["price"], 100)
+        self.assertNotIn("eps_fwd", saved)
+        self.assertTrue(document.set.call_args.kwargs["merge"])
+
+    def test_duplicate_records_are_removed_by_code_or_name(self):
+        records = [
+            {"code": "005930", "name": "삼성전자"},
+            {"code": "005930", "name": "삼성전자 우"},
+            {"code": "000660", "name": " 삼성 전자 "},
+            {"code": "034020", "name": "두산에너빌리티"},
+        ]
+
+        result = uploader.dedupe_records(records)
+
+        self.assertEqual([record["code"] for record in result], ["005930", "034020"])
+
     def test_monthly_distribution_target_keeps_prelisting_etf(self):
         etf = {
             "name": "KODEX 200커버드콜액티브",
