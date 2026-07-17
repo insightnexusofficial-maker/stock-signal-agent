@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>SAYO 사용 가이드</title>
+  <style>
+    :root {
+      --bg-0: #171411;
+      --bg-1: #1f1c18;
+      --bg-2: #28231f;
+      --bg-3: #342f2a;
+      --fg-1: #f5f1eb;
+      --fg-2: #d8d0c6;
+      --fg-3: #aa9f93;
+      --border: rgba(255,255,255,0.09);
+      --green: #8fc7ae;
+      --gold: #e7c45f;
+      --warn: #d7a15b;
+      --danger: #e06b6b;
+      --blue: #91b8e8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-0);
+      color: var(--fg-1);
+      line-height: 1.68;
+      word-break: keep-all;
+    }
+
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: calc(58px + env(safe-area-inset-top)) 16px 44px;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      min-height: 46px;
+      padding: 0 4px;
+      margin-bottom: 14px;
+      color: var(--fg-2);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .hero {
+      padding: 4px 0 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .hero img {
+      display: block;
+      width: min(500px, 100%);
+      height: 108px;
+      object-fit: contain;
+      object-position: center;
+      margin: 0 auto 20px;
+      filter: saturate(1.16) contrast(1.08) drop-shadow(0 1px 1px rgba(242, 201, 106, 0.18));
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 26px;
+      letter-spacing: 0;
+      text-align: center;
+    }
+
+    .lead {
+      margin: 0 auto;
+      max-width: 680px;
+      color: var(--fg-2);
+      text-align: center;
+      font-size: 15px;
+    }
+
+    .section {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .section.emphasis {
+      background: linear-gradient(180deg, rgba(143, 199, 174, 0.08), var(--bg-1));
+      border-color: rgba(143, 199, 174, 0.22);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 19px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 15px;
+      color: var(--fg-1);
+    }
+
+    p { margin: 0 0 11px; color: var(--fg-2); }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--fg-1); }
+
+    .summary {
+      padding: 15px 16px;
+      background: var(--bg-2);
+      border-left: 3px solid var(--green);
+      border-radius: 8px;
+      color: var(--fg-2);
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 10px;
+      counter-reset: guide-step;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      padding: 14px;
+      background: var(--bg-2);
+      border-radius: 8px;
+    }
+
+    .step::before {
+      counter-increment: guide-step;
+      content: counter(guide-step);
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(143, 199, 174, 0.16);
+      color: var(--green);
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .step-title {
+      margin-bottom: 4px;
+      color: var(--fg-1);
+      font-weight: 900;
+    }
+
+    .step p {
+      font-size: 14px;
+      margin-bottom: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--bg-2);
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 122px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 900;
+      color: var(--fg-1);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      flex: 0 0 auto;
+    }
+
+    .dot.gold { background: var(--gold); }
+    .dot.warn { background: var(--warn); }
+    .dot.danger { background: var(--danger); }
+    .dot.blue { background: var(--blue); }
+
+    .metric-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .metric-list li {
+      padding: 13px 14px;
+      background: var(--bg-2);
+      border-radius: 8px;
+      color: var(--fg-2);
+    }
+
+    .metric-list small {
+      display: block;
+      margin-top: 4px;
+      color: var(--fg-3);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .plain-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--fg-2);
+    }
+
+    .plain-list li {
+      margin-bottom: 9px;
+    }
+
+    .callout {
+      margin-top: 14px;
+      padding: 13px 14px;
+      border-radius: 8px;
+      background: rgba(231, 196, 95, 0.1);
+      border: 1px solid rgba(231, 196, 95, 0.18);
+      color: var(--fg-2);
+    }
+
+    .footer-note {
+      color: var(--fg-3);
+      font-size: 12px;
+      text-align: center;
+      padding: 16px 4px 0;
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: calc(64px + env(safe-area-inset-top)) 12px 38px;
+      }
+      .hero img { height: 86px; }
+      h1 { font-size: 22px; }
+      .section { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .step { grid-template-columns: 30px 1fr; padding: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <a class="back" href="/">← SAYO로 돌아가기</a>
+
+    <header class="hero">
+      <img src="/assets/sayo-logo-20260712-transparent.png" alt="SAYO" />
+      <h1>SAYO 사용 가이드</h1>
+      <p class="lead">SAYO는 밸류 있는 기업을 좋은 가격에 사서 오래 보유하기 위한 매수 타이밍 도구입니다.</p>
+    </header>
+
+    <section class="section emphasis">
+      <h2>어떻게 사용하면 됩니다</h2>
+      <div class="summary">
+        SAYO의 기본 시퀀스는 간단합니다. 좋은 기업을 고르고, 싸지는 순간을 기다리고, 매수 신호가 오면 분할로 사고, 최소 10년을 볼 생각으로 보유합니다. 필요할 때 익절하거나 투자 아이디어가 깨질 때만 매도를 고민합니다.
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div>
+            <div class="step-title">먼저 감시 종목을 봅니다</div>
+            <p>미장, 국장, ETF 탭에서 SAYO가 추적하는 종목을 확인하고 관심 있는 종목은 별표로 즐겨찾기에 올려둡니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <div class="step-title">시그널 탭을 기다립니다</div>
+            <p>시그널 탭에는 단순 정보가 아니라 실제 매수 관련 신호가 있는 종목만 올라옵니다. 이 화면이 오늘의 우선순위입니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <div class="step-title">RSI 매수 구간 진입을 확인합니다</div>
+            <p>매수 후보나 강력 매수 종목이 RSI 매수 구간에 들어오면 실행 알림이 올 수 있습니다. 이때가 SAYO가 보는 매수 타이밍입니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <div class="step-title">한 번에 다 사지 않습니다</div>
+            <p>알림은 바닥을 맞히는 마법이 아니라 좋은 구간을 알려주는 신호입니다. 여러 번 나누어 사는 것이 SAYO의 철학과 더 잘 맞습니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <div class="step-title">필요할 때 빼고는 팔지 않습니다</div>
+            <p>SAYO는 단타 도구가 아닙니다. 애초에 10년 장기 보유가 가능한 기업만 좋은 가격에 사는 전략입니다. 돈이 필요하거나 기업의 가치 훼손이 뚜렷할 때만 매도를 고민합니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>SAYO의 투자 철학</h2>
+      <p>SAYO는 "좋은 기업을 싸게 산다"는 원칙에서 출발합니다. 좋은 기업이어도 너무 비싸게 사면 오래 기다려야 하고, 싼 주식이어도 기업이 나쁘면 싼 이유가 있을 수 있습니다.</p>
+      <p>그래서 SAYO는 두 가지를 같이 봅니다. 첫째, 이 기업이 앞으로 돈을 더 잘 벌 가능성이 있는가. 둘째, 지금 가격이 그 성장성에 비해 과하지 않은가.</p>
+      <div class="callout">
+        핵심은 매도보다 매수입니다. 우리는 자주 사고파는 전략이 아니라, 오래 보유할 만한 종목을 타이밍 좋게 사는 전략을 씁니다.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>알림은 이렇게 이해하면 됩니다</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>매수 후보</div>
+          <p>기업의 밸류에이션, 성장성, 가격 위치가 관심권에 들어온 상태입니다. 바로 매수 명령이 아니라 주목해야 할 종목입니다.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot gold"></span>강력 매수</div>
+          <p>매수 후보 조건에 더해 EPS 전망이나 목표가 흐름이 더 우호적일 때입니다. 같은 가격 하락이라도 기업 전망이 좋아지는 경우를 더 높게 봅니다.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot warn"></span>RSI 매수 구간</div>
+          <p>매수 후보 또는 강력 매수 종목이 과매도 구간에 들어온 상태입니다. 푸시 알림은 이 실행 구간에 들어왔을 때 올 수 있습니다.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot danger"></span>위기 알림</div>
+          <p>EPS, 목표가, 실적 흐름이 함께 나빠질 때 한 번 더 점검하라는 알림입니다. 매도 명령은 아니지만 투자 아이디어가 깨졌는지 확인해야 합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>화면은 이렇게 보면 됩니다</h2>
+      <ul class="metric-list">
+        <li><strong>시그널</strong>: 오늘 가장 먼저 볼 화면입니다. 매수 후보, 강력 매수, 위기 등 행동이 필요한 종목만 모읍니다.</li>
+        <li><strong>미장 / 국장 / ETF</strong>: 전체 감시 종목 화면입니다. 평소에는 여기서 관심 종목을 확인하고 별표로 즐겨찾기에 넣습니다.</li>
+        <li><strong>즐겨찾기</strong>: 내가 실제로 자주 보는 종목만 모아보는 화면입니다. 미국 주식, 한국 주식, 한국 ETF 카테고리를 눌러 접고 펼칠 수 있습니다.</li>
+        <li><strong>상단 네 개 위젯</strong>: VIX, QQQ, KOSPI, USD/KRW를 통해 시장 분위기를 봅니다. 시장이 불안할수록 좋은 가격이 생길 수 있지만, 기준은 더 신중해집니다.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>주요 지표 쉽게 보기</h2>
+      <ul class="metric-list">
+        <li><strong>RSI</strong>: 주가가 단기적으로 많이 빠졌는지 보는 지표입니다. 낮을수록 과매도에 가깝고, SAYO는 매수 타이밍 판단에 RSI 구간을 사용합니다.<small>단, RSI가 낮다고 무조건 좋은 주식은 아닙니다. 먼저 기업 조건을 통과해야 합니다.</small></li>
+        <li><strong>PEG</strong>: 이익 성장률 대비 주가가 싼지 보는 지표입니다. 보통 1 미만이면 성장성 대비 저평가로 해석할 수 있습니다.<small>SAYO는 비정상적으로 성장률이 튄 경우 신호 계산에서 제외해 과장된 PEG를 피합니다.</small></li>
+        <li><strong>PER</strong>: 예상 이익 대비 주가 수준입니다. 낮을수록 싸 보일 수 있지만, 성장성이 낮거나 이익이 꺾이면 낮은 PER도 함정일 수 있습니다.</li>
+        <li><strong>PBR</strong>: 자산가치 대비 주가 수준입니다. 제조업, 금융, 산업재처럼 자산 기반이 중요한 기업을 볼 때 특히 참고합니다.</li>
+        <li><strong>PS</strong>: 매출 대비 주가입니다. 아직 이익이 충분하지 않은 성장주를 볼 때 보조적으로 봅니다.</li>
+        <li><strong>EPS 추세</strong>: 애널리스트들이 이익 전망을 올리는지 내리는지 봅니다. 장기투자에서 가장 중요한 것은 결국 이익의 방향입니다.</li>
+        <li><strong>목표가 추세</strong>: 시장 전문가들이 적정 가격을 올리는지 내리는지 봅니다. EPS 추세와 함께 좋아질 때 신뢰도가 올라갑니다.</li>
+        <li><strong>목표가 갭</strong>: 현재가와 목표가 사이의 여유입니다. 여유가 클수록 상승 여지가 있지만, 목표가 자체가 낮아지는 중인지도 함께 봐야 합니다.</li>
+        <li><strong>52주 위치</strong>: 최근 1년 가격 범위에서 현재가가 어디쯤인지 봅니다. 좋은 기업이 낮은 위치에 있을수록 관심도가 올라갑니다.</li>
+        <li><strong>거래량 비율</strong>: 평소보다 거래가 얼마나 몰렸는지 봅니다. 과도한 거래량은 기회일 수도, 위험 신호일 수도 있어 다른 지표와 같이 봅니다.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>커버드콜 ETF는 이렇게 봅니다</h2>
+      <p>커버드콜 ETF는 주가 상승을 일부 포기하는 대신 분배금을 받는 구조입니다. SAYO는 상세 화면에서 <strong>500만원당 예상 월분배금</strong>을 보여줍니다.</p>
+      <p>목표 분배율이 명확한 상품은 목표 월분배율을 우선 사용하고, 상장 초기라 12개월 데이터가 부족한 월분배 상품은 최근 월분배율을 기준으로 표시합니다.</p>
+      <div class="callout">
+        월분배금은 확정 이자가 아닙니다. 시장 상황, 옵션 프리미엄, 운용사 정책에 따라 바뀔 수 있어 주기적으로 확인해야 합니다.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>매도는 언제 고민하나요?</h2>
+      <p>SAYO의 기본값은 보유입니다. 좋은 기업을 싸게 샀다면 며칠, 몇 주 흔들림에 팔기보다 시간이 기업가치를 반영할 때까지 기다리는 쪽을 선택합니다.</p>
+      <ul class="plain-list">
+        <li><strong>돈이 필요할 때</strong>: 투자보다 생활과 계획이 우선입니다. 필요한 시점에는 익절을 고민할 수 있습니다.</li>
+        <li><strong>투자 아이디어가 깨졌을 때</strong>: EPS와 목표가가 계속 나빠지고, 실적도 기대를 벗어나면 다시 봐야 합니다.</li>
+        <li><strong>더 좋은 기회가 명확할 때</strong>: 같은 장기 보유 후보 중 더 좋은 가격과 더 강한 펀더멘털이 있다면 비중 조절을 고민할 수 있습니다.</li>
+      </ul>
+      <p>그 외에는 쉽게 팔지 않는 것이 SAYO의 기본 철학입니다. 우리는 오래 들고 갈 수 있는 주식을 사기 위해 신중하게 고르고, 타이밍이 올 때만 움직입니다.</p>
+    </section>
+
+    <section class="section">
+      <h2>마지막 체크리스트</h2>
+      <ul class="plain-list">
+        <li>이 회사가 무엇으로 돈을 버는지 이해했나요?</li>
+        <li>10년을 들고 갈 수 있는 기업이라고 생각하나요?</li>
+        <li>SAYO 신호가 매수 후보 또는 강력 매수인지 확인했나요?</li>
+        <li>RSI 매수 구간에 들어왔는지 확인했나요?</li>
+        <li>한 번에 사지 않고 나누어 살 계획이 있나요?</li>
+        <li>이 돈이 당장 필요한 돈은 아닌가요?</li>
+      </ul>
+    </section>
+
+    <div class="footer-note">SAYO v4 · 매수 시그널 모니터 · 투자 판단은 본인 책임입니다</div>
+  </main>
+</body>
+</html>

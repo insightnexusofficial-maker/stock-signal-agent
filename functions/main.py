@@ -1,4 +1,4 @@
-from firebase_functions import https_fn, scheduler_fn
+from firebase_functions import https_fn, options, scheduler_fn
 from firebase_admin import initialize_app, firestore
 import requests
 from bs4 import BeautifulSoup
@@ -93,7 +93,7 @@ def get_us_data(ticker):
     return result
 
 # === API 엔드포인트 ===
-@https_fn.on_request(cors=True)
+@https_fn.on_request(cors=options.CorsOptions(cors_origins="*"))
 def api_stocks(req: https_fn.Request) -> https_fn.Response:
     data = {"kr": [], "us": [], "updated": time.strftime("%m월 %d일 %H:%M")}
     
@@ -134,7 +134,7 @@ def api_stocks(req: https_fn.Request) -> https_fn.Response:
     )
 
 # === Firestore에서 데이터 읽기 ===
-@https_fn.on_request(cors=True)
+@https_fn.on_request(cors=options.CorsOptions(cors_origins="*"))
 def get_data(req: https_fn.Request) -> https_fn.Response:
     db = firestore.client()
     

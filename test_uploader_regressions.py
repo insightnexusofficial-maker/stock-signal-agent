@@ -18,6 +18,114 @@ class FakeResponse:
 
 
 class UploaderRegressionTests(unittest.TestCase):
+    @patch("uploader.get_naver_consensus")
+    def test_kr_forward_peg_uses_longest_positive_consensus_cagr(self, consensus):
+        consensus.return_value = {
+            "per_fwd": 12.0,
+            "eps_fwd": 1200.0,
+            "eps_ttm": 1000.0,
+            "eps_growth": 20.0,
+            "eps_growth_source": "naver_annual_consensus_yoy",
+            "annual_eps_cagr": 10.0,
+            "annual_eps_cagr_years": 3,
+        }
+
+        result = uploader.get_kr_valuation("005930")
+
+        self.assertEqual(result["peg_raw"], 1.2)
+        self.assertEqual(result["peg_fwd"], 1.2)
+        self.assertEqual(result["peg_quality"], "normal_proxy")
+        self.assertEqual(result["peg_growth_horizon"], "3y_mixed_cagr_proxy")
+
+    @patch("uploader.yf.Ticker")
+    def test_us_forward_peg_prefers_long_term_analyst_growth(self, ticker_factory):
+        ticker = Mock()
+        ticker.info = {
+            "currentPrice": 100.0,
+            "forwardPE": 20.0,
+            "forwardEps": 5.0,
+            "trailingEps": 4.0,
+        }
+        ticker.growth_estimates = pd.DataFrame(
+            {"stockTrend": [0.2, 0.4], "indexTrend": [0.1, 0.1]},
+            index=["+5y", "+1y"],
+        )
+        ticker.earnings_history = pd.DataFrame()
+        ticker.history.return_value = pd.DataFrame()
+        ticker_factory.return_value = ticker
+
+        result = uploader.get_us_stock_data("TEST")
+
+        self.assertEqual(result["eps_growth"], 20.0)
+        self.assertEqual(result["peg_fwd"], 1.0)
+        self.assertEqual(result["peg_source"], "yahoo_growth_estimates_5y")
+        self.assertEqual(result["peg_growth_horizon"], "5y_forward")
+
+    def test_cagr_rejects_loss_base_and_smooths_one_year_jump(self):
+        self.assertIsNone(uploader.calculate_cagr(-100, 200, 3))
+        self.assertEqual(uploader.calculate_cagr(100, 172.8, 3), 20.0)
+
+    def test_forward_peg_rejects_non_positive_growth(self):
+        self.assertIsNone(uploader.calculate_forward_peg(10, 0))
+        self.assertIsNone(uploader.calculate_forward_peg(10, -5))
+
+    @patch("uploader.calculate_target_trend", return_value={})
+    @patch("uploader.calculate_eps_trend", return_value={})
+    def test_kr_signal_keeps_forward_per_as_consensus_support(self, _eps_trend, _target_trend):
+        data = {
+            "code": "000660",
+            "peg_fwd": 0.02,
+            "peg_quality": "high_growth_base_effect",
+            "per_ttm": 20.0,
+            "per_fwd": 7.0,
+            "per_source": "naver_consensus",
+            "eps_growth": 436.5,
+            "eps_growth_quality": "extreme_growth_not_for_signal",
+            "target_gap": 10.0,
+            "pbr": 8.0,
+            "rsi": 50.0,
+            "vol_ratio": 1.0,
+        }
+
+        step1, _, _ = uploader.check_stock_signal(data, "semiconductor", {}, region="kr")
+
+        self.assertTrue(step1)
+        self.assertEqual(data["buy_level"], "candidate")
+
+    @patch("uploader._get_published_payload")
+    def test_kospi_uses_last_published_close_when_fetch_fails(self, published):
+        published.return_value = {
+            "updated": "07월 15일 15:31",
+            "kospi": {"price": 3000.0, "ma20": 2950.0, "above_ma20": True},
+        }
+
+        result = uploader._get_cached_macro_value("kospi")
+
+        self.assertEqual(result["price"], 3000.0)
+        self.assertTrue(result["is_stale"])
+        self.assertEqual(result["stale_as_of"], "07월 15일 15:31")
+
+    @patch("uploader.db")
+    def test_publish_patch_does_not_overwrite_with_none_or_empty_lists(self, firestore_db):
+        document = Mock()
+        firestore_db.collection.return_value.document.return_value = document
+
+        uploader.publish_payload_patch({
+            "kr_stock": [],
+            "kospi": None,
+            "usdkrw": {"current": 1400.0},
+            "updated": "07월 15일 15:31",
+        })
+
+        document_calls = firestore_db.collection.return_value.document.call_args_list
+        self.assertEqual([args.args[0] for args in document_calls], ["data", "last_good"])
+        self.assertEqual(document.set.call_count, 2)
+        saved, = document.set.call_args.args
+        self.assertNotIn("kr_stock", saved)
+        self.assertNotIn("kospi", saved)
+        self.assertEqual(saved["usdkrw"]["current"], 1400.0)
+        self.assertTrue(document.set.call_args.kwargs["merge"])
+
     @patch("uploader.get_snapshot_history")
     def test_snapshot_fallback_searches_each_field_across_dates(self, history):
         history.return_value = [
@@ -110,12 +218,26 @@ class UploaderRegressionTests(unittest.TestCase):
             {"rt_cd": "0", "output2": candles},
         ]
 
-        result = uploader.get_kr_stock_data("token", "000660")
+        with patch("uploader.get_naver_stock_quote", return_value={}):
+            result = uploader.get_kr_stock_data("token", "000660")
 
         self.assertEqual(result["price"], 70000)
         self.assertEqual(result["volume"], 1000)
         self.assertIsNotNone(result["rsi"])
         self.assertIn("vol_ratio", result)
+
+    @patch("uploader.get_naver_stock_quote")
+    def test_naver_quote_keeps_kr_price_when_kis_token_is_missing(self, naver_quote):
+        naver_quote.return_value = {
+            "price": 130300,
+            "price_source": "naver_mobile_realtime",
+            "price_market_status": "CLOSE",
+        }
+
+        result = uploader.get_kr_stock_data(None, "267270")
+
+        self.assertEqual(result["price"], 130300)
+        self.assertEqual(result["price_source"], "naver_mobile_realtime")
 
     @patch("uploader.requests.get")
     def test_naver_mobile_exchange_rate_is_normalized(self, requests_get):

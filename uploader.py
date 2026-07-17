@@ -3,6 +3,7 @@ from firebase_admin import credentials, firestore
 import requests
 from bs4 import BeautifulSoup
 import yfinance as yf
+import pandas as pd
 import re
 import os
 import time
@@ -28,6 +29,7 @@ db = firestore.client()
 # Snapshot 캐시 (실행당 1번만 조회)
 _snapshot_cache = {}
 _read_counter = {"calls": 0, "cache_hits": 0, "actual_reads": 0}
+_published_payload_cache = None
 
 
 
@@ -129,6 +131,35 @@ def _to_float(value):
         return num
     except (TypeError, ValueError):
         return None
+
+
+def calculate_forward_peg(forward_pe, expected_eps_growth_pct):
+    """Forward P/E를 예상 EPS 성장률(퍼센트 단위)로 나눈 표준 PEG."""
+    pe = _to_float(forward_pe)
+    growth = _to_float(expected_eps_growth_pct)
+    if pe is None or growth is None or pe <= 0 or growth <= 0:
+        return None
+    return round(pe / growth, 2)
+
+
+def calculate_cagr(start_value, end_value, years):
+    """양수 EPS 구간의 연환산 성장률(CAGR)을 퍼센트 단위로 반환한다."""
+    start = _to_float(start_value)
+    end = _to_float(end_value)
+    years = _to_float(years)
+    if start is None or end is None or years is None or start <= 0 or end <= 0 or years <= 0:
+        return None
+    return round(((end / start) ** (1 / years) - 1) * 100, 1)
+
+
+def _normalize_growth_pct(value):
+    """Yahoo 성장률처럼 소수/퍼센트 표기가 섞인 값을 퍼센트 단위로 맞춘다."""
+    growth = _to_float(value)
+    if growth is None:
+        return None
+    if -1 < growth < 1:
+        growth *= 100
+    return round(growth, 1)
 
 
 def _get_row_values(table, label):
@@ -294,15 +325,21 @@ def _get_usdkrw_from_naver_html():
     return _make_exchange_rate(current, prev, source="naver_html")
 
 
+def _get_published_payload():
+    global _published_payload_cache
+    if _published_payload_cache is None:
+        snapshot = db.collection("stocks").document("data").get()
+        _published_payload_cache = snapshot.to_dict() if snapshot.exists else {}
+    return _published_payload_cache or {}
+
+
 def _get_cached_macro_value(field):
     """외부 공급원이 모두 실패해도 직전 정상값을 지우지 않는다."""
     try:
-        snapshot = db.collection("stocks").document("data").get()
-        if not snapshot.exists:
-            return None
-        payload = snapshot.to_dict() or {}
+        payload = _get_published_payload()
         value = payload.get(field)
-        if not isinstance(value, dict) or value.get("current") is None:
+        required_key = "current" if field in ("vix", "usdkrw") else "price"
+        if not isinstance(value, dict) or _to_float(value.get(required_key)) is None:
             return None
         cached = deepcopy(value)
         cached["source"] = "firestore_cache"
@@ -324,10 +361,11 @@ def get_macro_data():
     try:
         vix = yf.Ticker("^VIX")
         hist = vix.history(period="1mo")
-        if not hist.empty:
-            current = round(float(hist["Close"].iloc[-1]), 2)
-            ma5 = round(float(hist["Close"].iloc[-5:].mean()), 2) if len(hist) >= 5 else current
-            prev = round(float(hist["Close"].iloc[-2]), 2) if len(hist) >= 2 else current
+        closes = hist["Close"].dropna() if not hist.empty else []
+        if len(closes):
+            current = round(float(closes.iloc[-1]), 2)
+            ma5 = round(float(closes.iloc[-5:].mean()), 2) if len(closes) >= 5 else current
+            prev = round(float(closes.iloc[-2]), 2) if len(closes) >= 2 else current
             
             if current < 25:
                 mode = "normal"
@@ -391,8 +429,9 @@ def get_macro_data():
         except Exception as e:
             print(f"   USD/KRW {provider_name} 에러: {e}")
 
-    if not result["usdkrw"]:
-        result["usdkrw"] = _get_cached_macro_value("usdkrw")
+    for field in ("vix", "qqq", "kospi", "usdkrw"):
+        if not result[field]:
+            result[field] = _get_cached_macro_value(field)
         
     return result
 
@@ -540,8 +579,10 @@ def dedupe_records(records, code_key="code", name_key="name"):
 
 KR_STOCK_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
+    "price_source", "price_provider_gap_pct", "price_market_status",
     "eps_fwd", "eps_ttm", "eps_growth", "eps_growth_raw", "eps_growth_source", "eps_growth_quality",
-    "annual_eps_prev", "annual_eps_fwd", "annual_eps_growth",
+    "annual_eps_prev", "annual_eps_fwd", "annual_eps_growth", "annual_eps_cagr", "annual_eps_cagr_years",
+    "peg_growth_rate", "peg_growth_horizon",
     "peg_fwd", "peg_raw", "pbr", "per_fwd", "per_ttm", "div_yield", "dps", "bps",
     "peg_source", "peg_quality", "annual_per_fwd", "annual_pbr_fwd",
     "target_price", "target_gap", "investment_opinion_score",
@@ -685,40 +726,75 @@ def _get_kis_json(url, headers, params, label, attempts=3):
     return {}
 
 
+def get_naver_stock_quote(code):
+    """네이버 모바일의 정규장 현재가를 국내 시세 독립 검증값으로 사용한다."""
+    url = f"https://m.stock.naver.com/api/stock/{code}/basic"
+    res = requests.get(
+        url,
+        headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"},
+        timeout=10,
+    )
+    res.raise_for_status()
+    payload = res.json()
+    price = _to_float(payload.get("closePrice"))
+    if price is None or price <= 0:
+        return {}
+    return {
+        "price": int(price),
+        "price_source": "naver_mobile_realtime",
+        "price_market_status": payload.get("marketStatus"),
+    }
+
+
 def get_kr_stock_data(token, code):
     result = {}
-    headers = {"authorization": f"Bearer {token}", "appkey": APP_KEY, "appsecret": APP_SECRET, "tr_id": "FHKST01010100"}
-    
-    url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price"
-    params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code}
-    payload = _get_kis_json(url, headers, params, f"현재가 {code}")
-    if payload.get("rt_cd") == "0":
-        output = payload.get("output") or {}
-        result["price"] = int(output["stck_prpr"]) if output.get("stck_prpr") else None
-        result["volume"] = int(output.get("acml_vol", 0) or 0)
-    
-    time.sleep(0.5)
-    
-    headers["tr_id"] = "FHKST03010100"
-    url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice"
-    today = datetime.now(KST).strftime("%Y%m%d")
-    params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code, "FID_INPUT_DATE_1": "20250101", "FID_INPUT_DATE_2": today, "FID_PERIOD_DIV_CODE": "D", "FID_ORG_ADJ_PRC": "0"}
-    payload = _get_kis_json(url, headers, params, f"일봉 {code}")
-    if payload.get("rt_cd") == "0":
-        candles = [d for d in (payload.get("output2") or []) if d.get("stck_clpr")]
-        prices = [int(d["stck_clpr"]) for d in reversed(candles)]
-        result["rsi"] = calculate_rsi(prices)
+    if token:
+        headers = {"authorization": f"Bearer {token}", "appkey": APP_KEY, "appsecret": APP_SECRET, "tr_id": "FHKST01010100"}
+        url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price"
+        params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code}
+        payload = _get_kis_json(url, headers, params, f"현재가 {code}")
+        if payload.get("rt_cd") == "0":
+            output = payload.get("output") or {}
+            result["price"] = int(output["stck_prpr"]) if output.get("stck_prpr") else None
+            result["volume"] = int(output.get("acml_vol", 0) or 0)
+            result["price_source"] = "kis_realtime"
 
-        # 현재가 호출만 실패해도 일봉의 최신 종가/거래량으로 종목을 유지한다.
-        if candles:
-            result["price"] = result.get("price") or int(candles[0]["stck_clpr"])
-            result["volume"] = result.get("volume") or int(candles[0].get("acml_vol", 0) or 0)
-        
-        if len(candles) >= 20:
-            vol_20 = [int(d.get("acml_vol", 0)) for d in candles[:20]]
-            result["vol_avg_20"] = sum(vol_20) / 20
-            if result["vol_avg_20"] > 0 and result.get("volume") is not None:
-                result["vol_ratio"] = round(result["volume"] / result["vol_avg_20"], 2)
+        time.sleep(0.5)
+
+        headers["tr_id"] = "FHKST03010100"
+        url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice"
+        today = datetime.now(KST).strftime("%Y%m%d")
+        params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code, "FID_INPUT_DATE_1": "20250101", "FID_INPUT_DATE_2": today, "FID_PERIOD_DIV_CODE": "D", "FID_ORG_ADJ_PRC": "0"}
+        payload = _get_kis_json(url, headers, params, f"일봉 {code}")
+        if payload.get("rt_cd") == "0":
+            candles = [d for d in (payload.get("output2") or []) if d.get("stck_clpr")]
+            prices = [int(d["stck_clpr"]) for d in reversed(candles)]
+            result["rsi"] = calculate_rsi(prices)
+
+            if candles:
+                if not result.get("price"):
+                    result["price"] = int(candles[0]["stck_clpr"])
+                    result["price_source"] = "kis_latest_close"
+                result["volume"] = result.get("volume") or int(candles[0].get("acml_vol", 0) or 0)
+
+            if len(candles) >= 20:
+                vol_20 = [int(d.get("acml_vol", 0)) for d in candles[:20]]
+                result["vol_avg_20"] = sum(vol_20) / 20
+                if result["vol_avg_20"] > 0 and result.get("volume") is not None:
+                    result["vol_ratio"] = round(result["volume"] / result["vol_avg_20"], 2)
+
+    # KIS 인증/호출 장애에도 가격을 확보하고, 두 공급원이 다르면 사용자 기준 시세인
+    # 네이버 정규장 현재가를 우선한다.
+    try:
+        naver_quote = get_naver_stock_quote(code)
+        naver_price = naver_quote.get("price")
+        kis_price = result.get("price")
+        if naver_price and kis_price:
+            result["price_provider_gap_pct"] = round((kis_price - naver_price) / naver_price * 100, 2)
+        if naver_price:
+            result.update(naver_quote)
+    except Exception as e:
+        print(f"   네이버 현재가 에러 ({code}): {e}")
     
     return result
 
@@ -794,6 +870,18 @@ def get_naver_consensus(code):
             result["annual_eps_fwd"] = fwd_eps
             if prev_eps and fwd_eps and prev_eps != 0:
                 result["annual_eps_growth"] = round((fwd_eps - prev_eps) / abs(prev_eps) * 100, 1)
+
+            # 네이버는 장기 성장률을 직접 제공하지 않는다. 최근 3개 확정치 중
+            # 가장 오래된 양수 EPS부터 다음 연도 컨센서스까지의 CAGR을 사용해
+            # 단년도 턴어라운드 기저효과를 완화한다.
+            if fwd_eps and fwd_eps > 0:
+                for index, base_eps in enumerate(eps_values[:3]):
+                    years = 3 - index
+                    cagr = calculate_cagr(base_eps, fwd_eps, years)
+                    if cagr is not None:
+                        result["annual_eps_cagr"] = cagr
+                        result["annual_eps_cagr_years"] = years
+                        break
         
         if len(per_values) >= 4 and per_values[3] and per_values[3] > 0:
             result["annual_per_fwd"] = per_values[3]
@@ -917,17 +1005,24 @@ def get_kr_valuation(code):
             result["eps_growth_quality"] = "extreme_growth_not_for_signal"
             result["eps_growth_raw"] = result["eps_growth"]
 
-    # 4) PEG 계산 (PER + EPS 성장률)
-    if result.get("per_fwd") and result.get("eps_growth") and result["eps_growth"] > 0:
-        peg_raw = round(result["per_fwd"] / result["eps_growth"], 2)
-        result["peg_raw"] = peg_raw
-        result["peg_source"] = result.get("eps_growth_source")
-        if result.get("eps_growth_quality") == "extreme_growth_not_for_signal":
-            result["peg_fwd"] = None
-            result["peg_quality"] = "extreme_growth_not_for_signal"
+    # 국내 장기 전망치가 별도로 없으므로 가장 긴 양수 EPS 구간 CAGR을 우선한다.
+    # 이 값은 3~5년 순수 forward 전망이 아니라 확정치+전망치 혼합 대용치임을 보존한다.
+    peg_growth = result.get("annual_eps_cagr") or result.get("eps_growth")
+    peg_years = result.get("annual_eps_cagr_years")
+    result["peg_growth_rate"] = peg_growth
+    result["peg_growth_horizon"] = f"{peg_years}y_mixed_cagr_proxy" if peg_years else "1y_forward"
+    peg = calculate_forward_peg(result.get("per_fwd"), peg_growth)
+    if peg is not None:
+        result["peg_raw"] = peg
+        result["peg_fwd"] = peg
+        result["peg_source"] = (
+            f"naver_annual_consensus_{peg_years}y_mixed_cagr"
+            if peg_years else result.get("eps_growth_source")
+        )
+        if peg_growth is None or not (5 <= peg_growth <= 100):
+            result["peg_quality"] = "high_growth_base_effect"
         else:
-            result["peg_fwd"] = peg_raw
-            result["peg_quality"] = "normal"
+            result["peg_quality"] = "normal_proxy"
     
     return result
 
@@ -954,6 +1049,36 @@ def get_us_earnings_surprise(stock):
         return None
 
 
+def get_us_forward_eps_growth(stock, info):
+    """PEG 비교 가능성을 위해 Yahoo 장기 전망을 우선한다."""
+    try:
+        estimates = stock.growth_estimates
+        if isinstance(estimates, pd.DataFrame):
+            for horizon, source in (
+                ("+5y", "yahoo_growth_estimates_5y"),
+                ("+1y", "yahoo_growth_estimates_1y"),
+            ):
+                if horizon not in estimates.index:
+                    continue
+                growth = _normalize_growth_pct(estimates.loc[horizon].get("stockTrend"))
+                if growth is not None and growth > 0:
+                    return growth, source
+    except Exception:
+        pass
+
+    forward_eps = _to_float(info.get("forwardEps"))
+    trailing_eps = _to_float(info.get("trailingEps"))
+    if forward_eps is not None and trailing_eps is not None and trailing_eps > 0:
+        growth = (forward_eps - trailing_eps) / trailing_eps * 100
+        if growth > 0:
+            return round(growth, 1), "yahoo_forward_vs_trailing_eps"
+
+    earnings_growth = _to_float(info.get("earningsGrowth"))
+    if earnings_growth is not None and earnings_growth > 0:
+        return round(earnings_growth * 100, 1), "yahoo_earnings_growth_fallback"
+    return None, None
+
+
 def get_us_stock_data(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
@@ -965,22 +1090,25 @@ def get_us_stock_data(ticker):
     result["pbr"] = info.get("priceToBook")
     result["ps"] = info.get("priceToSalesTrailing12Months")
     result["eps_fwd"] = info.get("forwardEps")
+    result["eps_ttm"] = info.get("trailingEps")
     
-    eg = info.get("earningsGrowth")
-    if eg is not None:
-        eps_growth_pct = eg * 100
-        if 5 <= eps_growth_pct <= 200:
-            result["eps_growth"] = round(eps_growth_pct, 1)
+    eps_growth, eps_growth_source = get_us_forward_eps_growth(stock, info)
+    if eps_growth is not None:
+        result["eps_growth"] = eps_growth
+        result["eps_growth_source"] = eps_growth_source
     
     rg = info.get("revenueGrowth")
     if rg is not None:
         result["rev_growth"] = round(rg * 100, 1)
     
-    peg_yf = info.get("pegRatio")
-    if peg_yf and 0.1 <= peg_yf <= 5:
-        result["peg_fwd"] = round(peg_yf, 2)
-    elif result.get("per_fwd") and result.get("eps_growth"):
-        result["peg_fwd"] = round(result["per_fwd"] / result["eps_growth"], 2)
+    result["peg_growth_rate"] = result.get("eps_growth")
+    result["peg_growth_horizon"] = "5y_forward" if eps_growth_source == "yahoo_growth_estimates_5y" else "1y_forward"
+    peg = calculate_forward_peg(result.get("per_fwd"), result.get("eps_growth"))
+    if peg is not None:
+        result["peg_fwd"] = peg
+        result["peg_raw"] = peg
+        result["peg_source"] = eps_growth_source
+        result["peg_quality"] = "normal"
     
     target = info.get("targetMeanPrice")
     if target and result["price"]:
@@ -1259,9 +1387,10 @@ def check_stock_signal(data, sector, macro, region="us"):
     # === 지표 변수 정리 (거래량 체크는 hits 계산 후로 연기) ===
     rsi = data.get("rsi")
     peg = data.get("peg_fwd")
-    peg_for_signal = None if data.get("peg_quality") == "extreme_growth_not_for_signal" else peg
+    peg_for_signal = None if data.get("peg_quality") == "high_growth_base_effect" else peg
     pbr = data.get("pbr")
-    per = data.get("per_fwd") or data.get("per_ttm")
+    per = data.get("per_ttm") or data.get("per_fwd")
+    per_fwd = data.get("per_fwd")
     ps = data.get("ps")
     rev_growth = data.get("rev_growth")
     eps_growth = data.get("eps_growth")
@@ -1330,9 +1459,9 @@ def check_stock_signal(data, sector, macro, region="us"):
         per_source = data.get("per_source")
         if (
             per_fallback_max is not None
-            and per is not None
+            and per_fwd is not None
             and per_source == "naver_consensus"
-            and per < per_fallback_max
+            and per_fwd < per_fallback_max
         ):
             val_ok = True
             data["valuation_basis"] = "kr_consensus_per_fallback"
@@ -1357,9 +1486,9 @@ def check_stock_signal(data, sector, macro, region="us"):
         per_fallback_max = criteria.get("kr_per_fallback_max")
         if (
             per_fallback_max is not None
-            and per is not None
+            and per_fwd is not None
             and data.get("per_source") == "naver_consensus"
-            and per < per_fallback_max
+            and per_fwd < per_fallback_max
         ):
             hits += 1
             hit_details.append("consensus_per")
@@ -1601,10 +1730,23 @@ def check_crisis_trigger(data, macro):
 
 def publish_payload_patch(payload):
     """긴 수집 작업의 앞 단계 결과를 먼저 공개해 뒷 단계 장애의 영향을 격리한다."""
-    db.collection("stocks").document("data").set(
-        _sanitize_for_firestore(payload),
-        merge=True,
-    )
+    safe_payload = {}
+    protected_lists = {"kr_stock", "kr_etf", "us_stock"}
+    for key, value in payload.items():
+        if value is None:
+            print(f"   마지막 정상값 유지: {key} (새 값 없음)")
+            continue
+        if key in protected_lists and isinstance(value, list) and not value:
+            print(f"   마지막 정상값 유지: {key} (빈 배열)")
+            continue
+        safe_payload[key] = value
+    if not safe_payload:
+        return
+    sanitized = _sanitize_for_firestore(safe_payload)
+    db.collection("stocks").document("data").set(sanitized, merge=True)
+    # 구버전 수집기가 stocks/data를 통째로 덮어써도 정상값을 복원할 수 있게
+    # 별도 문서에 마지막 성공 결과를 유지한다.
+    db.collection("stocks").document("last_good").set(sanitized, merge=True)
 
 # ============================================================
 # 메인 업로드 함수
@@ -1668,15 +1810,12 @@ def upload_data():
         sector = info["sector"]
         print(f"   {name} ({sector})...")
         try:
-            kis_data = get_kr_stock_data(token, code) if token else {}
+            kis_data = get_kr_stock_data(token, code)
             fn_data = get_kr_valuation(code)
             time.sleep(0.5)
             
             merged = {**kis_data, **fn_data, "code": code, "name": name, "sector": sector}
             merged = merge_missing_from_snapshot(code, merged, KR_STOCK_SNAPSHOT_FIELDS)
-            if merged.get("peg_quality") == "extreme_growth_not_for_signal":
-                merged["peg_fwd"] = None
-            
             # target_gap 먼저 계산 (check_stock_signal에서 참조하기 위해)
             if merged.get("target_price") and merged.get("price"):
                 merged["target_gap"] = round(
@@ -1832,9 +1971,7 @@ def upload_data():
         "updated": updated,
     }
     
-    # numpy 타입 정제 (Firestore는 numpy 타입 거부)
-    payload = _sanitize_for_firestore(payload)    
-    db.collection("stocks").document("data").set(payload)
+    publish_payload_patch(payload)
     
     print(f"\n📊 Read 통계:")
     print(f"   호출 횟수: {_read_counter['calls']}")

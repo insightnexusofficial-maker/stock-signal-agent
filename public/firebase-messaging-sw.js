@@ -12,6 +12,14 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(self.clients.claim());
+});
+
 messaging.onBackgroundMessage((payload) => {
     console.log('백그라운드 메시지:', payload);
     

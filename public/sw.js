@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stock-sayo-v3';
+const CACHE_NAME = 'stock-sayo-v9';
 const urlsToCache = ['/manifest.json'];
 
 self.addEventListener('install', event => {
