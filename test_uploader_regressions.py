@@ -1,4 +1,5 @@
 import unittest
+import json
 from unittest.mock import Mock, patch
 
 import pandas as pd
@@ -18,24 +19,64 @@ class FakeResponse:
 
 
 class UploaderRegressionTests(unittest.TestCase):
+    @patch("uploader.get_fnguide_forward_consensus")
     @patch("uploader.get_naver_consensus")
-    def test_kr_forward_peg_uses_longest_positive_consensus_cagr(self, consensus):
-        consensus.return_value = {
+    def test_kr_forward_peg_uses_multi_year_forward_consensus(self, naver, fnguide):
+        naver.return_value = {
             "per_fwd": 12.0,
             "eps_fwd": 1200.0,
             "eps_ttm": 1000.0,
             "eps_growth": 20.0,
+            "annual_eps_growth": 20.0,
             "eps_growth_source": "naver_annual_consensus_yoy",
-            "annual_eps_cagr": 10.0,
-            "annual_eps_cagr_years": 3,
+        }
+        fnguide.return_value = {
+            "per_fwd": 5.46,
+            "per_source": "fnguide_multi_year_consensus",
+            "eps_fwd": 46663.99,
+            "forward_eps_cagr": 18.8,
+            "forward_eps_cagr_years": 2,
         }
 
         result = uploader.get_kr_valuation("005930")
 
-        self.assertEqual(result["peg_raw"], 1.2)
-        self.assertEqual(result["peg_fwd"], 1.2)
-        self.assertEqual(result["peg_quality"], "normal_proxy")
-        self.assertEqual(result["peg_growth_horizon"], "3y_mixed_cagr_proxy")
+        self.assertEqual(result["peg_raw"], 0.29)
+        self.assertEqual(result["peg_fwd"], 0.29)
+        self.assertEqual(result["peg_quality"], "multi_year_forward_consensus")
+        self.assertEqual(result["peg_growth_horizon"], "2y_forward_consensus")
+
+    def test_fnguide_forward_consensus_parser_uses_estimate_columns_only(self):
+        trend = {
+            "header": [
+                {"YYMM": "2025/12", "EP_CHK": " ", "CD": "VAL1"},
+                {"YYMM": "2026/12", "EP_CHK": "E", "CD": "VAL2"},
+                {"YYMM": "2027/12", "EP_CHK": "E", "CD": "VAL3"},
+                {"YYMM": "2028/12", "EP_CHK": "E", "CD": "VAL4"},
+            ],
+            "data": [
+                {"NAME": "EPS", "VAL1": "100", "VAL2": "200", "VAL3": "242", "VAL4": "288"},
+                {"NAME": "PER", "VAL1": "20", "VAL2": "10", "VAL3": "8", "VAL4": "7"},
+            ],
+        }
+        html = f"perforTrend: {json.dumps(trend)}, perforTrendChart: {{}}"
+
+        result = uploader._extract_fnguide_forward_consensus(html)
+
+        self.assertEqual(result["forward_eps_cagr"], 20.0)
+        self.assertEqual(result["forward_eps_cagr_years"], 2)
+        self.assertEqual(result["per_fwd"], 10.0)
+        self.assertEqual([item["period"] for item in result["forward_eps_estimates"]], [
+            "2026/12", "2027/12", "2028/12",
+        ])
+
+    def test_kr_forward_peg_hides_non_positive_forward_growth(self):
+        data = {"per_fwd": 7.56, "forward_eps_cagr": -5.3, "forward_eps_cagr_years": 2}
+
+        peg = uploader.apply_kr_peg(data)
+
+        self.assertIsNone(peg)
+        self.assertIsNone(data["peg_fwd"])
+        self.assertEqual(data["peg_quality"], "unavailable_non_positive_forward_growth")
 
     @patch("uploader.yf.Ticker")
     def test_us_forward_peg_prefers_long_term_analyst_growth(self, ticker_factory):
@@ -58,27 +99,87 @@ class UploaderRegressionTests(unittest.TestCase):
 
         self.assertEqual(result["eps_growth"], 20.0)
         self.assertEqual(result["peg_fwd"], 1.0)
-        self.assertEqual(result["peg_source"], "yahoo_growth_estimates_5y")
-        self.assertEqual(result["peg_growth_horizon"], "5y_forward")
+        self.assertEqual(result["peg_source"], "yahoo_growth_estimates_5y_calculated")
+        self.assertEqual(result["peg_growth_horizon"], "long_term_forward")
 
-    def test_cagr_rejects_loss_base_and_smooths_one_year_jump(self):
-        self.assertIsNone(uploader.calculate_cagr(-100, 200, 3))
-        self.assertEqual(uploader.calculate_cagr(100, 172.8, 3), 20.0)
+    @patch("uploader.yf.Ticker")
+    def test_us_provider_peg_wins_and_growth_over_100_pct_keeps_unit(self, ticker_factory):
+        ticker = Mock()
+        ticker.info = {
+            "currentPrice": 853.2,
+            "forwardPE": 5.6704,
+            "trailingPE": 19.2683,
+            "forwardEps": 150.465,
+            "trailingEps": 44.28,
+            "pegRatio": 0.13,
+        }
+        ticker.growth_estimates = pd.DataFrame(
+            {"stockTrend": [1.0509]}, index=["+1y"]
+        )
+        ticker.earnings_history = pd.DataFrame()
+        ticker.history.return_value = pd.DataFrame()
+        ticker_factory.return_value = ticker
+
+        result = uploader.get_us_stock_data("MU")
+
+        self.assertEqual(result["eps_growth"], 105.1)
+        self.assertEqual(result["peg_fwd"], 0.13)
+        self.assertEqual(result["peg_source"], "yahoo_peg_ratio")
+        self.assertEqual(result["metric_quality"], "ok")
+
+    @patch("uploader.yf.Ticker")
+    def test_currency_matched_listing_supplies_asml_ratios(self, ticker_factory):
+        adr = Mock()
+        adr.info = {
+            "currentPrice": 1784.87,
+            "forwardPE": 30.89,
+            "trailingPE": 56.82,
+            "forwardEps": 57.79,
+            "trailingEps": 31.41,
+            "pegRatio": 2.65,
+            "priceToBook": 1606.0,
+            "priceToSalesTrailing12Months": 1138.0,
+            "currency": "USD",
+            "financialCurrency": "EUR",
+        }
+        adr.growth_estimates = pd.DataFrame()
+        adr.earnings_history = pd.DataFrame()
+        adr.history.return_value = pd.DataFrame()
+        primary = Mock()
+        primary.info = {
+            "priceToBook": 30.27,
+            "priceToSalesTrailing12Months": 17.56,
+        }
+        ticker_factory.side_effect = [adr, primary]
+
+        result = uploader.get_us_stock_data("ASML", "ASML.AS")
+
+        self.assertEqual(result["pbr"], 30.27)
+        self.assertEqual(result["ps"], 17.56)
+        self.assertEqual(result["fundamental_ticker"], "ASML.AS")
 
     def test_forward_peg_rejects_non_positive_growth(self):
         self.assertIsNone(uploader.calculate_forward_peg(10, 0))
         self.assertIsNone(uploader.calculate_forward_peg(10, -5))
+
+    def test_earnings_surprise_ratio_over_100_pct_keeps_unit(self):
+        ticker = Mock()
+        ticker.earnings_history = pd.DataFrame(
+            {"surprisePercent": [1.25]}, index=["latest"]
+        )
+
+        self.assertEqual(uploader.get_us_earnings_surprise(ticker), 125.0)
 
     @patch("uploader.calculate_target_trend", return_value={})
     @patch("uploader.calculate_eps_trend", return_value={})
     def test_kr_signal_keeps_forward_per_as_consensus_support(self, _eps_trend, _target_trend):
         data = {
             "code": "000660",
-            "peg_fwd": 0.02,
-            "peg_quality": "high_growth_base_effect",
+            "peg_fwd": None,
+            "peg_quality": "unavailable_non_positive_forward_growth",
             "per_ttm": 20.0,
             "per_fwd": 7.0,
-            "per_source": "naver_consensus",
+            "per_source": "fnguide_multi_year_consensus",
             "eps_growth": 436.5,
             "eps_growth_quality": "extreme_growth_not_for_signal",
             "target_gap": 10.0,
@@ -91,6 +192,68 @@ class UploaderRegressionTests(unittest.TestCase):
 
         self.assertTrue(step1)
         self.assertEqual(data["buy_level"], "candidate")
+
+    @patch("uploader.calculate_target_trend", return_value={})
+    @patch("uploader.calculate_eps_trend", return_value={})
+    def test_kr_signal_uses_forward_cagr_instead_of_base_effect_yoy(self, _eps_trend, _target_trend):
+        data = {
+            "peg_fwd": 0.35,
+            "peg_quality": "multi_year_forward_consensus",
+            "per_fwd": 5.85,
+            "per_source": "fnguide_multi_year_consensus",
+            "forward_eps_cagr": 16.5,
+            "eps_growth": 433.9,
+            "eps_growth_quality": "extreme_growth_not_for_signal",
+            "target_gap": 20.0,
+            "pbr": 7.0,
+            "rsi": 50.0,
+            "vol_ratio": 1.0,
+        }
+
+        step1, _, _ = uploader.check_stock_signal(data, "semiconductor", {}, region="kr")
+
+        self.assertTrue(step1)
+        self.assertIn("forward_eps_cagr", data["selection_hit_details"])
+
+    @patch("uploader.calculate_target_trend", return_value={})
+    @patch("uploader.calculate_eps_trend", return_value={})
+    def test_negative_forward_cagr_blocks_kr_per_fallback(self, _eps_trend, _target_trend):
+        data = {
+            "peg_fwd": None,
+            "peg_quality": "unavailable_non_positive_forward_growth",
+            "per_fwd": 7.56,
+            "per_source": "fnguide_multi_year_consensus",
+            "forward_eps_cagr": -5.3,
+            "eps_fwd": 4804.0,
+            "target_gap": 75.0,
+            "pbr": 0.52,
+            "div_yield": 1.82,
+            "rsi": 50.0,
+            "vol_ratio": 1.0,
+        }
+
+        step1, _, _ = uploader.check_stock_signal(data, "growth", {}, region="kr")
+
+        self.assertFalse(step1)
+
+    @patch("uploader.calculate_target_trend", return_value={})
+    @patch("uploader.calculate_eps_trend", return_value={})
+    def test_formula_warning_excludes_peg_from_signal(self, _eps_trend, _target_trend):
+        data = {
+            "peg_fwd": 0.1,
+            "peg_quality": "provider_reported",
+            "metric_warnings": ["peg:formula_mismatch"],
+            "eps_fwd": 1.0,
+            "rsi": 50.0,
+            "vol_ratio": 2.0,
+            "rev_growth": 30.0,
+            "earnings_surprise_pct": 10.0,
+            "target_gap": 20.0,
+        }
+
+        step1, _, _ = uploader.check_stock_signal(data, "semiconductor", {}, region="us")
+
+        self.assertFalse(step1)
 
     @patch("uploader._get_published_payload")
     def test_kospi_uses_last_published_close_when_fetch_fails(self, published):
@@ -144,6 +307,29 @@ class UploaderRegressionTests(unittest.TestCase):
         self.assertEqual(result["target_price"], 130)
         self.assertEqual(result["stale_field_sources"]["eps_fwd"], "20260713")
         self.assertEqual(result["stale_field_sources"]["target_price"], "20260712")
+
+    @patch("uploader.get_snapshot_history")
+    def test_kr_derived_metrics_are_not_mixed_with_old_snapshot(self, history):
+        history.return_value = [{
+            "date": "20260716",
+            "peg_fwd": 5.15,
+            "target_gap": 99.0,
+            "per_fwd": 12.0,
+            "forward_eps_cagr": 20.0,
+            "forward_eps_cagr_years": 2,
+        }]
+        current = {"per_fwd": 10.0, "forward_eps_cagr": 25.0, "forward_eps_cagr_years": 2}
+        fallback_fields = tuple(
+            field for field in uploader.KR_STOCK_SNAPSHOT_FIELDS
+            if field not in uploader.KR_STOCK_DERIVED_FIELDS
+        )
+
+        result = uploader.merge_missing_from_snapshot("005930", current, fallback_fields)
+        uploader.apply_kr_peg(result)
+
+        self.assertEqual(result["peg_fwd"], 0.4)
+        self.assertNotEqual(result.get("target_gap"), 99.0)
+        self.assertNotIn("peg_fwd", result.get("stale_filled_fields", []))
 
     @patch("uploader.db")
     def test_snapshot_save_merges_only_non_missing_fields(self, firestore_db):

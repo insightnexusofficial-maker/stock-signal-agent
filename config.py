@@ -29,7 +29,9 @@ US_STOCKS = {
     "CPNG":  {"name": "쿠팡",           "sector": "growth"},
     "TSLA":  {"name": "테슬라",         "sector": "growth"},
     "AMD":   {"name": "AMD",            "sector": "semiconductor"},
-    "ASML":  {"name": "ASML",           "sector": "semiconductor"},
+    # 미국 ADR의 주가 통화(USD)와 재무제표 통화(EUR)를 Yahoo가 혼합해
+    # PBR/PS가 깨지므로 재무비율은 유럽 원주에서 가져온다.
+    "ASML":  {"name": "ASML",           "sector": "semiconductor", "fundamental_ticker": "ASML.AS"},
     "AMZN":  {"name": "아마존",         "sector": "ai_bigtech"},
     "ANET":  {"name": "아리스타 네트웍스", "sector": "ai_bigtech"},
 }

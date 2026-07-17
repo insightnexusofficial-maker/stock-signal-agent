@@ -2696,6 +2696,11 @@ button {
     const pegHorizon = String(stock.peg_growth_horizon || "");
     const pegHorizonMatch = pegHorizon.match(/^(\d+)y/i);
     const pegGrowthLabel = pegHorizonMatch ? `PEG 성장률 (${pegHorizonMatch[1]}Y)` : "PEG 성장률";
+    const pegMethodMap = {
+        yahoo_peg_ratio: "Yahoo 제공 PEG",
+        fnguide_forward_eps_cagr_calculated: "FnGuide 예상 EPS CAGR",
+    };
+    const pegMethod = pegMethodMap[stock.peg_source] || "—";
     const epsTrendText = epsTrend.arrow ? `${epsTrend.arrow} ${epsTrend.value}` : epsTrend.value;
     const targetTrendText = targetTrend.arrow ? `${targetTrend.arrow} ${targetTrend.value}` : targetTrend.value;
 
@@ -2728,6 +2733,7 @@ button {
             ? stock.vol_ratio.toFixed(2) + "x" : "—" },
     ] : [
         { key: "PEG", val: peg, hl: true },
+        { key: "PEG 기준", val: pegMethod },
         { key: "PER", val: fmt(stock.per_ttm, { decimals: 2 }) },
         { key: "예상 PER", val: fmt(stock.per_fwd, { decimals: 2 }) },
         { key: "PBR", val: fmt(stock.pbr, { decimals: 2 }) },
@@ -2739,7 +2745,7 @@ button {
         ...(region === "us" ? [
             { key: "매출 성장률", val: revGrowth },
             { key: "어닝 서프라이즈", val: surprise },
-            { key: pegGrowthLabel, val: pegGrowth },
+            { key: "예상 EPS 성장률 (1Y)", val: epsGrowth },
         ] : [
             { key: pegGrowthLabel, val: pegGrowth },
             { key: "EPS YoY", val: epsGrowth },

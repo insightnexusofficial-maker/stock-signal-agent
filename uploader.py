@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 import pandas as pd
 import re
+import json
 import os
 import time
 from copy import deepcopy
@@ -143,7 +144,7 @@ def calculate_forward_peg(forward_pe, expected_eps_growth_pct):
 
 
 def calculate_cagr(start_value, end_value, years):
-    """양수 EPS 구간의 연환산 성장률(CAGR)을 퍼센트 단위로 반환한다."""
+    """양수인 순수 forward 전망 구간의 연환산 성장률을 계산한다."""
     start = _to_float(start_value)
     end = _to_float(end_value)
     years = _to_float(years)
@@ -153,13 +154,81 @@ def calculate_cagr(start_value, end_value, years):
 
 
 def _normalize_growth_pct(value):
-    """Yahoo 성장률처럼 소수/퍼센트 표기가 섞인 값을 퍼센트 단위로 맞춘다."""
+    """Yahoo growth_estimates의 비율값을 퍼센트 단위로 바꾼다.
+
+    이 API는 20%를 0.20, 105%를 1.05로 반환한다. 이전의 ``abs(value) < 1``
+    휴리스틱은 100%가 넘는 성장률을 이미 퍼센트인 것으로 오인했다.
+    """
     growth = _to_float(value)
     if growth is None:
         return None
-    if -1 < growth < 1:
-        growth *= 100
-    return round(growth, 1)
+    return round(growth * 100, 1)
+
+
+def _relative_gap_pct(actual, expected):
+    """두 양수 지표의 상대 오차율. 검증할 수 없으면 None."""
+    actual = _to_float(actual)
+    expected = _to_float(expected)
+    if actual is None or expected is None or expected == 0:
+        return None
+    return abs(actual - expected) / abs(expected) * 100
+
+
+def audit_stock_metrics(data, region):
+    """공개 전 계산식·범위·교차 필드 일관성을 검사해 레코드에 기록한다."""
+    warnings = []
+
+    for field in ("per_fwd", "per_ttm", "pbr", "ps", "peg_fwd", "vol_ratio", "div_yield"):
+        value = _to_float(data.get(field))
+        if value is not None and value < 0:
+            warnings.append(f"{field}:negative")
+
+    rsi = _to_float(data.get("rsi"))
+    if rsi is not None and not 0 <= rsi <= 100:
+        warnings.append("rsi:out_of_range")
+
+    band = _to_float(data.get("band_pct"))
+    if band is not None and not -1 <= band <= 101:
+        warnings.append("band_pct:out_of_range")
+
+    div_yield = _to_float(data.get("div_yield"))
+    if div_yield is not None and div_yield > 30:
+        warnings.append("div_yield:out_of_range")
+
+    target = _to_float(data.get("target_price"))
+    price = _to_float(data.get("price"))
+    target_gap = _to_float(data.get("target_gap"))
+    if price and target is not None and target_gap is not None:
+        expected_gap = (target - price) / price * 100
+        if abs(target_gap - expected_gap) > 0.15:
+            warnings.append("target_gap:formula_mismatch")
+
+    peg = _to_float(data.get("peg_fwd"))
+    peg_growth = _to_float(data.get("peg_growth_rate"))
+    peg_source = str(data.get("peg_source") or "")
+    if peg is not None and peg_growth is not None and (
+        peg_source.startswith("naver_") or peg_source.endswith("_calculated")
+    ):
+        expected_peg = calculate_forward_peg(data.get("per_fwd"), peg_growth)
+        if expected_peg is None or abs(peg - expected_peg) > 0.011:
+            warnings.append("peg:formula_mismatch")
+
+    # 미국 EPS/PER는 같은 Yahoo 레코드에서 오므로 가격과 직접 교차검증할 수 있다.
+    if region == "us" and price:
+        for per_field, eps_field in (("per_fwd", "eps_fwd"), ("per_ttm", "eps_ttm")):
+            per = _to_float(data.get(per_field))
+            eps = _to_float(data.get(eps_field))
+            if per and eps and eps > 0:
+                gap = _relative_gap_pct(per * eps, price)
+                if gap is not None and gap > 3:
+                    warnings.append(f"{per_field}:{eps_field}_price_mismatch")
+
+    data["metric_warnings"] = warnings
+    data["metric_quality"] = "warning" if warnings else "ok"
+    return warnings
+
+
+KR_FORWARD_PER_SOURCES = {"naver_consensus", "fnguide_multi_year_consensus"}
 
 
 def _get_row_values(table, label):
@@ -581,13 +650,22 @@ KR_STOCK_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
     "price_source", "price_provider_gap_pct", "price_market_status",
     "eps_fwd", "eps_ttm", "eps_growth", "eps_growth_raw", "eps_growth_source", "eps_growth_quality",
-    "annual_eps_prev", "annual_eps_fwd", "annual_eps_growth", "annual_eps_cagr", "annual_eps_cagr_years",
+    "annual_eps_prev", "annual_eps_fwd", "annual_eps_growth",
+    "forward_eps_estimates", "forward_eps_cagr", "forward_eps_cagr_years",
+    "forward_eps_start_period", "forward_eps_end_period",
     "peg_growth_rate", "peg_growth_horizon",
     "peg_fwd", "peg_raw", "pbr", "per_fwd", "per_ttm", "div_yield", "dps", "bps",
     "peg_source", "peg_quality", "annual_per_fwd", "annual_pbr_fwd",
     "target_price", "target_gap", "investment_opinion_score",
     "per_source", "eps_source", "target_price_source", "trailing_source",
 )
+
+# 입력값을 복원한 뒤 다시 계산해야 하는 필드. 과거 스냅샷의 파생값을 그대로
+# 섞으면 오늘 PER와 어제 PEG/목표가 갭이 한 레코드에 공존할 수 있다.
+KR_STOCK_DERIVED_FIELDS = {
+    "peg_growth_rate", "peg_growth_horizon", "peg_fwd", "peg_raw",
+    "peg_source", "peg_quality", "target_gap",
+}
 
 KR_ETF_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
@@ -871,30 +949,96 @@ def get_naver_consensus(code):
             if prev_eps and fwd_eps and prev_eps != 0:
                 result["annual_eps_growth"] = round((fwd_eps - prev_eps) / abs(prev_eps) * 100, 1)
 
-            # 네이버는 장기 성장률을 직접 제공하지 않는다. 최근 3개 확정치 중
-            # 가장 오래된 양수 EPS부터 다음 연도 컨센서스까지의 CAGR을 사용해
-            # 단년도 턴어라운드 기저효과를 완화한다.
-            if fwd_eps and fwd_eps > 0:
-                for index, base_eps in enumerate(eps_values[:3]):
-                    years = 3 - index
-                    cagr = calculate_cagr(base_eps, fwd_eps, years)
-                    if cagr is not None:
-                        result["annual_eps_cagr"] = cagr
-                        result["annual_eps_cagr_years"] = years
-                        break
-        
         if len(per_values) >= 4 and per_values[3] and per_values[3] > 0:
             result["annual_per_fwd"] = per_values[3]
         if len(pbr_values) >= 4 and pbr_values[3] and pbr_values[3] > 0:
             result["annual_pbr_fwd"] = pbr_values[3]
         if len(bps_values) >= 4 and bps_values[3] and bps_values[3] > 0:
             result["annual_bps_fwd"] = bps_values[3]
-        if len(dps_values) >= 3 and dps_values[2] and dps_values[2] > 0:
+        if len(dps_values) >= 3 and dps_values[2] is not None and dps_values[2] >= 0:
             result["annual_dps_latest"] = dps_values[2]
-        if len(div_values) >= 3 and div_values[2] and div_values[2] > 0:
+        if len(div_values) >= 3 and div_values[2] is not None and div_values[2] >= 0:
             result["annual_div_yield_latest"] = div_values[2]
     
     return result
+
+
+def _extract_fnguide_forward_consensus(html):
+    """FnGuide 컨센서스 페이지의 3개년 예상 EPS/PER를 공통 형식으로 변환한다."""
+    match = re.search(
+        r"perforTrend:\s*(\{.*?\}),\s*perforTrendChart",
+        html or "",
+        re.DOTALL,
+    )
+    if not match:
+        return {}
+
+    try:
+        trend = json.loads(match.group(1))
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+
+    headers = trend.get("header") or []
+    rows = trend.get("data") or []
+    eps_row = next((row for row in rows if str(row.get("NAME") or "").strip() == "EPS"), None)
+    per_row = next((row for row in rows if str(row.get("NAME") or "").strip() == "PER"), None)
+    if not eps_row:
+        return {}
+
+    estimates = []
+    for header in headers:
+        if str(header.get("EP_CHK") or "").strip().upper() != "E":
+            continue
+        period = str(header.get("YYMM") or "").strip()
+        value = _to_float(eps_row.get(header.get("CD")))
+        if not period or value is None:
+            continue
+        estimates.append({"period": period, "eps": value})
+
+    if len(estimates) < 2:
+        return {}
+
+    try:
+        start_year = int(estimates[0]["period"].split("/")[0])
+        end_year = int(estimates[-1]["period"].split("/")[0])
+    except (TypeError, ValueError, IndexError):
+        return {}
+    years = end_year - start_year
+    cagr = calculate_cagr(estimates[0]["eps"], estimates[-1]["eps"], years)
+
+    first_estimate_header = next(
+        (header for header in headers if str(header.get("EP_CHK") or "").strip().upper() == "E"),
+        None,
+    )
+    forward_per = _to_float(per_row.get(first_estimate_header.get("CD"))) if per_row and first_estimate_header else None
+
+    result = {
+        "forward_eps_estimates": estimates,
+        "forward_eps_cagr": cagr,
+        "forward_eps_cagr_years": years,
+        "forward_eps_start_period": estimates[0]["period"],
+        "forward_eps_end_period": estimates[-1]["period"],
+        "annual_eps_fwd": estimates[0]["eps"],
+        "eps_fwd": estimates[0]["eps"],
+        "eps_source": "fnguide_multi_year_consensus",
+    }
+    if forward_per is not None and forward_per > 0:
+        result["annual_per_fwd"] = forward_per
+        result["per_fwd"] = forward_per
+        result["per_source"] = "fnguide_multi_year_consensus"
+    return result
+
+
+def get_fnguide_forward_consensus(code):
+    """FnGuide의 2026E~2028E 같은 복수 연도 컨센서스를 조회한다."""
+    res = requests.get(
+        "https://wcomp.fnguide.com/CompanyInfo/Consensus",
+        params={"cmp_cd": code},
+        headers={"User-Agent": "Mozilla/5.0", "Accept-Language": "ko-KR,ko;q=0.9"},
+        timeout=15,
+    )
+    res.raise_for_status()
+    return _extract_fnguide_forward_consensus(res.text)
 
 
 def get_kr_valuation(code):
@@ -957,6 +1101,13 @@ def get_kr_valuation(code):
         result.update(get_naver_consensus(code))
     except Exception as e:
         print(f"   네이버 컨센서스 에러 ({code}): {e}")
+
+    # 네이버 요약표에는 다음 해 한 개 전망만 노출된다. PEG에는 과거 실적을
+    # 섞지 않고 FnGuide의 복수 연도 순수 forward EPS 컨센서스를 사용한다.
+    try:
+        result.update(get_fnguide_forward_consensus(code))
+    except Exception as e:
+        print(f"   FnGuide 복수 연도 컨센서스 에러 ({code}): {e}")
     
     if result.get("per_ttm") is None:
         result["per_ttm"] = result.get("naver_per_ttm")
@@ -1005,26 +1156,37 @@ def get_kr_valuation(code):
             result["eps_growth_quality"] = "extreme_growth_not_for_signal"
             result["eps_growth_raw"] = result["eps_growth"]
 
-    # 국내 장기 전망치가 별도로 없으므로 가장 긴 양수 EPS 구간 CAGR을 우선한다.
-    # 이 값은 3~5년 순수 forward 전망이 아니라 확정치+전망치 혼합 대용치임을 보존한다.
-    peg_growth = result.get("annual_eps_cagr") or result.get("eps_growth")
-    peg_years = result.get("annual_eps_cagr_years")
-    result["peg_growth_rate"] = peg_growth
-    result["peg_growth_horizon"] = f"{peg_years}y_mixed_cagr_proxy" if peg_years else "1y_forward"
-    peg = calculate_forward_peg(result.get("per_fwd"), peg_growth)
-    if peg is not None:
-        result["peg_raw"] = peg
-        result["peg_fwd"] = peg
-        result["peg_source"] = (
-            f"naver_annual_consensus_{peg_years}y_mixed_cagr"
-            if peg_years else result.get("eps_growth_source")
-        )
-        if peg_growth is None or not (5 <= peg_growth <= 100):
-            result["peg_quality"] = "high_growth_base_effect"
-        else:
-            result["peg_quality"] = "normal_proxy"
+    apply_kr_peg(result)
     
     return result
+
+
+def apply_kr_peg(result):
+    """국내 PEG를 복수 연도 순수 forward EPS CAGR 기준으로 확정한다."""
+    growth = _to_float(result.get("forward_eps_cagr"))
+    years = _to_float(result.get("forward_eps_cagr_years"))
+    result["peg_growth_rate"] = growth
+    result["peg_growth_horizon"] = f"{int(years)}y_forward_consensus" if years else None
+    result["peg_source"] = "fnguide_forward_eps_cagr_calculated"
+    result["peg_raw"] = None
+    result["peg_fwd"] = None
+
+    if growth is None or growth <= 0:
+        result["peg_quality"] = "unavailable_non_positive_forward_growth"
+        return None
+    if growth > 100:
+        result["peg_quality"] = "unavailable_extreme_forward_growth"
+        return None
+
+    peg = calculate_forward_peg(result.get("per_fwd"), growth)
+    if peg is None:
+        result["peg_quality"] = "unavailable_inputs"
+        return None
+
+    result["peg_raw"] = peg
+    result["peg_fwd"] = peg
+    result["peg_quality"] = "multi_year_forward_consensus"
+    return peg
 
 
 # ============================================================
@@ -1042,19 +1204,19 @@ def get_us_earnings_surprise(stock):
         sp = float(sp)
         if sp != sp:  # NaN
             return None
-        if -1 < sp < 1:
-            sp = sp * 100
-        return round(sp, 2)
+        # earnings_history도 5%를 0.05, 120%를 1.20으로 주는 비율 필드다.
+        return round(sp * 100, 2)
     except Exception:
         return None
 
 
 def get_us_forward_eps_growth(stock, info):
-    """PEG 비교 가능성을 위해 Yahoo 장기 전망을 우선한다."""
+    """독립 표시용 예상 EPS 성장률. Yahoo 값은 비율 단위다."""
     try:
         estimates = stock.growth_estimates
         if isinstance(estimates, pd.DataFrame):
             for horizon, source in (
+                ("LTG", "yahoo_growth_estimates_long_term"),
                 ("+5y", "yahoo_growth_estimates_5y"),
                 ("+1y", "yahoo_growth_estimates_1y"),
             ):
@@ -1079,7 +1241,7 @@ def get_us_forward_eps_growth(stock, info):
     return None, None
 
 
-def get_us_stock_data(ticker):
+def get_us_stock_data(ticker, fundamental_ticker=None):
     stock = yf.Ticker(ticker)
     info = stock.info
     result = {}
@@ -1087,8 +1249,38 @@ def get_us_stock_data(ticker):
     result["price"] = info.get("currentPrice") or info.get("regularMarketPrice")
     result["per_fwd"] = info.get("forwardPE")
     result["per_ttm"] = info.get("trailingPE")
-    result["pbr"] = info.get("priceToBook")
-    result["ps"] = info.get("priceToSalesTrailing12Months")
+    fundamental_info = info
+    if fundamental_ticker and fundamental_ticker != ticker:
+        try:
+            alternate = yf.Ticker(fundamental_ticker).info
+            if alternate:
+                fundamental_info = alternate
+                result["fundamental_ticker"] = fundamental_ticker
+        except Exception as e:
+            print(f"   대체 재무비율 에러 ({ticker} → {fundamental_ticker}): {e}")
+
+    ratio_ticker = fundamental_ticker or ticker
+    ratio_quote_currency = fundamental_info.get("currency")
+    ratio_financial_currency = fundamental_info.get("financialCurrency")
+    currencies_match = (
+        not ratio_quote_currency
+        or not ratio_financial_currency
+        or ratio_quote_currency == ratio_financial_currency
+    )
+    if currencies_match:
+        result["pbr"] = fundamental_info.get("priceToBook")
+        result["ps"] = fundamental_info.get("priceToSalesTrailing12Months")
+        result["fundamental_ratio_quality"] = "currency_matched"
+    else:
+        # 통화가 다른 ADR 비율은 price/bookValue처럼 서로 다른 통화를 나눠
+        # 수백~수천 배로 튈 수 있다. 대응 원주가 없으면 빈 값이 더 안전하다.
+        result["pbr"] = None
+        result["ps"] = None
+        result["fundamental_ratio_quality"] = "unavailable_currency_mismatch"
+    result["pbr_source"] = ratio_ticker
+    result["ps_source"] = ratio_ticker
+    result["quote_currency"] = info.get("currency")
+    result["financial_currency"] = info.get("financialCurrency")
     result["eps_fwd"] = info.get("forwardEps")
     result["eps_ttm"] = info.get("trailingEps")
     
@@ -1101,14 +1293,38 @@ def get_us_stock_data(ticker):
     if rg is not None:
         result["rev_growth"] = round(rg * 100, 1)
     
-    result["peg_growth_rate"] = result.get("eps_growth")
-    result["peg_growth_horizon"] = "5y_forward" if eps_growth_source == "yahoo_growth_estimates_5y" else "1y_forward"
-    peg = calculate_forward_peg(result.get("per_fwd"), result.get("eps_growth"))
-    if peg is not None:
-        result["peg_fwd"] = peg
-        result["peg_raw"] = peg
-        result["peg_source"] = eps_growth_source
-        result["peg_quality"] = "normal"
+    # Yahoo 제공 PEG를 우선 사용한다. +1y 성장률로 재계산하면 마이크론처럼
+    # 사이클주의 값이 크게 왜곡되고 공급자 PEG와 정의도 달라진다.
+    provider_peg = _to_float(info.get("pegRatio")) or _to_float(info.get("trailingPegRatio"))
+    if provider_peg is not None and provider_peg > 0:
+        result["peg_fwd"] = round(provider_peg, 2)
+        result["peg_raw"] = provider_peg
+        result["peg_source"] = "yahoo_peg_ratio"
+        result["peg_quality"] = "provider_reported"
+        result["peg_growth_rate"] = None
+        result["peg_growth_horizon"] = "provider_reported"
+    elif eps_growth_source in {"yahoo_growth_estimates_long_term", "yahoo_growth_estimates_5y"}:
+        peg = calculate_forward_peg(result.get("per_fwd"), result.get("eps_growth"))
+        if peg is not None:
+            result["peg_fwd"] = peg
+            result["peg_raw"] = peg
+            result["peg_source"] = f"{eps_growth_source}_calculated"
+            result["peg_quality"] = "calculated_long_term"
+            result["peg_growth_rate"] = result.get("eps_growth")
+            result["peg_growth_horizon"] = "long_term_forward"
+    else:
+        result["peg_fwd"] = None
+        result["peg_raw"] = None
+        result["peg_source"] = None
+        result["peg_quality"] = "unavailable_long_term_growth"
+        result["peg_growth_rate"] = None
+        result["peg_growth_horizon"] = None
+
+    dividend_yield = _to_float(info.get("dividendYield"))
+    if dividend_yield is None:
+        trailing_yield = _to_float(info.get("trailingAnnualDividendYield"))
+        dividend_yield = trailing_yield * 100 if trailing_yield is not None else None
+    result["div_yield"] = round(dividend_yield, 2) if dividend_yield is not None else None
     
     target = info.get("targetMeanPrice")
     if target and result["price"]:
@@ -1131,7 +1347,8 @@ def get_us_stock_data(ticker):
         high52 = info.get("fiftyTwoWeekHigh")
         if low52 and high52 and high52 > low52:
             result["band_pct"] = round((result["price"] - low52) / (high52 - low52) * 100, 1)
-    
+
+    audit_stock_metrics(result, "us")
     return result
 
 
@@ -1362,6 +1579,7 @@ def check_stock_signal(data, sector, macro, region="us"):
     data["buy_level"] = "none"
     data["in_buy_zone"] = False
     data["selection_hits"] = 0
+    data.pop("valuation_basis", None)
     
     # === 기울기 계산 (EPS + 목표주가) ===
     eps_trend = {}
@@ -1388,6 +1606,8 @@ def check_stock_signal(data, sector, macro, region="us"):
     rsi = data.get("rsi")
     peg = data.get("peg_fwd")
     peg_for_signal = None if data.get("peg_quality") == "high_growth_base_effect" else peg
+    if any(str(warning).startswith("peg:") for warning in data.get("metric_warnings", [])):
+        peg_for_signal = None
     pbr = data.get("pbr")
     per = data.get("per_ttm") or data.get("per_fwd")
     per_fwd = data.get("per_fwd")
@@ -1395,6 +1615,7 @@ def check_stock_signal(data, sector, macro, region="us"):
     rev_growth = data.get("rev_growth")
     eps_growth = data.get("eps_growth")
     eps_growth_for_signal = None if data.get("eps_growth_quality") == "extreme_growth_not_for_signal" else eps_growth
+    forward_eps_cagr = _to_float(data.get("forward_eps_cagr"))
     band_pct = data.get("band_pct")
     earnings_surprise = data.get("earnings_surprise_pct")
     target_gap = data.get("target_gap")
@@ -1457,10 +1678,14 @@ def check_stock_signal(data, sector, macro, region="us"):
     if region == "kr" and not val_ok and peg_for_signal is None:
         per_fallback_max = criteria.get("kr_per_fallback_max")
         per_source = data.get("per_source")
+        # 복수 연도 컨센서스가 명시적으로 역성장을 가리키면 낮은 PER만으로
+        # valuation 게이트를 우회하지 않는다. 전망 자체가 없을 때만 기존 폴백 허용.
+        per_fallback_allowed = forward_eps_cagr is None or forward_eps_cagr > 0
         if (
             per_fallback_max is not None
             and per_fwd is not None
-            and per_source == "naver_consensus"
+            and per_source in KR_FORWARD_PER_SOURCES
+            and per_fallback_allowed
             and per_fwd < per_fallback_max
         ):
             val_ok = True
@@ -1479,15 +1704,17 @@ def check_stock_signal(data, sector, macro, region="us"):
             hit_details.append("target_gap")
         
         eps_growth_min = criteria.get("kr_eps_growth_min", criteria.get("rev_growth_min", 5))
-        if eps_growth_min is not None and eps_growth_for_signal is not None and eps_growth_for_signal >= eps_growth_min:
+        kr_growth_for_signal = forward_eps_cagr if forward_eps_cagr is not None else eps_growth_for_signal
+        if eps_growth_min is not None and kr_growth_for_signal is not None and kr_growth_for_signal >= eps_growth_min:
             hits += 1
-            hit_details.append("eps_growth")
+            hit_details.append("forward_eps_cagr" if forward_eps_cagr is not None else "eps_growth")
         
         per_fallback_max = criteria.get("kr_per_fallback_max")
         if (
             per_fallback_max is not None
             and per_fwd is not None
-            and data.get("per_source") == "naver_consensus"
+            and data.get("per_source") in KR_FORWARD_PER_SOURCES
+            and (forward_eps_cagr is None or forward_eps_cagr > 0)
             and per_fwd < per_fallback_max
         ):
             hits += 1
@@ -1815,12 +2042,22 @@ def upload_data():
             time.sleep(0.5)
             
             merged = {**kis_data, **fn_data, "code": code, "name": name, "sector": sector}
-            merged = merge_missing_from_snapshot(code, merged, KR_STOCK_SNAPSHOT_FIELDS)
+            fallback_fields = tuple(
+                field for field in KR_STOCK_SNAPSHOT_FIELDS
+                if field not in KR_STOCK_DERIVED_FIELDS
+            )
+            merged = merge_missing_from_snapshot(code, merged, fallback_fields)
+            # 스냅샷으로 입력값이 보완된 경우에도 파생값은 한 기준으로 다시 계산한다.
+            apply_kr_peg(merged)
             # target_gap 먼저 계산 (check_stock_signal에서 참조하기 위해)
             if merged.get("target_price") and merged.get("price"):
                 merged["target_gap"] = round(
                     (merged["target_price"] - merged["price"]) / merged["price"] * 100, 1
                 )
+            else:
+                merged["target_gap"] = None
+
+            audit_stock_metrics(merged, "kr")
             
             # 스냅샷 저장
             save_snapshot(code, {
@@ -1907,7 +2144,7 @@ def upload_data():
         sector = info["sector"]
         print(f"   {name} ({sector})...")
         try:
-            data = get_us_stock_data(ticker)
+            data = get_us_stock_data(ticker, info.get("fundamental_ticker"))
             data["code"] = ticker
             data["name"] = name
             data["sector"] = sector
