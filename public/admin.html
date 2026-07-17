@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#171a1d">
+  <title>SAYO Admin</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111315;
+      --panel: #1a1d20;
+      --panel-2: #21252a;
+      --border: #343940;
+      --text: #f2f3f4;
+      --muted: #a3aab2;
+      --accent: #41d39c;
+      --danger: #ff7272;
+      --warning: #f2c96a;
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      letter-spacing: 0;
+    }
+    button, input { font: inherit; letter-spacing: 0; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+    .shell {
+      width: min(920px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+    .topbar {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .brand { font-size: 18px; font-weight: 800; }
+    .brand span { color: var(--accent); }
+    .back-link { color: var(--muted); text-decoration: none; font-size: 13px; }
+    .login-panel {
+      width: min(420px, 100%);
+      margin: 72px auto 0;
+      padding: 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    h1 { margin: 0; font-size: 22px; line-height: 1.3; }
+    .subtext { margin: 8px 0 22px; color: var(--muted); font-size: 14px; }
+    .field { display: grid; gap: 7px; margin-bottom: 14px; }
+    label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      outline: none;
+    }
+    input:focus { border-color: var(--accent); }
+    .primary, .secondary, .danger, .approve {
+      min-height: 38px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 8px 13px;
+      font-weight: 750;
+    }
+    .primary { width: 100%; min-height: 44px; background: var(--accent); color: #07130f; }
+    .secondary { background: var(--panel-2); border-color: var(--border); color: var(--text); }
+    .approve { background: rgba(65, 211, 156, 0.13); border-color: rgba(65, 211, 156, 0.4); color: var(--accent); }
+    .danger { background: transparent; border-color: rgba(255, 114, 114, 0.45); color: var(--danger); }
+    button:disabled { cursor: wait; opacity: 0.6; }
+    .message { min-height: 20px; margin-top: 12px; color: var(--danger); font-size: 13px; }
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .user-line { margin-top: 6px; color: var(--muted); font-size: 12px; }
+    .header-actions { display: flex; gap: 8px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+    .stat { padding: 15px 10px; text-align: center; }
+    .stat + .stat { border-left: 1px solid var(--border); }
+    .stat-value { font-size: 22px; font-weight: 800; }
+    .stat-label { margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .toolbar { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .filters { display: flex; gap: 6px; }
+    .filter {
+      min-height: 36px;
+      padding: 7px 12px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .filter.active { color: var(--text); background: var(--panel-2); border-color: var(--accent); }
+    .list { display: grid; gap: 8px; }
+    .user-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 64px;
+      padding: 12px 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+    }
+    .nickname { font-weight: 750; overflow-wrap: anywhere; }
+    .meta { margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .status { font-size: 12px; font-weight: 750; color: var(--warning); }
+    .status.approved { color: var(--accent); }
+    .row-actions { display: flex; gap: 6px; }
+    .empty { padding: 44px 12px; text-align: center; color: var(--muted); border-top: 1px solid var(--border); }
+    @media (max-width: 640px) {
+      .shell { width: min(100% - 20px, 920px); padding-top: 14px; }
+      .login-panel { margin-top: 36px; padding: 20px; }
+      .dashboard-header, .toolbar { align-items: stretch; flex-direction: column; }
+      .header-actions { justify-content: flex-end; }
+      .filters { display: grid; grid-template-columns: repeat(3, 1fr); }
+      .user-row { grid-template-columns: minmax(0, 1fr) auto; }
+      .row-actions { grid-column: 1 / -1; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">SAYO <span>Admin</span></div>
+      <a class="back-link" href="/">앱으로 돌아가기</a>
+    </header>
+
+    <section id="login-panel" class="login-panel">
+      <h1>관리자 로그인</h1>
+      <p class="subtext">Firebase 관리자 계정으로 로그인하세요.</p>
+      <form id="login-form">
+        <div class="field">
+          <label for="email">이메일</label>
+          <input id="email" type="email" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="password">비밀번호</label>
+          <input id="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button id="login-button" class="primary" type="submit">로그인</button>
+        <div id="login-message" class="message" role="alert"></div>
+      </form>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <div class="dashboard-header">
+        <div>
+          <h1>알림 신청 관리</h1>
+          <div id="current-user" class="user-line"></div>
+        </div>
+        <div class="header-actions">
+          <button id="refresh-button" class="secondary" type="button">새로고침</button>
+          <button id="logout-button" class="secondary" type="button">로그아웃</button>
+        </div>
+      </div>
+
+      <div class="stats" aria-label="신청 현황">
+        <div class="stat"><div id="pending-count" class="stat-value">0</div><div class="stat-label">대기</div></div>
+        <div class="stat"><div id="approved-count" class="stat-value">0</div><div class="stat-label">승인</div></div>
+        <div class="stat"><div id="total-count" class="stat-value">0</div><div class="stat-label">전체</div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters" aria-label="목록 필터">
+          <button class="filter active" data-filter="pending" type="button">대기</button>
+          <button class="filter" data-filter="approved" type="button">승인</button>
+          <button class="filter" data-filter="all" type="button">전체</button>
+        </div>
+        <div id="dashboard-message" class="message" role="status"></div>
+      </div>
+      <div id="user-list" class="list"></div>
+    </section>
+  </main>
+  <script type="module" src="/admin.js"></script>
+</body>
+</html>

@@ -1,6 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
     
     match /stocks/{document=**} {
       allow read: if true;
@@ -19,9 +22,13 @@ service cloud.firestore {
     
     match /fcm_tokens/{token} {
       // 토큰 값 자체가 문서 ID인 경우에만 본인 승인 상태를 조회할 수 있다.
-      // 컬렉션 목록과 승인 변경은 Admin SDK를 사용하는 로컬 관리 도구에만 맡긴다.
+      // 일반 사용자는 자기 토큰만 조회하고, 관리자만 승인 목록을 관리한다.
       allow get: if true;
-      allow list, update, delete: if false;
+      allow list: if isAdmin();
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved'])
+                    && request.resource.data.approved is bool;
+      allow delete: if isAdmin();
 
       allow create: if request.resource.data.keys().hasOnly([
                       'token', 'nickname', 'registered_at', 'createdAt', 'approved'
