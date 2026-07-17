@@ -1,7 +1,13 @@
 {
   "hosting": {
     "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "assets/sayo-logo-20260711-v2.png",
+      "assets/sayo-logo-20260711-v3.png"
+    ],
     "cleanUrls": true,
     "headers": [
       {

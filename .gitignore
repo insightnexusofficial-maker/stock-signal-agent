@@ -5,3 +5,6 @@ __pycache__/
 firebase-key.json
 .DS_Store
 .firebase/
+debug.log
+public/assets/sayo-logo-20260711-v2.png
+public/assets/sayo-logo-20260711-v3.png

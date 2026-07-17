@@ -1870,10 +1870,6 @@ button {
                 <span class="pulse-dot"></span>
                 <span>시그널 탐지 중</span>
               </div>
-              <div class="notif-toggle on" id="notif-toggle">
-                <div class="switch"></div>
-                <span class="label-text">알림 받기</span>
-              </div>
             </div>
         </div>
         </header>
@@ -2343,9 +2339,6 @@ button {
         </div>
         <footer class="app-footer">
             <div class="mono">SAYO v4 · 10분 단위 시그널 감지</div>
-            <div class="links">
-                <a href="/admin.html">admin</a>
-            </div>
         </footer>
       
       </div>
@@ -2355,7 +2348,7 @@ button {
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+    import { deleteToken, getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
     
     const firebaseConfig = {
         apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
@@ -2368,7 +2361,7 @@ button {
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const APP_VERSION = "20260717-kr-price-peg-1";
+    const APP_VERSION = "20260717-security-1";
     
     // ============================================================
     // 유틸
@@ -3183,7 +3176,8 @@ button {
     // FCM 알림 + 게이트 로직
     // ============================================================
     const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
-    const TOKEN_KEY = "sayo:fcm-token";
+    const LEGACY_TOKEN_KEY = "sayo:fcm-token";
+    const TOKEN_KEY = "sayo:fcm-token:v2";
     let messaging = null;
     let serviceWorkerReg = null;
 
@@ -3205,6 +3199,19 @@ button {
     }
     }
 
+    async function rotateLegacyToken() {
+      const legacyToken = localStorage.getItem(LEGACY_TOKEN_KEY);
+      if (!legacyToken) return;
+      try {
+        if (messaging) await deleteToken(messaging);
+      } catch (e) {
+        console.warn("기존 알림 토큰 폐기 실패:", e);
+      } finally {
+        localStorage.removeItem(LEGACY_TOKEN_KEY);
+        localStorage.removeItem(TOKEN_KEY);
+      }
+    }
+
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (sessionStorage.getItem("sayo:sw-reloaded") === "1") return;
@@ -3214,16 +3221,15 @@ button {
     }
 
     async function checkApprovalStatus(token) {
-  // Firestore에서 토큰의 approved 상태 확인
-  try {
-    const tokenDoc = await getDoc(doc(db, "fcm_tokens", token));
-    if (!tokenDoc.exists()) return null;
-    return tokenDoc.data().approved === true;
-  } catch (e) {
-    console.error("승인 상태 확인 실패:", e);
-    return null;
-  }
-}
+      try {
+        const tokenDoc = await getDoc(doc(db, "fcm_tokens", token));
+        if (!tokenDoc.exists()) return { exists: false, approved: false };
+        return { exists: true, approved: tokenDoc.data().approved === true };
+      } catch (e) {
+        console.error("승인 상태 확인 실패:", e);
+        return { exists: null, approved: false };
+      }
+    }
 
     async function checkRegistration() {
     if (!("Notification" in window)) return { registered: false };
@@ -3232,8 +3238,12 @@ button {
     if (Notification.permission !== "granted") return { registered: false };
     
     // 승인 상태도 같이 확인
-    const approved = await checkApprovalStatus(stored);
-    return { registered: true, approved, token: stored };
+    const status = await checkApprovalStatus(stored);
+    if (status.exists === false) {
+      localStorage.removeItem(TOKEN_KEY);
+      return { registered: false };
+    }
+    return { registered: true, approved: status.approved, statusKnown: status.exists !== null, token: stored };
     }
 
     function showPendingState() {
@@ -3338,67 +3348,10 @@ button {
     }
     // 성공 시: registerForNotifications 안에서 showPendingState() 호출됨
     });
-    // ============================================================
-    // 알림 받기 토글
-    // ============================================================
-    async function loadNotifToggleState() {
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (!token) return;
-      
-      try {
-        const tokenDoc = await getDoc(doc(db, "fcm_tokens", token));
-        if (tokenDoc.exists()) {
-          const enabled = tokenDoc.data().notifications_enabled !== false;
-          updateToggleUI(enabled);
-        }
-      } catch (e) {
-        console.error("토글 상태 로드 실패:", e);
-      }
-    }
-
-    function updateToggleUI(enabled) {
-      const toggle = $("#notif-toggle");
-      const labelText = toggle.querySelector(".label-text");
-      if (enabled) {
-        toggle.classList.add("on");
-        labelText.textContent = "알림 받기";
-      } else {
-        toggle.classList.remove("on");
-        labelText.textContent = "알림 끔";
-      }
-    }
-
-    async function toggleNotifications() {
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (!token) return;
-      
-      const toggle = $("#notif-toggle");
-      const currentlyOn = toggle.classList.contains("on");
-      const newState = !currentlyOn;
-      
-      // UI 먼저 업데이트 (낙관적)
-      updateToggleUI(newState);
-      
-      try {
-        await setDoc(doc(db, "fcm_tokens", token), {
-          notifications_enabled: newState,
-        }, { merge: true });
-      } catch (e) {
-        console.error("토글 저장 실패:", e);
-        // 실패 시 롤백
-        updateToggleUI(currentlyOn);
-        alert("저장 실패: " + e.message);
-      }
-    }
-
-    $("#notif-toggle").addEventListener("click", toggleNotifications);
-
-    // 페이지 진입 시 현재 상태 로드
-    loadNotifToggleState();
-    
     // 초기 로직
     (async () => {
     await initServiceWorker();
+    await rotateLegacyToken();
     const status = await checkRegistration();
     
     if (!status.registered) {
@@ -3415,8 +3368,8 @@ button {
         showPendingState();
         watchApproval(status.token);
     } else {
-        // approved 정보 못 가져옴 (네트워크 등) → 일단 본 화면
-        hideGate();
+        // 승인 상태를 확인하지 못하면 공개 화면으로 우회하지 않는다.
+        showPendingState();
     }
     })();
         

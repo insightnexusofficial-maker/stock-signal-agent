@@ -4,30 +4,46 @@ on:
   # 외부 트리거(cron-job.org) 전용. GitHub 내장 cron은 신뢰도 낮아 제거.
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: stock-signal-check
+  cancel-in-progress: false
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
       
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
       
       - name: Install dependencies
-        run: |
-          pip install requests beautifulsoup4 lxml yfinance firebase-admin python-dotenv
+        run: pip install --disable-pip-version-check --no-input -r requirements-uploader.txt
       
       - name: Create Firebase key
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-key.json
+          umask 077
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-key.json
       
       - name: Create .env file
         run: |
-          echo "KIS_APP_KEY=${{ secrets.KIS_APP_KEY }}" >> .env
-          echo "KIS_APP_SECRET=${{ secrets.KIS_APP_SECRET }}" >> .env
+          umask 077
+          printf '%s\n' "KIS_APP_KEY=${{ secrets.KIS_APP_KEY }}" > .env
+          printf '%s\n' "KIS_APP_SECRET=${{ secrets.KIS_APP_SECRET }}" >> .env
       
       - name: Run signal checker
         run: python uploader.py
+
+      - name: Remove temporary credentials
+        if: always()
+        run: rm -f .env firebase-key.json

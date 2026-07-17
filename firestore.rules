@@ -18,12 +18,23 @@ service cloud.firestore {
     }
     
     match /fcm_tokens/{token} {
-      allow read: if true;
-      allow update, delete: if true;
-      
-      allow create: if request.resource.data.keys().hasAll(['token', 'nickname', 'approved'])
+      // 토큰 값 자체가 문서 ID인 경우에만 본인 승인 상태를 조회할 수 있다.
+      // 컬렉션 목록과 승인 변경은 Admin SDK를 사용하는 로컬 관리 도구에만 맡긴다.
+      allow get: if true;
+      allow list, update, delete: if false;
+
+      allow create: if request.resource.data.keys().hasOnly([
+                      'token', 'nickname', 'registered_at', 'createdAt', 'approved'
+                    ])
+                  && request.resource.data.keys().hasAll([
+                      'token', 'nickname', 'registered_at', 'createdAt', 'approved'
+                    ])
+                  && request.resource.data.token == token
+                  && request.resource.data.token is string
                   && request.resource.data.nickname is string
                   && request.resource.data.nickname.size() <= 30
+                  && request.resource.data.registered_at is string
+                  && request.resource.data.createdAt is timestamp
                   && request.resource.data.approved == false;
     }
   }
