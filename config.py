@@ -11,6 +11,7 @@
 KR_STOCKS = {
     "005930": {"name": "삼성전자",         "sector": "semiconductor"},
     "000660": {"name": "SK하이닉스",       "sector": "semiconductor"},
+    "042700": {"name": "한미반도체",       "sector": "semiconductor"},
     "267270": {"name": "HD현대건설기계",   "sector": "industrial"},
     "034020": {"name": "두산에너빌리티",   "sector": "industrial"},
     "010120": {"name": "LS ELECTRIC",      "sector": "industrial"},
@@ -26,14 +27,26 @@ US_STOCKS = {
     "MU":    {"name": "마이크론",       "sector": "semiconductor"},
     "MSFT":  {"name": "마이크로소프트", "sector": "ai_bigtech"},
     "GOOGL": {"name": "구글",           "sector": "ai_bigtech"},
+    "META":  {"name": "메타",           "sector": "ai_bigtech"},
+    "ORCL":  {"name": "오라클",         "sector": "ai_bigtech"},
     "CPNG":  {"name": "쿠팡",           "sector": "growth"},
     "TSLA":  {"name": "테슬라",         "sector": "growth"},
     "AMD":   {"name": "AMD",            "sector": "semiconductor"},
+    "TSM":   {"name": "TSMC",           "sector": "semiconductor"},
+    "INTC":  {"name": "인텔",           "sector": "semiconductor"},
+    "AMAT":  {"name": "어플라이드 머티어리얼즈", "sector": "semiconductor"},
+    "LRCX":  {"name": "램리서치",       "sector": "semiconductor"},
     # 미국 ADR의 주가 통화(USD)와 재무제표 통화(EUR)를 Yahoo가 혼합해
     # PBR/PS가 깨지므로 재무비율은 유럽 원주에서 가져온다.
     "ASML":  {"name": "ASML",           "sector": "semiconductor", "fundamental_ticker": "ASML.AS"},
+    # 일본 원주는 yfinance 조회 코드(8035.T)와 학습 페이지 표시 코드(8035)가 다르다.
+    "8035.T": {"name": "도쿄일렉트론",   "sector": "semiconductor", "display_code": "8035"},
     "AMZN":  {"name": "아마존",         "sector": "ai_bigtech"},
     "ANET":  {"name": "아리스타 네트웍스", "sector": "ai_bigtech"},
+    "VRT":   {"name": "버티브",         "sector": "industrial"},
+    "SMCI":  {"name": "슈퍼마이크로",   "sector": "ai_bigtech"},
+    "VST":   {"name": "비스트라",       "sector": "industrial"},
+    "PLTR":  {"name": "팔란티어",       "sector": "growth"},
 }
 
 # ============================================================

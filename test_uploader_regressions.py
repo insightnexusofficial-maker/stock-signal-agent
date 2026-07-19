@@ -455,6 +455,43 @@ class UploaderRegressionTests(unittest.TestCase):
         self.assertEqual(data["selection_hit_details"], ["nav_discount"])
         self.assertEqual(data["nav_discount_threshold"], -0.5)
 
+    @patch("uploader.requests.get")
+    def test_cycle_report_requires_unexpired_verified_company_contract(self, requests_get):
+        requests_get.return_value = FakeResponse({
+            "schema_version": "1.2",
+            "report_id": "weekly-1",
+            "generated_at": "2026-07-18T07:00:00+09:00",
+            "expires_at": "2026-07-26T07:00:00+09:00",
+            "quality_gate": {"status": "passed"},
+            "company_cycle": [{"ticker": "AMD", "status": "neutral"}],
+        })
+
+        report = uploader.fetch_cycle_report(now=uploader.datetime.fromisoformat("2026-07-19T12:00:00+09:00"))
+
+        self.assertEqual(report["report_id"], "weekly-1")
+
+    def test_cycle_context_is_display_only(self):
+        report = {
+            "report_id": "weekly-1",
+            "expires_at": "2026-07-26T07:00:00+09:00",
+            "quality_gate": {"status": "passed"},
+            "company_cycle": [{
+                "ticker": "AMD",
+                "status": "favorable",
+                "confidence": 72,
+                "label": "사이클 우호",
+                "reason": "두 축에서 긍정 근거가 확인됐습니다.",
+                "primary_segment": "ai_compute_design",
+            }],
+        }
+        stock = {"code": "AMD", "sector": "semiconductor", "step1": False, "buy_level": "none"}
+
+        uploader.attach_cycle_context(stock, report)
+
+        self.assertEqual(stock["cycle_status"], "favorable")
+        self.assertFalse(stock["step1"])
+        self.assertEqual(stock["buy_level"], "none")
+
 
 if __name__ == "__main__":
     unittest.main()

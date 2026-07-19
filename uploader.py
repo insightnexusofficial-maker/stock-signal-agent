@@ -39,6 +39,11 @@ APP_SECRET = os.getenv("KIS_APP_SECRET")
 BASE_URL = "https://openapi.koreainvestment.com:9443"
 
 KST = timezone(timedelta(hours=9))
+CYCLE_REPORT_URL = os.getenv(
+    "SAYO_CYCLE_REPORT_URL",
+    "https://stock-sayo-study.web.app/data/cycle-latest.json",
+)
+CYCLE_COVERED_SECTORS = {"semiconductor", "ai_bigtech", "industrial"}
 
 
 # ============================================================
@@ -141,6 +146,61 @@ def calculate_forward_peg(forward_pe, expected_eps_growth_pct):
     if pe is None or growth is None or pe <= 0 or growth <= 0:
         return None
     return round(pe / growth, 2)
+
+
+def fetch_cycle_report(url=None, now=None):
+    """Study가 확정한 사이클 스냅샷만 읽는다. 매수 판정에는 사용하지 않는다."""
+    now = now or datetime.now(KST)
+    try:
+        response = requests.get(url or CYCLE_REPORT_URL, timeout=12)
+        response.raise_for_status()
+        report = response.json()
+        expires_at = datetime.fromisoformat(str(report.get("expires_at") or ""))
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=KST)
+        if (
+            report.get("schema_version") not in {"1.1", "1.2"}
+            or report.get("quality_gate", {}).get("status") != "passed"
+            or expires_at <= now
+            or not isinstance(report.get("company_cycle"), list)
+        ):
+            raise ValueError("검증 또는 만료 조건을 통과하지 못한 사이클 리포트")
+        return report
+    except Exception as error:
+        print(f"   사이클 리포트 폴백: {error}")
+        return {
+            "schema_version": "1.2",
+            "report_id": None,
+            "generated_at": None,
+            "expires_at": None,
+            "quality_gate": {"status": "unavailable"},
+            "company_cycle": [],
+        }
+
+
+def attach_cycle_context(data, cycle_report):
+    """종목에 표시용 사이클 문맥을 붙인다. signal/step/buy_level은 변경하지 않는다."""
+    ticker = str(data.get("code") or "").upper()
+    company = next(
+        (
+            item for item in cycle_report.get("company_cycle", [])
+            if str(item.get("ticker") or "").upper() == ticker
+        ),
+        None,
+    )
+    if company:
+        data["cycle_status"] = company.get("status", "neutral")
+        data["cycle_confidence"] = company.get("confidence")
+        data["cycle_label"] = company.get("label")
+        data["cycle_reason"] = company.get("reason")
+        data["cycle_primary_segment"] = company.get("primary_segment")
+        data["cycle_report_id"] = cycle_report.get("report_id")
+        data["cycle_expires_at"] = cycle_report.get("expires_at")
+    elif data.get("sector") in CYCLE_COVERED_SECTORS and cycle_report.get("quality_gate", {}).get("status") != "passed":
+        data["cycle_status"] = "pending"
+        data["cycle_label"] = "사이클 중립 · 갱신 대기"
+        data["cycle_reason"] = "검증된 최신 사이클 리포트를 불러오지 못했습니다."
+    return data
 
 
 def calculate_cagr(start_value, end_value, years):
@@ -658,6 +718,7 @@ KR_STOCK_SNAPSHOT_FIELDS = (
     "peg_source", "peg_quality", "annual_per_fwd", "annual_pbr_fwd",
     "target_price", "target_gap", "investment_opinion_score",
     "per_source", "eps_source", "target_price_source", "trailing_source",
+    "operating_margin", "return_on_equity", "debt_to_equity", "free_cash_flow_margin",
 )
 
 # 입력값을 복원한 뒤 다시 계산해야 하는 필드. 과거 스냅샷의 파생값을 그대로
@@ -940,6 +1001,9 @@ def get_naver_consensus(code):
         bps_values = _get_row_values(finance_table, "BPS")
         dps_values = _get_row_values(finance_table, "주당배당금")
         div_values = _get_row_values(finance_table, "시가배당률")
+        operating_margin_values = _get_row_values(finance_table, "영업이익률")
+        roe_values = _get_row_values(finance_table, "ROE")
+        debt_ratio_values = _get_row_values(finance_table, "부채비율")
         
         if len(eps_values) >= 4:
             prev_eps = eps_values[2]
@@ -959,6 +1023,12 @@ def get_naver_consensus(code):
             result["annual_dps_latest"] = dps_values[2]
         if len(div_values) >= 3 and div_values[2] is not None and div_values[2] >= 0:
             result["annual_div_yield_latest"] = div_values[2]
+        if len(operating_margin_values) >= 3 and operating_margin_values[2] is not None:
+            result["operating_margin"] = operating_margin_values[2]
+        if len(roe_values) >= 3 and roe_values[2] is not None:
+            result["return_on_equity"] = roe_values[2]
+        if len(debt_ratio_values) >= 3 and debt_ratio_values[2] is not None and debt_ratio_values[2] >= 0:
+            result["debt_to_equity"] = debt_ratio_values[2]
     
     return result
 
@@ -1283,6 +1353,19 @@ def get_us_stock_data(ticker, fundamental_ticker=None):
     result["financial_currency"] = info.get("financialCurrency")
     result["eps_fwd"] = info.get("forwardEps")
     result["eps_ttm"] = info.get("trailingEps")
+    operating_margin = _to_float(fundamental_info.get("operatingMargins"))
+    return_on_equity = _to_float(fundamental_info.get("returnOnEquity"))
+    debt_to_equity = _to_float(fundamental_info.get("debtToEquity"))
+    free_cash_flow = _to_float(fundamental_info.get("freeCashflow"))
+    total_revenue = _to_float(fundamental_info.get("totalRevenue"))
+    result["operating_margin"] = round(operating_margin * 100, 1) if operating_margin is not None else None
+    result["return_on_equity"] = round(return_on_equity * 100, 1) if return_on_equity is not None else None
+    result["debt_to_equity"] = round(debt_to_equity, 1) if debt_to_equity is not None and debt_to_equity >= 0 else None
+    result["free_cash_flow_margin"] = (
+        round(free_cash_flow / total_revenue * 100, 1)
+        if free_cash_flow is not None and total_revenue is not None and total_revenue > 0
+        else None
+    )
     
     eps_growth, eps_growth_source = get_us_forward_eps_growth(stock, info)
     if eps_growth is not None:
@@ -1983,6 +2066,7 @@ def upload_data():
     
     print("\n📈 매크로 지표 확인...")
     macro = get_macro_data()
+    cycle_report = fetch_cycle_report()
     
     vix_info = macro.get("vix")
     qqq_info = macro.get("qqq")
@@ -2070,6 +2154,8 @@ def upload_data():
             step1, step2, reason = check_stock_signal(merged, sector, macro, region="kr")
             merged["step1"] = step1
             merged["step2"] = step2
+            merged["data_as_of"] = merged.get("stale_as_of") or get_date_str()
+            attach_cycle_context(merged, cycle_report)
             if reason:
                 merged["skip_reason"] = reason
             
@@ -2142,17 +2228,20 @@ def upload_data():
     for ticker, info in US_STOCKS.items():
         name = info["name"]
         sector = info["sector"]
+        code = info.get("display_code", ticker)
         print(f"   {name} ({sector})...")
         try:
             data = get_us_stock_data(ticker, info.get("fundamental_ticker"))
-            data["code"] = ticker
+            data["code"] = code
             data["name"] = name
             data["sector"] = sector
+            if code != ticker:
+                data["quote_ticker"] = ticker
             
             # (target_gap은 get_us_stock_data 안에서 이미 계산됨)
             
             # 스냅샷 저장
-            save_snapshot(ticker, {
+            save_snapshot(code, {
                 "eps_fwd": data.get("eps_fwd"),
                 "peg_fwd": data.get("peg_fwd"),
                 "pbr": data.get("pbr"),
@@ -2160,14 +2249,21 @@ def upload_data():
                 "ps": data.get("ps"),
                 "target_price": data.get("target_price"),
                 "earnings_surprise_pct": data.get("earnings_surprise_pct"),
+                "operating_margin": data.get("operating_margin"),
+                "return_on_equity": data.get("return_on_equity"),
+                "debt_to_equity": data.get("debt_to_equity"),
+                "free_cash_flow_margin": data.get("free_cash_flow_margin"),
                 "price": data.get("price"),
                 "rsi": data.get("rsi"),
+                "data_as_of": get_date_str(),
             })
             
             # 매수 시그널
             step1, step2, reason = check_stock_signal(data, sector, macro, region="us")
             data["step1"] = step1
             data["step2"] = step2
+            data["data_as_of"] = get_date_str()
+            attach_cycle_context(data, cycle_report)
             if reason:
                 data["skip_reason"] = reason
             
@@ -2205,6 +2301,12 @@ def upload_data():
         "market_mode": mode_us,       # 하위호환 (기존 PWA)
         "market_mode_us": mode_us,
         "market_mode_kr": mode_kr,
+        "cycle_report": {
+            "report_id": cycle_report.get("report_id"),
+            "generated_at": cycle_report.get("generated_at"),
+            "expires_at": cycle_report.get("expires_at"),
+            "quality_status": cycle_report.get("quality_gate", {}).get("status"),
+        },
         "updated": updated,
     }
     

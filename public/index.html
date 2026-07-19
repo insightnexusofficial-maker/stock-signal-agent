@@ -486,6 +486,9 @@ button {
 .badge.warn { background: rgba(255, 184, 77, 0.18); color: var(--signal-warn); }
 .badge.watch { background: rgba(255, 140, 66, 0.20); color: var(--signal-watch); }
 .badge.info { background: rgba(92, 179, 255, 0.18); color: var(--signal-info); }
+.badge.cycle-favorable { background: rgba(47, 133, 90, 0.18); color: #67d59a; }
+.badge.cycle-neutral { background: rgba(122, 162, 194, 0.15); color: var(--signal-info); }
+.badge.cycle-caution { background: rgba(255, 184, 77, 0.18); color: var(--signal-warn); }
 
 /* 표 헤더 (선택적) */
 .stock-table-header {
@@ -1549,6 +1552,9 @@ button {
 .stock-row .badge.warn { background: rgba(212, 165, 116, 0.15); color: var(--signal-warn); }
 .stock-row .badge.watch { background: rgba(201, 140, 94, 0.15); color: var(--signal-watch); }
 .stock-row .badge.info { background: rgba(122, 162, 194, 0.15); color: var(--signal-info); }
+.stock-row .badge.cycle-favorable { background: rgba(47, 133, 90, 0.18); color: #67d59a; }
+.stock-row .badge.cycle-neutral { background: rgba(122, 162, 194, 0.15); color: var(--signal-info); }
+.stock-row .badge.cycle-caution { background: rgba(212, 165, 116, 0.15); color: var(--signal-warn); }
 
 /* 요약 영역 (RSI + 가격) */
 .stock-row-summary {
@@ -2403,6 +2409,12 @@ button {
       }
       return String(val);
     }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>'"]/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
+      })[char]);
+    }
     
     function fmtPrice(price, region) {
       if (price === null || price === undefined) return "—";
@@ -2516,6 +2528,18 @@ button {
         badges.push({ label: "주의", cls: "warn" });
       } else if (infoLevel === "info_mild") {
         badges.push({ label: "정보", cls: "info" });
+      }
+
+      // Study의 검증된 사이클은 표시만 한다. 매수 레벨·행 강조·정렬에는 관여하지 않는다.
+      const cycleStatus = stock.cycle_status;
+      if (["favorable", "neutral", "caution", "pending"].includes(cycleStatus)) {
+        const cycleMap = {
+          favorable: { label: "사이클 우호", cls: "cycle-favorable" },
+          neutral: { label: "사이클 중립", cls: "cycle-neutral" },
+          caution: { label: "사이클 주의", cls: "cycle-caution" },
+          pending: { label: "사이클 갱신 대기", cls: "cycle-neutral" },
+        };
+        badges.push(cycleMap[cycleStatus]);
       }
       
       return { rowClass, badges };
@@ -2719,6 +2743,7 @@ button {
     const reasons = [];
     (stock.crisis_details || []).forEach(d => reasons.push(`<span class="reason-tag">${d}</span>`));
     (stock.info_reasons || []).forEach(d => reasons.push(`<span class="reason-tag">${d}</span>`));
+    if (stock.cycle_reason) reasons.push(`<span class="reason-tag">사이클 · ${escapeHtml(stock.cycle_reason)}</span>`);
     const reasonsHtml = reasons.length > 0 ? `<div class="detail-reasons">${reasons.join(" ")}</div>` : "";
     
     // 펼침 영역의 모든 지표 항목
