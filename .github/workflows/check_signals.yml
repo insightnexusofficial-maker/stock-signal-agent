@@ -5,11 +5,16 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
   group: stock-signal-check
-  cancel-in-progress: false
+  # 시세 데이터는 최신 실행의 가치가 가장 높다. 오래 대기한 실행이 복구 뒤
+  # 최신 실행을 막지 않도록 새 dispatch가 이전 실행/대기를 대체한다.
+  # 현재 외부 30분 간격은 25분 job timeout보다 길다. 10분으로 줄이기 전에는
+  # OPERATIONS.md의 전환 게이트에 따라 실행 시간을 먼저 줄여야 한다.
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -17,6 +22,45 @@ jobs:
     timeout-minutes: 25
     
     steps:
+      - name: Record dispatch and job start
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          job_started_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          job_started_epoch="$(date -u +'%s')"
+          dispatch_at=""
+          run_api="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          if response="$(curl --silent --show-error --fail \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$run_api" 2>/dev/null)"; then
+            dispatch_at="$(jq -r '.created_at // empty' <<<"$response" 2>/dev/null || true)"
+          fi
+          if [ -z "$dispatch_at" ]; then
+            dispatch_at="unavailable"
+          fi
+
+          {
+            printf 'SAYO_DISPATCH_AT=%s\n' "$dispatch_at"
+            printf 'SAYO_JOB_STARTED_AT=%s\n' "$job_started_at"
+            printf 'SAYO_JOB_STARTED_EPOCH=%s\n' "$job_started_epoch"
+          } >> "$GITHUB_ENV"
+
+          {
+            printf '## Stock Signal Check\n\n'
+            printf '| 공개 운영 항목 | 값 |\n'
+            printf '| --- | --- |\n'
+            printf '| Dispatch 접수 (UTC) | `%s` |\n' "$dispatch_at"
+            printf '| 실제 job 시작 (UTC) | `%s` |\n' "$job_started_at"
+            printf '| Run | [`%s` 시도 `%s`](%s/%s/actions/runs/%s) |\n' \
+              "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SERVER_URL" \
+              "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
+            printf '| Commit | `%s` |\n' "$GITHUB_SHA"
+            printf '\n이 요약에는 비밀값, API 응답 본문, 사용자 데이터가 포함되지 않습니다.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Check out repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -42,8 +86,33 @@ jobs:
           printf '%s\n' "KIS_APP_SECRET=${{ secrets.KIS_APP_SECRET }}" >> .env
       
       - name: Run signal checker
+        id: signal_checker
         run: python uploader.py
 
       - name: Remove temporary credentials
         if: always()
         run: rm -f .env firebase-key.json
+
+      - name: Record completion
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          SIGNAL_CHECKER_OUTCOME: ${{ steps.signal_checker.outcome }}
+        run: |
+          completed_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          completed_epoch="$(date -u +'%s')"
+          elapsed="unavailable"
+          if [[ "${SAYO_JOB_STARTED_EPOCH:-}" =~ ^[0-9]+$ ]]; then
+            elapsed="$((completed_epoch - SAYO_JOB_STARTED_EPOCH))s"
+          fi
+          signal_outcome="${SIGNAL_CHECKER_OUTCOME:-not-run}"
+
+          {
+            printf '\n| 완료 항목 | 값 |\n'
+            printf '| --- | --- |\n'
+            printf '| 요약 기록 시각 (UTC) | `%s` |\n' "$completed_at"
+            printf '| Job 경과 시간 | `%s` |\n' "$elapsed"
+            printf '| Job 상태 | `%s` |\n' "$JOB_STATUS"
+            printf '| Signal checker 단계 | `%s` |\n' "$signal_outcome"
+            printf '\n> `success`는 프로세스 종료 상태입니다. 공급자별 데이터 완전성은 별도 신선도 감사를 통과해야 합니다.\n'
+          } >> "$GITHUB_STEP_SUMMARY"

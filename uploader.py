@@ -17,20 +17,27 @@ from config import (
     SLOPE_RULES, BUY_LEVELS, EXIT_TRIGGERS,
 )
 
-load_dotenv()
+if os.getenv("SAYO_SKIP_FIREBASE_INIT") != "1":
+    load_dotenv()
 
-try:
-    firebase_admin.get_app()
-except ValueError:
-    cred = credentials.Certificate("firebase-key.json")
-    firebase_admin.initialize_app(cred)
+if os.getenv("SAYO_SKIP_FIREBASE_INIT") == "1":
+    # Unit tests can exercise collection logic without opening local credentials.
+    db = None
+else:
+    try:
+        firebase_admin.get_app()
+    except ValueError:
+        cred = credentials.Certificate("firebase-key.json")
+        firebase_admin.initialize_app(cred)
 
-db = firestore.client()
+    db = firestore.client()
 
 # Snapshot 캐시 (실행당 1번만 조회)
 _snapshot_cache = {}
 _read_counter = {"calls": 0, "cache_hits": 0, "actual_reads": 0}
 _published_payload_cache = None
+_active_collection_report = None
+_kis_token_cache = {"token": None, "expires_at": 0.0}
 
 
 
@@ -44,6 +51,75 @@ CYCLE_REPORT_URL = os.getenv(
     "https://stock-sayo-study.web.app/data/cycle-latest.json",
 )
 CYCLE_COVERED_SECTORS = {"semiconductor", "ai_bigtech", "industrial"}
+
+
+class KisApiError(RuntimeError):
+    """KIS 오류를 비밀이나 원문 응답 없이 분류해 전달한다."""
+
+    def __init__(self, category):
+        super().__init__(category)
+        self.category = category
+
+
+def _iso_kst(value=None):
+    return (value or datetime.now(KST)).isoformat(timespec="seconds")
+
+
+def _new_collection_report():
+    return {
+        "error_count": 0,
+        "critical_error_count": 0,
+        "errors_by_provider": {},
+        "errors_by_stage": {},
+        "errors_by_category": {},
+    }
+
+
+def _increment_counter(mapping, key):
+    key = str(key or "unknown")
+    mapping[key] = mapping.get(key, 0) + 1
+
+
+def _record_collection_error(provider, stage, category, critical=False):
+    """공개 가능한 분류와 개수만 기록한다. 예외/응답 원문은 저장하지 않는다."""
+    report = _active_collection_report
+    if report is None:
+        return
+    report["error_count"] += 1
+    if critical:
+        report["critical_error_count"] += 1
+    _increment_counter(report["errors_by_provider"], provider)
+    _increment_counter(report["errors_by_stage"], stage)
+    _increment_counter(report["errors_by_category"], category)
+
+
+def _classify_request_error(error):
+    if isinstance(error, requests.Timeout):
+        return "timeout"
+    if isinstance(error, requests.HTTPError):
+        status = getattr(getattr(error, "response", None), "status_code", None)
+        if status == 429:
+            return "rate_limited"
+        if status in (401, 403):
+            return "authentication"
+        if status is not None and status >= 500:
+            return "upstream_server_error"
+        return "http_error"
+    if isinstance(error, requests.RequestException):
+        return "network_error"
+    if isinstance(error, (ValueError, json.JSONDecodeError)):
+        return "invalid_response"
+    return "unexpected_error"
+
+
+def _classify_kis_payload(payload):
+    code = str(payload.get("msg_cd") or payload.get("error_code") or "").upper()
+    message = str(payload.get("msg1") or payload.get("message") or "").lower()
+    if code == "EGW00201" or "초당" in message or "rate" in message:
+        return "rate_limited"
+    if any(word in message for word in ("token", "토큰", "인증", "authorization")):
+        return "authentication"
+    return "api_error"
 
 
 # ============================================================
@@ -167,6 +243,11 @@ def fetch_cycle_report(url=None, now=None):
             raise ValueError("검증 또는 만료 조건을 통과하지 못한 사이클 리포트")
         return report
     except Exception as error:
+        _record_collection_error(
+            "stock_sayo_study",
+            "cycle_report",
+            _classify_request_error(error),
+        )
         print(f"   사이클 리포트 폴백: {error}")
         return {
             "schema_version": "1.2",
@@ -512,6 +593,7 @@ def get_macro_data():
                 "reversal": reversal,
             }
     except Exception as e:
+        _record_collection_error("yahoo", "macro_vix", _classify_request_error(e))
         print(f"   VIX 에러: {e}")
     
     # QQQ
@@ -527,6 +609,7 @@ def get_macro_data():
         if status:
             result["qqq"] = status
     except Exception as e:
+        _record_collection_error("yahoo", "macro_qqq", _classify_request_error(e))
         print(f"   QQQ 에러: {e}")
     
     # KOSPI
@@ -542,6 +625,7 @@ def get_macro_data():
         if status:
             result["kospi"] = status
     except Exception as e:
+        _record_collection_error("yahoo", "macro_kospi", _classify_request_error(e))
         print(f"   KOSPI 에러: {e}")
     
     # 환율 (USD/KRW): HTML 구조나 단일 공급원 장애에 묶이지 않도록 순차 폴백.
@@ -556,6 +640,11 @@ def get_macro_data():
             if result["usdkrw"]:
                 break
         except Exception as e:
+            _record_collection_error(
+                "naver" if "네이버" in provider_name else "yahoo",
+                "macro_usdkrw",
+                _classify_request_error(e),
+            )
             print(f"   USD/KRW {provider_name} 에러: {e}")
 
     for field in ("vix", "qqq", "kospi", "usdkrw"):
@@ -732,6 +821,14 @@ KR_ETF_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
     "nav", "nav_discount", "band_pct",
     "distribution_yield_ttm", "distribution_yield_monthly",
+    "distribution_recent_yield_monthly", "distribution_recent_amount",
+    "distribution_record_date", "distribution_payment_date",
+    "distribution_actual_source", "distribution_actual_source_url",
+    "distribution_actual_checked_month",
+    "distribution_schedule", "distribution_schedule_source",
+    "distribution_schedule_source_url",
+    "distribution_monitoring_start_month",
+    "distribution_update_due",
     "distribution_target_yield_annual", "distribution_target_yield_monthly",
     "distribution_target_source", "distribution_target_checked_month",
     "expected_dividend_5m", "expected_monthly_dividend_5m", "expected_dividend_source",
@@ -825,43 +922,75 @@ def calculate_target_trend(code):
 # ============================================================
 # 국내 주식 (KIS API + FnGuide)
 # ============================================================
-def get_kis_token():
+def get_kis_token(force_refresh=False):
+    """KIS 토큰을 프로세스 메모리 안에서만 재사용한다.
+
+    GitHub Actions처럼 매번 새 프로세스가 뜨는 환경에서는 실행 간 캐시가 남지 않는다.
+    장기 실행 스케줄러에서는 토큰 발급 응답의 만료시간 이내에 재발급을 피한다.
+    """
     if not APP_KEY or not APP_SECRET:
-        raise RuntimeError("KIS_APP_KEY 또는 KIS_APP_SECRET이 없습니다")
+        raise KisApiError("missing_credentials")
+
+    now = time.monotonic()
+    if (
+        not force_refresh
+        and _kis_token_cache.get("token")
+        and now < _kis_token_cache.get("expires_at", 0)
+    ):
+        return _kis_token_cache["token"]
+
     url = f"{BASE_URL}/oauth2/tokenP"
     body = {"grant_type": "client_credentials", "appkey": APP_KEY, "appsecret": APP_SECRET}
-    res = requests.post(url, headers={"content-type": "application/json"}, json=body, timeout=12)
-    res.raise_for_status()
-    payload = res.json()
+    try:
+        res = requests.post(url, headers={"content-type": "application/json"}, json=body, timeout=12)
+        res.raise_for_status()
+        payload = res.json()
+    except (requests.RequestException, ValueError) as error:
+        raise KisApiError(_classify_request_error(error)) from None
+
     token = payload.get("access_token")
     if not token:
-        raise RuntimeError(payload.get("error_description") or payload.get("msg1") or "KIS 토큰 응답에 access_token이 없습니다")
+        raise KisApiError(_classify_kis_payload(payload))
+
+    expires_in = _to_float(payload.get("expires_in"))
+    # 응답에 만료 초가 없더라도 공식 24시간 수명보다 보수적인 23시간만 유지한다.
+    cache_seconds = min(max((expires_in or 86400) - 60, 60), 23 * 60 * 60)
+    _kis_token_cache.update({"token": token, "expires_at": now + cache_seconds})
     return token
 
 
-def _get_kis_json(url, headers, params, label, attempts=3):
-    """KIS의 일시적 호출 제한은 재시도하고 최종 실패는 종목 누락 대신 빈 응답으로 돌린다."""
+def _get_kis_json(url, headers, params, label, attempts=3, stage="kis_request"):
+    """재시도 가능한 KIS 오류만 backoff하고 공개 요약에는 분류만 남긴다."""
     for attempt in range(1, attempts + 1):
+        response = None
         try:
-            res = requests.get(url, headers=headers, params=params, timeout=12)
-            res.raise_for_status()
-            payload = res.json()
-        except (requests.RequestException, ValueError) as e:
-            if attempt == attempts:
-                print(f"   KIS {label} 요청 에러: {e}")
-                return {}
-            time.sleep(0.7 * attempt)
-            continue
+            response = requests.get(url, headers=headers, params=params, timeout=12)
+            response.raise_for_status()
+            payload = response.json()
+        except (requests.RequestException, ValueError) as error:
+            category = _classify_request_error(error)
+            retryable = category in {
+                "timeout", "network_error", "rate_limited", "upstream_server_error",
+            }
+            if attempt < attempts and retryable:
+                retry_after = _to_float(getattr(response, "headers", {}).get("Retry-After"))
+                time.sleep(retry_after if retry_after is not None else 0.7 * attempt)
+                continue
+            _record_collection_error("kis", stage, category)
+            print(f"   KIS {label} 요청 실패 ({category})")
+            return {}
 
         if payload.get("rt_cd") == "0":
             return payload
 
-        message = payload.get("msg1") or payload.get("message") or "알 수 없는 오류"
-        code = payload.get("msg_cd") or payload.get("error_code") or payload.get("rt_cd")
-        if attempt == attempts:
-            print(f"   KIS {label} 실패 [{code}]: {message}")
-            return payload
-        time.sleep(0.7 * attempt)
+        category = _classify_kis_payload(payload)
+        retryable = category in {"rate_limited", "upstream_server_error"}
+        if attempt < attempts and retryable:
+            time.sleep(0.7 * attempt)
+            continue
+        _record_collection_error("kis", stage, category)
+        print(f"   KIS {label} 실패 ({category})")
+        return payload
     return {}
 
 
@@ -891,7 +1020,7 @@ def get_kr_stock_data(token, code):
         headers = {"authorization": f"Bearer {token}", "appkey": APP_KEY, "appsecret": APP_SECRET, "tr_id": "FHKST01010100"}
         url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price"
         params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code}
-        payload = _get_kis_json(url, headers, params, f"현재가 {code}")
+        payload = _get_kis_json(url, headers, params, f"현재가 {code}", stage="kr_quote")
         if payload.get("rt_cd") == "0":
             output = payload.get("output") or {}
             result["price"] = int(output["stck_prpr"]) if output.get("stck_prpr") else None
@@ -904,7 +1033,7 @@ def get_kr_stock_data(token, code):
         url = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice"
         today = datetime.now(KST).strftime("%Y%m%d")
         params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code, "FID_INPUT_DATE_1": "20250101", "FID_INPUT_DATE_2": today, "FID_PERIOD_DIV_CODE": "D", "FID_ORG_ADJ_PRC": "0"}
-        payload = _get_kis_json(url, headers, params, f"일봉 {code}")
+        payload = _get_kis_json(url, headers, params, f"일봉 {code}", stage="kr_history")
         if payload.get("rt_cd") == "0":
             candles = [d for d in (payload.get("output2") or []) if d.get("stck_clpr")]
             prices = [int(d["stck_clpr"]) for d in reversed(candles)]
@@ -933,6 +1062,7 @@ def get_kr_stock_data(token, code):
         if naver_price:
             result.update(naver_quote)
     except Exception as e:
+        _record_collection_error("naver", "kr_quote", _classify_request_error(e))
         print(f"   네이버 현재가 에러 ({code}): {e}")
     
     return result
@@ -1170,6 +1300,7 @@ def get_kr_valuation(code):
     try:
         result.update(get_naver_consensus(code))
     except Exception as e:
+        _record_collection_error("naver", "kr_consensus", _classify_request_error(e))
         print(f"   네이버 컨센서스 에러 ({code}): {e}")
 
     # 네이버 요약표에는 다음 해 한 개 전망만 노출된다. PEG에는 과거 실적을
@@ -1177,6 +1308,7 @@ def get_kr_valuation(code):
     try:
         result.update(get_fnguide_forward_consensus(code))
     except Exception as e:
+        _record_collection_error("fnguide", "kr_consensus", _classify_request_error(e))
         print(f"   FnGuide 복수 연도 컨센서스 에러 ({code}): {e}")
     
     if result.get("per_ttm") is None:
@@ -1534,12 +1666,88 @@ def get_naver_etf_metrics(code):
         if expected_monthly_yield is not None and expected_monthly_yield > 0:
             result["expected_monthly_dividend_5m"] = int(round(5_000_000 * expected_monthly_yield / 100, 0))
     except Exception as e:
+        _record_collection_error("naver", "etf_metrics", _classify_request_error(e))
         print(f"   네이버 ETF 지표 에러 ({code}): {e}")
     return result
 
 
-def apply_configured_etf_distribution_target(etf, result):
-    """설정에 명시한 목표 분배율을 월 기준 계산값으로 적용한다."""
+def _last_business_day(year, month):
+    if month == 12:
+        day = datetime(year + 1, 1, 1, tzinfo=KST) - timedelta(days=1)
+    else:
+        day = datetime(year, month + 1, 1, tzinfo=KST) - timedelta(days=1)
+    while day.weekday() >= 5:
+        day -= timedelta(days=1)
+    return day.date()
+
+
+def distribution_update_due(etf, now=None):
+    """마지막 공식 확인월 이후 해당 상품의 월 지급기준일이 지났는지 판정한다."""
+    now = now or datetime.now(KST)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=KST)
+    else:
+        now = now.astimezone(KST)
+
+    checked_month = str(etf.get("distribution_actual_checked_month") or "")
+    current_month = now.strftime("%Y-%m")
+    if checked_month >= current_month:
+        return False
+
+    prior_month = (now.replace(day=1) - timedelta(days=1)).strftime("%Y-%m")
+    if checked_month and checked_month < prior_month:
+        return True
+    monitoring_start = str(etf.get("distribution_monitoring_start_month") or "")
+    if not checked_month and monitoring_start and current_month > monitoring_start:
+        return True
+
+    schedule = etf.get("distribution_schedule")
+    if schedule == "monthly_15":
+        return now.day >= 15
+    if schedule == "monthly_last_business_day":
+        return now.date() >= _last_business_day(now.year, now.month)
+    return bool(schedule)
+
+
+def apply_configured_etf_distribution_target(etf, result, now=None):
+    """최근 실제 분배율을 우선하고, 없을 때만 설정한 예상/목표 분배율을 쓴다."""
+    for field in (
+        "distribution_recent_amount",
+        "distribution_record_date",
+        "distribution_payment_date",
+        "distribution_actual_source",
+        "distribution_actual_source_url",
+        "distribution_actual_checked_month",
+        "distribution_schedule",
+        "distribution_schedule_source",
+        "distribution_schedule_source_url",
+        "distribution_monitoring_start_month",
+    ):
+        if etf.get(field) is not None:
+            result[field] = etf[field]
+    result["distribution_update_due"] = distribution_update_due(etf, now=now)
+
+    recent_monthly_yield = _to_float(etf.get("distribution_recent_yield_monthly"))
+    if recent_monthly_yield is not None and recent_monthly_yield > 0:
+        recent_monthly_yield = round(recent_monthly_yield, 2)
+        result["distribution_recent_yield_monthly"] = recent_monthly_yield
+        result["distribution_yield_monthly"] = recent_monthly_yield
+        result["expected_dividend_source"] = "recent_monthly_distribution_yield"
+        result["expected_dividend_5m"] = int(round(
+            5_000_000 * recent_monthly_yield * 12 / 100, 0,
+        ))
+        result["expected_monthly_dividend_5m"] = int(round(
+            5_000_000 * recent_monthly_yield / 100, 0,
+        ))
+        return result
+
+    # 공급자가 최근 1회 월 분배율로 명시한 값도 사용자 예상값보다 우선한다.
+    if (
+        result.get("expected_dividend_source") == "recent_monthly_distribution_yield"
+        and _to_float(result.get("distribution_yield_monthly")) is not None
+    ):
+        return result
+
     monthly_yield = _to_float(etf.get("distribution_target_yield_monthly"))
     annual_yield = _to_float(etf.get("distribution_target_yield_annual"))
     if monthly_yield is not None and monthly_yield > 0:
@@ -1586,6 +1794,7 @@ def get_etf_data(etf):
                 result["band_pct"] = round((result["price"] - low52) / (high52 - low52) * 100, 1)
         
     except Exception as e:
+        _record_collection_error("yahoo", "etf_market_data", _classify_request_error(e))
         print(f"   ETF 에러 ({etf['name']}): {e}")
 
     for key, value in naver_metrics.items():
@@ -1621,7 +1830,8 @@ def get_etf_data(etf):
                 nav = float(td_values[0].replace(",", ""))
                 result["nav"] = nav
                 result["nav_discount"] = round((result["price"] - nav) / nav * 100, 2)
-    except: pass
+    except Exception as e:
+        _record_collection_error("naver", "etf_nav", _classify_request_error(e))
     
     apply_configured_etf_distribution_target(etf, result)
 
@@ -2038,8 +2248,51 @@ def check_crisis_trigger(data, macro):
     return triggers, details
 
 
-def publish_payload_patch(payload):
-    """긴 수집 작업의 앞 단계 결과를 먼저 공개해 뒷 단계 장애의 영향을 격리한다."""
+def _collection_summary(report, collected_counts=None):
+    return {
+        "expected_counts": {
+            "kr_stock": len(KR_STOCKS),
+            "kr_etf": len(dedupe_records(KR_ETFS, code_key="ticker_krx")),
+            "us_stock": len(US_STOCKS),
+            "macro": 4,
+        },
+        "collected_counts": collected_counts or {
+            "kr_stock": 0, "kr_etf": 0, "us_stock": 0, "macro": 0,
+        },
+        "error_count": report["error_count"],
+        "critical_error_count": report["critical_error_count"],
+        "errors_by_provider": dict(report["errors_by_provider"]),
+        "errors_by_stage": dict(report["errors_by_stage"]),
+        "errors_by_category": dict(report["errors_by_category"]),
+    }
+
+
+def _collection_status(report, counts):
+    expected = _collection_summary(report)["expected_counts"]
+    complete = all(counts.get(key, 0) == value for key, value in expected.items())
+    if complete and report["critical_error_count"] == 0:
+        return "success"
+    instrument_count = sum(counts.get(key, 0) for key in ("kr_stock", "kr_etf", "us_stock"))
+    if instrument_count == 0 or report["critical_error_count"] > 0 and counts.get("macro", 0) == 0:
+        return "failed"
+    return "partial"
+
+
+def _final_collection_metadata(report, counts, started_at, finished_at):
+    status = _collection_status(report, counts)
+    metadata = {
+        "last_attempt_at": _iso_kst(started_at),
+        "collection_finished_at": _iso_kst(finished_at),
+        "collection_status": status,
+        "collection_summary": _collection_summary(report, counts),
+    }
+    if status == "success":
+        metadata["updated"] = finished_at.strftime("%m월 %d일 %H:%M")
+    return metadata
+
+
+def publish_payload_patch(payload, update_last_good=False):
+    """data에는 진행/부분 상태를 게시하고 완전 성공일 때만 last_good을 갱신한다."""
     safe_payload = {}
     protected_lists = {"kr_stock", "kr_etf", "us_stock"}
     for key, value in payload.items():
@@ -2054,14 +2307,13 @@ def publish_payload_patch(payload):
         return
     sanitized = _sanitize_for_firestore(safe_payload)
     db.collection("stocks").document("data").set(sanitized, merge=True)
-    # 구버전 수집기가 stocks/data를 통째로 덮어써도 정상값을 복원할 수 있게
-    # 별도 문서에 마지막 성공 결과를 유지한다.
-    db.collection("stocks").document("last_good").set(sanitized, merge=True)
+    if update_last_good:
+        db.collection("stocks").document("last_good").set(sanitized, merge=True)
 
 # ============================================================
 # 메인 업로드 함수
 # ============================================================
-def upload_data():
+def _run_upload_data(report, started_at):
     print("📊 데이터 수집 시작...")
     
     print("\n📈 매크로 지표 확인...")
@@ -2092,7 +2344,6 @@ def upload_data():
     mode_map = {"normal": "🟢 일반", "adjust": "🟡 조정", "caution": "🟠 경계", "panic": "🔴 공포"}
     print(f"   미국 모드: {mode_map.get(mode_us, mode_us)} | 한국 모드: {mode_map.get(mode_kr, mode_kr)}")
 
-    updated = datetime.now(KST).strftime("%m월 %d일 %H:%M")
     try:
         publish_payload_patch({
             "vix": macro.get("vix"),
@@ -2102,17 +2353,21 @@ def upload_data():
             "market_mode": mode_us,
             "market_mode_us": mode_us,
             "market_mode_kr": mode_kr,
-            "updated": updated,
+            "last_attempt_at": _iso_kst(started_at),
+            "collection_status": "running",
+            "collection_summary": _collection_summary(report),
         })
     except Exception as e:
+        _record_collection_error("firestore", "macro_publish", _classify_request_error(e), critical=True)
         print(f"   매크로 중간 업로드 에러: {e}")
     
     # === 국내 주식 ===
     print("\n🇰🇷 국내 주식...")
     try:
         token = get_kis_token()
-    except Exception as e:
-        print(f"   KIS 토큰 에러: {e}")
+    except KisApiError as e:
+        _record_collection_error("kis", "authentication", e.category, critical=True)
+        print(f"   KIS 토큰 에러 ({e.category})")
         token = None
     
     kr_stock_list = []
@@ -2173,14 +2428,25 @@ def upload_data():
             
             kr_stock_list.append(merged)
         except Exception as e:
+            _record_collection_error("collection", "kr_stock", _classify_request_error(e))
             print(f"   에러: {e}")
             continue
 
     kr_stock_list = dedupe_records(kr_stock_list)
     try:
-        publish_payload_patch({"kr_stock": kr_stock_list, "updated": updated})
+        interim_counts = {
+            "kr_stock": len(kr_stock_list), "kr_etf": 0, "us_stock": 0,
+            "macro": sum(value is not None for value in macro.values()),
+        }
+        publish_payload_patch({
+            "kr_stock": kr_stock_list,
+            "last_attempt_at": _iso_kst(started_at),
+            "collection_status": "running",
+            "collection_summary": _collection_summary(report, interim_counts),
+        })
         print(f"   국내 주식 중간 업로드: {len(kr_stock_list)}개")
     except Exception as e:
+        _record_collection_error("firestore", "kr_publish", _classify_request_error(e), critical=True)
         print(f"   국내 주식 중간 업로드 에러: {e}")
     
     # === 국내 ETF ===
@@ -2217,6 +2483,7 @@ def upload_data():
             
             kr_etf_list.append(data)
         except Exception as e:
+            _record_collection_error("collection", "kr_etf", _classify_request_error(e))
             print(f"   에러 ({etf['name']}): {e}")
             continue
     
@@ -2281,6 +2548,7 @@ def upload_data():
             
             us_stock_list.append(data)
         except Exception as e:
+            _record_collection_error("yahoo", "us_stock", _classify_request_error(e))
             print(f"   에러: {e}")
             continue
     
@@ -2289,6 +2557,16 @@ def upload_data():
     # === Firestore ===
     print("\n☁️ Firestore 업로드...")
     date_str = get_date_str()
+    finished_at = datetime.now(KST)
+    counts = {
+        "kr_stock": len(kr_stock_list),
+        "kr_etf": len(kr_etf_list),
+        "us_stock": len(us_stock_list),
+        "macro": sum(value is not None for value in macro.values()),
+    }
+    collection_metadata = _final_collection_metadata(report, counts, started_at, finished_at)
+    collection_status = collection_metadata["collection_status"]
+    updated = finished_at.strftime("%m월 %d일 %H:%M")
     
     payload = {
         "kr_stock": kr_stock_list,
@@ -2307,16 +2585,16 @@ def upload_data():
             "expires_at": cycle_report.get("expires_at"),
             "quality_status": cycle_report.get("quality_gate", {}).get("status"),
         },
-        "updated": updated,
+        **collection_metadata,
     }
     
-    publish_payload_patch(payload)
+    publish_payload_patch(payload, update_last_good=collection_status == "success")
     
     print(f"\n📊 Read 통계:")
     print(f"   호출 횟수: {_read_counter['calls']}")
     print(f"   캐시 적중: {_read_counter['cache_hits']}")
     print(f"   실제 read: {_read_counter['actual_reads']}")
-    print(f"\n✅ 완료! ({updated})")
+    print(f"\n✅ 수집 종료! 상태: {collection_status} ({updated})")
     print(f"   국내 주식: {len(kr_stock_list)}개")
     print(f"   국내 ETF: {len(kr_etf_list)}개")
     print(f"   미국 주식: {len(us_stock_list)}개")
@@ -2330,6 +2608,42 @@ def upload_data():
             check_and_notify(macro.get("vix"), macro.get("qqq"), macro.get("kospi"))
     except Exception as e:
         print(f"   알림 에러: {e}")
+
+    return {
+        "collection_status": collection_status,
+        "collection_summary": _collection_summary(report, counts),
+    }
+
+
+def upload_data():
+    """수집 시도의 시작/종료 상태를 공개하고 예기치 않은 실패도 상태로 남긴다."""
+    global _active_collection_report
+    started_at = datetime.now(KST)
+    report = _new_collection_report()
+    _active_collection_report = report
+
+    try:
+        publish_payload_patch({
+            "last_attempt_at": _iso_kst(started_at),
+            "collection_status": "running",
+            "collection_summary": _collection_summary(report),
+        })
+        return _run_upload_data(report, started_at)
+    except Exception as error:
+        _record_collection_error("pipeline", "collection", _classify_request_error(error), critical=True)
+        failed_payload = {
+            "last_attempt_at": _iso_kst(started_at),
+            "collection_finished_at": _iso_kst(),
+            "collection_status": "failed",
+            "collection_summary": _collection_summary(report),
+        }
+        try:
+            publish_payload_patch(failed_payload)
+        except Exception:
+            print("   수집 실패 상태 게시 실패 (firestore_error)")
+        raise
+    finally:
+        _active_collection_report = None
 
 
 if __name__ == "__main__":

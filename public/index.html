@@ -1197,6 +1197,58 @@ button {
   display: block;
 }
 
+.gate-checking,
+.gate-connection {
+  display: none;
+  margin-top: 28px;
+  padding: 22px 20px;
+  background: var(--bg-1);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  max-width: 320px;
+  width: 100%;
+}
+
+.gate-state-icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.gate-state-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fg-1);
+  margin-bottom: 8px;
+}
+
+.gate-state-desc {
+  font-size: 13px;
+  color: var(--fg-3);
+  line-height: 1.5;
+}
+
+.gate-retry {
+  margin-top: 16px;
+  padding: 10px 18px;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  background: var(--bg-3);
+  color: var(--fg-1);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gate-retry:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.gate-screen.checking .gate-checking,
+.gate-screen.connection-error .gate-connection {
+  display: block;
+}
+
 /* 승인 대기 영역 */
 .gate-pending {
   margin-top: 36px;
@@ -1236,7 +1288,15 @@ button {
 .gate-screen.pending .gate-cta,
 .gate-screen.pending .gate-desc,
 .gate-screen.pending .gate-note,
-.gate-screen.pending .gate-error {
+.gate-screen.pending .gate-error,
+.gate-screen.checking .gate-cta,
+.gate-screen.checking .gate-desc,
+.gate-screen.checking .gate-note,
+.gate-screen.checking .gate-error,
+.gate-screen.connection-error .gate-cta,
+.gate-screen.connection-error .gate-desc,
+.gate-screen.connection-error .gate-note,
+.gate-screen.connection-error .gate-error {
   display: none;
 }
 /* ============================================================
@@ -1645,6 +1705,15 @@ button {
   gap: 6px;
 }
 
+.detail-caption {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-1);
+  color: var(--fg-4);
+  font-size: 11px;
+  text-align: right;
+}
+
 .reason-tag {
   font-size: 11px;
   padding: 4px 8px;
@@ -1824,7 +1893,7 @@ button {
     <!-- ============================================================
      게이트 화면 (알림 미등록 시 강제 표시)
      ============================================================ -->
-    <div class="gate-screen" id="gate-screen">
+    <div class="gate-screen checking" id="gate-screen">
         <div class="gate-icon">
         <img src="/assets/sayo-logo-20260712-transparent.png" alt="SAYO" />
         </div>
@@ -1849,6 +1918,20 @@ button {
         알림을 받아야 시그널을 놓치지 않아요.<br>
         홈 화면에 추가하면 더 빠르게 확인할 수 있어요.
         </p>
+        <div class="gate-checking" id="gate-checking" role="status" aria-live="polite">
+            <div class="gate-state-icon">⏳</div>
+            <div class="gate-state-title">승인 상태 확인 중</div>
+            <div class="gate-state-desc">안전하게 연결을 확인하고 있어요.</div>
+        </div>
+        <div class="gate-connection" id="gate-connection" role="alert">
+            <div class="gate-state-icon">↻</div>
+            <div class="gate-state-title">연결을 확인할 수 없어요</div>
+            <div class="gate-state-desc">
+            승인 대기 상태가 아니라 일시적인 연결 문제예요.<br>
+            네트워크를 확인한 뒤 다시 시도해주세요.
+            </div>
+            <button class="gate-retry" id="gate-retry" type="button">다시 확인</button>
+        </div>
         <!-- 승인 대기 화면 (등록 후 자동 표시) -->
         <div class="gate-pending" id="gate-pending" style="display:none;">
             <div class="gate-pending-icon">⏳</div>
@@ -2356,8 +2439,7 @@ button {
      ============================================================ -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, onSnapshot, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { deleteToken, getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+    import { getFirestore, doc, onSnapshot, setDoc, getDoc, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
     const firebaseConfig = {
         apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
@@ -2370,7 +2452,17 @@ button {
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const APP_VERSION = "20260717-security-1";
+    const APP_VERSION = "20260721-entry-flow-1";
+
+    function perfMark(name) {
+      try { performance.mark(`sayo:${name}`); } catch (e) {}
+    }
+
+    function perfMeasure(name, start, end) {
+      try { performance.measure(`sayo:${name}`, `sayo:${start}`, `sayo:${end}`); } catch (e) {}
+    }
+
+    perfMark("module-ready");
     
     // ============================================================
     // 유틸
@@ -2720,11 +2812,13 @@ button {
     const pegHorizon = String(stock.peg_growth_horizon || "");
     const pegHorizonMatch = pegHorizon.match(/^(\d+)y/i);
     const pegGrowthLabel = pegHorizonMatch ? `PEG 성장률 (${pegHorizonMatch[1]}Y)` : "PEG 성장률";
-    const pegMethodMap = {
-        yahoo_peg_ratio: "Yahoo 제공 PEG",
-        fnguide_forward_eps_cagr_calculated: "FnGuide 예상 EPS CAGR",
-    };
-    const pegMethod = pegMethodMap[stock.peg_source] || "—";
+    const pegSource = String(stock.peg_source || "");
+    const pegSourceName = pegSource.startsWith("yahoo_")
+        ? "Yahoo"
+        : (pegSource.startsWith("fnguide_") ? "FnGuide" : "");
+    const pegSourceCaptionHtml = region !== "etf" && peg !== "—" && pegSourceName
+        ? `<div class="detail-caption">PEG 출처: ${pegSourceName}</div>`
+        : "";
     const epsTrendText = epsTrend.arrow ? `${epsTrend.arrow} ${epsTrend.value}` : epsTrend.value;
     const targetTrendText = targetTrend.arrow ? `${targetTrend.arrow} ${targetTrend.value}` : targetTrend.value;
 
@@ -2758,7 +2852,6 @@ button {
             ? stock.vol_ratio.toFixed(2) + "x" : "—" },
     ] : [
         { key: "PEG", val: peg, hl: true },
-        { key: "PEG 기준", val: pegMethod },
         { key: "PER", val: fmt(stock.per_ttm, { decimals: 2 }) },
         { key: "예상 PER", val: fmt(stock.per_fwd, { decimals: 2 }) },
         { key: "PBR", val: fmt(stock.pbr, { decimals: 2 }) },
@@ -2822,6 +2915,7 @@ button {
             ${incomeHtml}
             <div class="detail-grid">${detailItemsHtml}</div>
             ${reasonsHtml}
+            ${pegSourceCaptionHtml}
         </div>
         </div>
     `;
@@ -3131,6 +3225,10 @@ button {
     const protectedLists = ["kr_stock", "kr_etf", "us_stock"];
     let liveMarketData = null;
     let lastGoodMarketData = null;
+    let fallbackLoadPromise = null;
+    let marketRenderFrame = null;
+    let receivedFirstLiveSnapshot = false;
+    let liveSnapshotRevision = 0;
 
     function hasMarketValue(value) {
       return value !== null && value !== undefined && value !== "";
@@ -3183,26 +3281,91 @@ button {
       return merged;
     }
 
-    function renderMergedMarketData() {
-      if (!liveMarketData && !lastGoodMarketData) return;
-      render(mergeMarketData(liveMarketData, lastGoodMarketData));
+    function collectionStatusNeedsFallback(status) {
+      if (typeof status === "string") {
+        return ["partial", "failed", "running"].includes(status.trim().toLowerCase());
+      }
+      if (!status || typeof status !== "object") return false;
+      return Object.values(status).some(value =>
+        ["partial", "failed", "running"].includes(String(value || "").trim().toLowerCase())
+      );
     }
 
+    function marketDataNeedsFallback(data) {
+      if (!data || typeof data !== "object") return true;
+      if (collectionStatusNeedsFallback(data.collection_status)) return true;
+      if (Object.entries(requiredMacroKeys).some(([field, key]) => !hasMarketValue(data[field]?.[key]))) {
+        return true;
+      }
+      return protectedLists.some(field => !Array.isArray(data[field]) || data[field].length === 0);
+    }
+
+    function scheduleMarketRender() {
+      if (marketRenderFrame !== null || (!liveMarketData && !lastGoodMarketData)) return;
+      perfMark("market-render-scheduled");
+      marketRenderFrame = requestAnimationFrame(() => {
+        marketRenderFrame = null;
+        perfMark("market-render-start");
+        render(mergeMarketData(liveMarketData, lastGoodMarketData));
+        perfMark("market-render-end");
+        perfMeasure("market-render", "market-render-start", "market-render-end");
+      });
+    }
+
+    function loadLastGoodOnce() {
+      if (fallbackLoadPromise) return fallbackLoadPromise;
+      fallbackLoadPromise = (async () => {
+        perfMark("last-good-read-start");
+        try {
+          const snap = await getDoc(lastGoodDoc);
+          return snap.exists() ? snap.data() : null;
+        } catch (e) {
+          console.warn("마지막 정상값을 불러오지 못했습니다.");
+          return null;
+        } finally {
+          perfMark("last-good-read-end");
+          perfMeasure("last-good-read", "last-good-read-start", "last-good-read-end");
+        }
+      })();
+      return fallbackLoadPromise;
+    }
+
+    perfMark("market-subscribe-start");
     onSnapshot(dataDoc, (snap) => {
-      if (snap.exists()) {
+      void (async () => {
+        const revision = ++liveSnapshotRevision;
+        if (!receivedFirstLiveSnapshot) {
+          receivedFirstLiveSnapshot = true;
+          perfMark("market-first-snapshot");
+          perfMeasure("market-first-snapshot", "market-subscribe-start", "market-first-snapshot");
+        }
+        if (!snap.exists()) {
+          liveMarketData = null;
+          const fallback = await loadLastGoodOnce();
+          if (revision !== liveSnapshotRevision) return;
+          lastGoodMarketData = fallback;
+          scheduleMarketRender();
+          return;
+        }
+
         liveMarketData = snap.data();
-        renderMergedMarketData();
-      }
-    }, (err) => {
-      console.error("Firestore 구독 에러:", err);
-    });
-    onSnapshot(lastGoodDoc, (snap) => {
-      if (snap.exists()) {
-        lastGoodMarketData = snap.data();
-        renderMergedMarketData();
-      }
-    }, (err) => {
-      console.error("마지막 정상값 구독 에러:", err);
+        if (marketDataNeedsFallback(liveMarketData)) {
+          const fallback = await loadLastGoodOnce();
+          if (revision !== liveSnapshotRevision) return;
+          lastGoodMarketData = fallback;
+        } else {
+          lastGoodMarketData = null;
+        }
+        scheduleMarketRender();
+      })();
+    }, () => {
+      const revision = ++liveSnapshotRevision;
+      console.warn("실시간 시세 연결이 끊겨 마지막 정상값을 확인합니다.");
+      void loadLastGoodOnce().then(fallback => {
+        if (revision !== liveSnapshotRevision) return;
+        lastGoodMarketData = fallback;
+        scheduleMarketRender();
+      });
     });
     
    
@@ -3212,136 +3375,247 @@ button {
     const VAPID_KEY = "BGims_ieBbA_7SJaNsRGJYFh6rEUrRYHBOnKqElUytY4-UbMmDdQ2xvECT-PWJgzpJmwd5JgMl8HfNnX2PVW-_g";
     const LEGACY_TOKEN_KEY = "sayo:fcm-token";
     const TOKEN_KEY = "sayo:fcm-token:v2";
+    const MESSAGING_SDK_URL = "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+    const APPROVAL_TIMEOUT_MS = 3000;
+    const APPROVAL_MAX_ATTEMPTS = 2;
+    const APPROVAL_RETRY_DELAY_MS = 350;
     let messaging = null;
+    let messagingSdk = null;
     let serviceWorkerReg = null;
+    let notificationInitPromise = null;
+    let legacyCleanupNeeded = false;
+    let legacyCleanupScheduled = false;
+    let legacyCleanupPromise = null;
+    let approvalUnsubscribe = null;
+    let gateCheckPromise = null;
+    let gateCheckSequence = 0;
 
-    async function initServiceWorker() {
-    if (!("serviceWorker" in navigator)) return null;
-    try {
-        serviceWorkerReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
-          updateViaCache: "none",
-        });
-        serviceWorkerReg.update().catch(() => {});
-        messaging = getMessaging(app);
-        onMessage(messaging, (payload) => {
-        console.log("FCM 메시지:", payload);
-        });
-        return serviceWorkerReg;
-    } catch (e) {
-        console.error("SW 등록 실패:", e);
-        return null;
-    }
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async function rotateLegacyToken() {
-      const legacyToken = localStorage.getItem(LEGACY_TOKEN_KEY);
-      if (!legacyToken) return;
+    function withTimeout(promise, timeoutMs) {
+      let timer = null;
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("approval-timeout")), timeoutMs);
+      });
+      return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+    }
+
+    async function initNotificationInfrastructure() {
+      if (notificationInitPromise) return notificationInitPromise;
+      notificationInitPromise = (async () => {
+        perfMark("notification-init-start");
+        try {
+          if (!("serviceWorker" in navigator)) throw new Error("service-worker-unavailable");
+          const sdkPromise = import(MESSAGING_SDK_URL);
+          const registrationPromise = navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+            updateViaCache: "none",
+          });
+          [messagingSdk, serviceWorkerReg] = await Promise.all([sdkPromise, registrationPromise]);
+          messaging = messagingSdk.getMessaging(app);
+          messagingSdk.onMessage(messaging, () => {});
+          return { sdk: messagingSdk, messaging, registration: serviceWorkerReg };
+        } finally {
+          perfMark("notification-init-end");
+          perfMeasure("notification-init", "notification-init-start", "notification-init-end");
+        }
+      })().catch(error => {
+        notificationInitPromise = null;
+        throw error;
+      });
+      return notificationInitPromise;
+    }
+
+    function clearLegacyTokenState() {
       try {
-        if (messaging) await deleteToken(messaging);
-      } catch (e) {
-        console.warn("기존 알림 토큰 폐기 실패:", e);
-      } finally {
+        if (localStorage.getItem(LEGACY_TOKEN_KEY) === null) return;
         localStorage.removeItem(LEGACY_TOKEN_KEY);
         localStorage.removeItem(TOKEN_KEY);
+        legacyCleanupNeeded = true;
+        perfMark("legacy-token-local-state-cleared");
+      } catch (e) {
+        console.warn("기존 알림 상태를 정리하지 못했습니다.");
       }
     }
 
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.addEventListener("controllerchange", () => {
-        if (sessionStorage.getItem("sayo:sw-reloaded") === "1") return;
-        sessionStorage.setItem("sayo:sw-reloaded", "1");
-        window.location.reload();
-      });
+    function scheduleLegacyTokenCleanup() {
+      if (!legacyCleanupNeeded) return Promise.resolve(true);
+      if (legacyCleanupPromise) return legacyCleanupPromise;
+      if (legacyCleanupScheduled || !("Notification" in window)) return Promise.resolve(false);
+      legacyCleanupScheduled = true;
+      legacyCleanupPromise = new Promise(resolve => setTimeout(resolve, 0))
+        .then(() => {
+          perfMark("legacy-token-cleanup-start");
+          return initNotificationInfrastructure();
+        })
+        .then(({ sdk, messaging: messagingInstance }) => sdk.deleteToken(messagingInstance))
+        .then(() => {
+          legacyCleanupNeeded = false;
+          return true;
+        })
+        .catch(() => {
+          legacyCleanupScheduled = false;
+          console.warn("기존 알림 토큰의 원격 정리를 나중에 다시 시도합니다.");
+          return false;
+        })
+        .finally(() => {
+          perfMark("legacy-token-cleanup-end");
+          perfMeasure("legacy-token-cleanup", "legacy-token-cleanup-start", "legacy-token-cleanup-end");
+          legacyCleanupPromise = null;
+        });
+      return legacyCleanupPromise;
     }
 
     async function checkApprovalStatus(token) {
-      try {
-        const tokenDoc = await getDoc(doc(db, "fcm_tokens", token));
-        if (!tokenDoc.exists()) return { exists: false, approved: false };
-        return { exists: true, approved: tokenDoc.data().approved === true };
-      } catch (e) {
-        console.error("승인 상태 확인 실패:", e);
-        return { exists: null, approved: false };
+      for (let attempt = 1; attempt <= APPROVAL_MAX_ATTEMPTS; attempt += 1) {
+        const startMark = `approval-attempt-${attempt}-start`;
+        const endMark = `approval-attempt-${attempt}-end`;
+        perfMark(startMark);
+        try {
+          const tokenDoc = await withTimeout(
+            getDocFromServer(doc(db, "fcm_tokens", token)),
+            APPROVAL_TIMEOUT_MS
+          );
+          perfMark(endMark);
+          perfMeasure(`approval-attempt-${attempt}`, startMark, endMark);
+          if (!tokenDoc.exists()) return { state: "not_found" };
+          return { state: tokenDoc.data().approved === true ? "approved" : "pending" };
+        } catch (e) {
+          perfMark(endMark);
+          perfMeasure(`approval-attempt-${attempt}`, startMark, endMark);
+          if (attempt < APPROVAL_MAX_ATTEMPTS) await delay(APPROVAL_RETRY_DELAY_MS);
+        }
       }
+      return { state: "connection_error" };
     }
 
     async function checkRegistration() {
-    if (!("Notification" in window)) return { registered: false };
-    const stored = localStorage.getItem(TOKEN_KEY);
-    if (!stored) return { registered: false };
-    if (Notification.permission !== "granted") return { registered: false };
-    
-    // 승인 상태도 같이 확인
-    const status = await checkApprovalStatus(stored);
-    if (status.exists === false) {
-      localStorage.removeItem(TOKEN_KEY);
-      return { registered: false };
+      if (!("Notification" in window)) return { state: "unregistered" };
+      let stored = null;
+      try {
+        stored = localStorage.getItem(TOKEN_KEY);
+      } catch (e) {
+        return { state: "connection_error" };
+      }
+      if (!stored || Notification.permission !== "granted") return { state: "unregistered" };
+
+      const status = await checkApprovalStatus(stored);
+      if (status.state === "not_found") {
+        try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+        return { state: "unregistered" };
+      }
+      return { ...status, token: stored };
     }
-    return { registered: true, approved: status.approved, statusKnown: status.exists !== null, token: stored };
+
+    function resetGateState() {
+      const screen = $("#gate-screen");
+      screen.classList.remove("checking", "pending", "connection-error");
+      $("#gate-pending").style.display = "none";
+    }
+
+    function stopApprovalWatch() {
+      if (!approvalUnsubscribe) return;
+      approvalUnsubscribe();
+      approvalUnsubscribe = null;
+    }
+
+    function showCheckingState() {
+      resetGateState();
+      $("#gate-screen").classList.add("checking");
+      $("#gate-screen").classList.remove("hidden");
     }
 
     function showPendingState() {
-    const screen = $("#gate-screen");
-    screen.classList.add("pending");
-    screen.classList.remove("hidden");
-    $("#gate-pending").style.display = "block";
+      resetGateState();
+      const screen = $("#gate-screen");
+      screen.classList.add("pending");
+      screen.classList.remove("hidden");
+      $("#gate-pending").style.display = "block";
+    }
+
+    function showConnectionError() {
+      resetGateState();
+      const screen = $("#gate-screen");
+      screen.classList.add("connection-error");
+      screen.classList.remove("hidden");
+      $("#gate-retry").disabled = false;
     }
 
     // 실시간 승인 감지
     function watchApproval(token) {
-    const tokenRef = doc(db, "fcm_tokens", token);
-    return onSnapshot(tokenRef, (snap) => {
+      stopApprovalWatch();
+      const tokenRef = doc(db, "fcm_tokens", token);
+      approvalUnsubscribe = onSnapshot(tokenRef, { includeMetadataChanges: true }, (snap) => {
+        if (snap.metadata.fromCache) return;
         if (snap.exists() && snap.data().approved === true) {
-        hideGate();
-        $("#gate-screen").classList.remove("pending");
+          stopApprovalWatch();
+          hideGate();
+        } else if (snap.exists()) {
+          showPendingState();
+        } else {
+          stopApprovalWatch();
+          try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+          showGate();
         }
-    }, (err) => console.error("승인 감시 에러:", err));
+      }, () => {
+        stopApprovalWatch();
+        showConnectionError();
+      });
+      return approvalUnsubscribe;
     }
 
-    async function showGate() {
-    $("#gate-screen").classList.remove("hidden");
+    function showGate() {
+      resetGateState();
+      $("#gate-screen").classList.remove("hidden");
+      scheduleLegacyTokenCleanup();
     }
 
-    async function hideGate() {
-    $("#gate-screen").classList.add("hidden");
+    function hideGate() {
+      resetGateState();
+      $("#gate-screen").classList.add("hidden");
+      perfMark("gate-hidden");
+      void initNotificationInfrastructure().catch(() => {
+        console.warn("알림 연결은 다음 동작에서 다시 시도합니다.");
+      });
+      scheduleLegacyTokenCleanup();
     }
 
     async function registerForNotifications() {
-    const errorEl = $("#gate-error");
-    errorEl.classList.remove("visible");
-    
-    if (!("Notification" in window)) {
+      const errorEl = $("#gate-error");
+      errorEl.classList.remove("visible");
+
+      if (!("Notification" in window)) {
         errorEl.textContent = "이 환경은 알림을 지원하지 않아요.";
         errorEl.classList.add("visible");
         return false;
-    }
-    
-    try {
+      }
+
+      perfMark("notification-register-start");
+      try {
         const permission = await Notification.requestPermission();
         if (permission !== "granted") {
-        errorEl.textContent = "알림이 거부됐어요. 브라우저 설정에서 알림을 허용한 뒤 다시 시도해주세요.";
-        errorEl.classList.add("visible");
-        return false;
+          errorEl.textContent = "알림이 거부됐어요. 브라우저 설정에서 알림을 허용한 뒤 다시 시도해주세요.";
+          errorEl.classList.add("visible");
+          return false;
         }
-        
-        if (!serviceWorkerReg) {
-        serviceWorkerReg = await initServiceWorker();
+
+        // 새 토큰 발급과 구형 토큰 폐기가 경합하지 않도록 보안 마이그레이션을 먼저 끝낸다.
+        if (legacyCleanupNeeded && !(await scheduleLegacyTokenCleanup())) {
+          throw new Error("legacy-token-cleanup-failed");
         }
-        if (!messaging) {
-        messaging = getMessaging(app);
-        }
-        
-        const token = await getToken(messaging, {
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: serviceWorkerReg,
+        const infrastructure = await initNotificationInfrastructure();
+        const token = await infrastructure.sdk.getToken(infrastructure.messaging, {
+          vapidKey: VAPID_KEY,
+          serviceWorkerRegistration: infrastructure.registration,
         });
-        
+
         if (!token) {
-        errorEl.textContent = "토큰 발급에 실패했어요. 잠시 후 다시 시도해주세요.";
-        errorEl.classList.add("visible");
-        return false;
+          errorEl.textContent = "토큰 발급에 실패했어요. 잠시 후 다시 시도해주세요.";
+          errorEl.classList.add("visible");
+          return false;
         }
-        
+
         const nickname = prompt("닉네임을 입력해주세요 (선택)", "재환") || "익명";
         await setDoc(doc(db, "fcm_tokens", token), {
           token: token,
@@ -3352,60 +3626,78 @@ button {
         });
 
         localStorage.setItem(TOKEN_KEY, token);
-
-        // 승인 대기 상태로 전환
         showPendingState();
-
-        // 실시간으로 승인 감지
         watchApproval(token);
-
         return true;
-    } catch (e) {
-        console.error(e);
-        errorEl.textContent = "등록 실패: " + e.message;
+      } catch (e) {
+        console.warn("알림 등록을 완료하지 못했습니다.");
+        errorEl.textContent = "등록을 완료하지 못했어요. 연결을 확인한 뒤 다시 시도해주세요.";
         errorEl.classList.add("visible");
         return false;
-    }
+      } finally {
+        perfMark("notification-register-end");
+        perfMeasure("notification-register", "notification-register-start", "notification-register-end");
+      }
     }
 
     // 게이트 CTA 클릭
     $("#gate-cta").addEventListener("click", async () => {
-    const cta = $("#gate-cta");
-    cta.disabled = true;
-    cta.textContent = "등록 중...";
-    
-    const ok = await registerForNotifications();
-    
-    if (!ok) {
+      const cta = $("#gate-cta");
+      cta.disabled = true;
+      cta.textContent = "등록 중...";
+
+      const ok = await registerForNotifications();
+
+      if (!ok) {
         cta.disabled = false;
         cta.innerHTML = "🔔 다시 시도";
-    }
-    // 성공 시: registerForNotifications 안에서 showPendingState() 호출됨
+      }
     });
-    // 초기 로직
-    (async () => {
-    await initServiceWorker();
-    await rotateLegacyToken();
-    const status = await checkRegistration();
-    
-    if (!status.registered) {
-        // 등록 안 됨 → 게이트 표시
-        showGate();
-        return;
+
+    async function runGateCheck() {
+      if (gateCheckPromise) return gateCheckPromise;
+      const checkId = ++gateCheckSequence;
+      const startMark = `gate-check-${checkId}-start`;
+      const endMark = `gate-check-${checkId}-end`;
+      showCheckingState();
+      perfMark(startMark);
+
+      const currentCheck = (async () => {
+        try {
+          const status = await checkRegistration();
+          if (status.state === "unregistered") {
+            showGate();
+          } else if (status.state === "approved") {
+            hideGate();
+          } else if (status.state === "pending") {
+            showPendingState();
+            watchApproval(status.token);
+          } else {
+            // 연결 실패는 승인으로 간주하지 않는다. 사용자가 명시적으로 재시도해야 한다.
+            showConnectionError();
+          }
+        } catch (e) {
+          showConnectionError();
+        }
+      })();
+      gateCheckPromise = currentCheck;
+
+      try {
+        await currentCheck;
+      } finally {
+        perfMark(endMark);
+        perfMeasure(`gate-check-${checkId}`, startMark, endMark);
+        if (gateCheckPromise === currentCheck) gateCheckPromise = null;
+      }
     }
-    
-    if (status.approved === true) {
-        // 등록 + 승인됨 → 본 화면
-        hideGate();
-    } else if (status.approved === false) {
-        // 등록됐지만 승인 대기 중
-        showPendingState();
-        watchApproval(status.token);
-    } else {
-        // 승인 상태를 확인하지 못하면 공개 화면으로 우회하지 않는다.
-        showPendingState();
-    }
-    })();
+
+    $("#gate-retry").addEventListener("click", () => {
+      $("#gate-retry").disabled = true;
+      void runGateCheck();
+    });
+
+    clearLegacyTokenState();
+    void runGateCheck();
         
     </script>
 </body>

@@ -1,8 +1,12 @@
 import unittest
 import json
+import os
+from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pandas as pd
+
+os.environ.setdefault("SAYO_SKIP_FIREBASE_INIT", "1")
 
 import uploader
 
@@ -270,8 +274,12 @@ class UploaderRegressionTests(unittest.TestCase):
 
     @patch("uploader.db")
     def test_publish_patch_does_not_overwrite_with_none_or_empty_lists(self, firestore_db):
-        document = Mock()
-        firestore_db.collection.return_value.document.return_value = document
+        data_document = Mock()
+        last_good_document = Mock()
+        firestore_db.collection.return_value.document.side_effect = lambda name: {
+            "data": data_document,
+            "last_good": last_good_document,
+        }[name]
 
         uploader.publish_payload_patch({
             "kr_stock": [],
@@ -280,14 +288,153 @@ class UploaderRegressionTests(unittest.TestCase):
             "updated": "07월 15일 15:31",
         })
 
-        document_calls = firestore_db.collection.return_value.document.call_args_list
-        self.assertEqual([args.args[0] for args in document_calls], ["data", "last_good"])
-        self.assertEqual(document.set.call_count, 2)
-        saved, = document.set.call_args.args
+        saved, = data_document.set.call_args.args
         self.assertNotIn("kr_stock", saved)
         self.assertNotIn("kospi", saved)
         self.assertEqual(saved["usdkrw"]["current"], 1400.0)
-        self.assertTrue(document.set.call_args.kwargs["merge"])
+        self.assertTrue(data_document.set.call_args.kwargs["merge"])
+        last_good_document.set.assert_not_called()
+
+    @patch("uploader.db")
+    def test_only_complete_publish_updates_last_good(self, firestore_db):
+        data_document = Mock()
+        last_good_document = Mock()
+        firestore_db.collection.return_value.document.side_effect = lambda name: {
+            "data": data_document,
+            "last_good": last_good_document,
+        }[name]
+
+        uploader.publish_payload_patch(
+            {"collection_status": "success", "us_stock": [{"code": "AMD"}]},
+            update_last_good=True,
+        )
+
+        data_document.set.assert_called_once()
+        last_good_document.set.assert_called_once()
+
+    def test_partial_collection_does_not_advance_updated(self):
+        started = datetime.fromisoformat("2026-07-20T09:00:00+09:00")
+        finished = datetime.fromisoformat("2026-07-20T09:08:00+09:00")
+        report = uploader._new_collection_report()
+        counts = {
+            "kr_stock": len(uploader.KR_STOCKS) - 1,
+            "kr_etf": len(uploader.dedupe_records(uploader.KR_ETFS, code_key="ticker_krx")),
+            "us_stock": len(uploader.US_STOCKS),
+            "macro": 4,
+        }
+
+        metadata = uploader._final_collection_metadata(report, counts, started, finished)
+
+        self.assertEqual(metadata["collection_status"], "partial")
+        self.assertNotIn("updated", metadata)
+        self.assertEqual(metadata["collection_finished_at"], "2026-07-20T09:08:00+09:00")
+
+    def test_complete_collection_advances_updated(self):
+        started = datetime.fromisoformat("2026-07-20T09:00:00+09:00")
+        finished = datetime.fromisoformat("2026-07-20T09:08:00+09:00")
+        report = uploader._new_collection_report()
+        counts = uploader._collection_summary(report)["expected_counts"]
+
+        metadata = uploader._final_collection_metadata(report, counts, started, finished)
+
+        self.assertEqual(metadata["collection_status"], "success")
+        self.assertEqual(metadata["updated"], "07월 20일 09:08")
+
+    def test_complete_collection_with_noncritical_fallback_is_success(self):
+        started = datetime.fromisoformat("2026-07-20T09:00:00+09:00")
+        finished = datetime.fromisoformat("2026-07-20T09:08:00+09:00")
+        report = uploader._new_collection_report()
+        uploader._active_collection_report = report
+        try:
+            uploader._record_collection_error(
+                "stock_sayo_study",
+                "cycle_report",
+                "timeout",
+                critical=False,
+            )
+        finally:
+            uploader._active_collection_report = None
+        counts = uploader._collection_summary(report)["expected_counts"]
+
+        metadata = uploader._final_collection_metadata(report, counts, started, finished)
+
+        self.assertEqual(metadata["collection_status"], "success")
+        self.assertEqual(metadata["collection_summary"]["error_count"], 1)
+        self.assertIn("updated", metadata)
+
+    def test_complete_collection_with_critical_error_is_partial(self):
+        report = uploader._new_collection_report()
+        uploader._active_collection_report = report
+        try:
+            uploader._record_collection_error("kis", "authentication", "authentication", critical=True)
+        finally:
+            uploader._active_collection_report = None
+        counts = uploader._collection_summary(report)["expected_counts"]
+
+        self.assertEqual(uploader._collection_status(report, counts), "partial")
+
+    def test_empty_collection_is_failed(self):
+        report = uploader._new_collection_report()
+        counts = {"kr_stock": 0, "kr_etf": 0, "us_stock": 0, "macro": 0}
+
+        self.assertEqual(uploader._collection_status(report, counts), "failed")
+
+    def test_public_error_summary_contains_counts_not_raw_errors(self):
+        report = uploader._new_collection_report()
+        uploader._active_collection_report = report
+        try:
+            uploader._record_collection_error("kis", "kr_quote", "rate_limited", critical=True)
+        finally:
+            uploader._active_collection_report = None
+
+        summary = uploader._collection_summary(report)
+
+        self.assertEqual(summary["error_count"], 1)
+        self.assertEqual(summary["errors_by_provider"], {"kis": 1})
+        self.assertNotIn("errors", summary)
+
+    @patch("uploader.requests.post")
+    def test_kis_token_is_reused_only_in_process_memory(self, requests_post):
+        requests_post.return_value = FakeResponse({
+            "access_token": "unit-test-token",
+            "expires_in": 3600,
+        })
+        uploader._kis_token_cache.update({"token": None, "expires_at": 0.0})
+
+        with patch.object(uploader, "APP_KEY", "test-key"), patch.object(uploader, "APP_SECRET", "test-secret"):
+            first = uploader.get_kis_token()
+            second = uploader.get_kis_token()
+
+        self.assertEqual(first, "unit-test-token")
+        self.assertEqual(second, "unit-test-token")
+        requests_post.assert_called_once()
+
+    @patch("uploader.time.sleep")
+    @patch("uploader.requests.get")
+    def test_kis_authentication_error_is_classified_without_retry(self, requests_get, sleep):
+        requests_get.return_value = FakeResponse({
+            "rt_cd": "1",
+            "msg_cd": "AUTH_ERROR",
+            "msg1": "접근 토큰이 유효하지 않습니다",
+        })
+        report = uploader._new_collection_report()
+        uploader._active_collection_report = report
+        try:
+            result = uploader._get_kis_json(
+                "https://example.invalid/kis",
+                {},
+                {},
+                "현재가 TEST",
+                stage="kr_quote",
+            )
+        finally:
+            uploader._active_collection_report = None
+
+        self.assertEqual(result["rt_cd"], "1")
+        requests_get.assert_called_once()
+        sleep.assert_not_called()
+        self.assertEqual(report["errors_by_category"], {"authentication": 1})
+        self.assertEqual(report["errors_by_stage"], {"kr_quote": 1})
 
     @patch("uploader.get_snapshot_history")
     def test_snapshot_fallback_searches_each_field_across_dates(self, history):
@@ -366,6 +513,7 @@ class UploaderRegressionTests(unittest.TestCase):
             "ticker_krx": "0219E0",
             "ticker_yf": "0219E0.KS",
             "distribution_target_yield_monthly": 2.0,
+            "distribution_schedule": "monthly_last_business_day",
         }
         ticker = Mock()
         ticker.history.return_value = pd.DataFrame()
@@ -382,6 +530,87 @@ class UploaderRegressionTests(unittest.TestCase):
         self.assertEqual(result["expected_monthly_dividend_5m"], 100000)
         self.assertEqual(result["expected_dividend_source"], "target_distribution_yield")
         self.assertNotIn("price", result)
+
+    def test_recent_distribution_yield_wins_over_target_yield(self):
+        result = {
+            "distribution_yield_ttm": 12.0,
+            "distribution_yield_monthly": 1.0,
+            "expected_dividend_source": "ttm_distribution_yield",
+        }
+        etf = {
+            "distribution_target_yield_monthly": 2.0,
+            "distribution_recent_yield_monthly": 1.38,
+            "distribution_recent_amount": 323,
+            "distribution_record_date": "2026-07-15",
+            "distribution_payment_date": "2026-07-20",
+            "distribution_actual_source": "삼성자산운용",
+            "distribution_actual_checked_month": "2026-07",
+            "distribution_schedule": "monthly_15",
+        }
+
+        actual = uploader.apply_configured_etf_distribution_target(
+            etf,
+            result,
+            now=datetime(2026, 7, 28, tzinfo=uploader.KST),
+        )
+
+        self.assertEqual(actual["distribution_yield_monthly"], 1.38)
+        self.assertEqual(actual["distribution_recent_amount"], 323)
+        self.assertEqual(actual["expected_monthly_dividend_5m"], 69000)
+        self.assertEqual(actual["expected_dividend_source"], "recent_monthly_distribution_yield")
+        self.assertFalse(actual["distribution_update_due"])
+
+    def test_provider_recent_distribution_also_wins_over_configured_target(self):
+        result = {
+            "distribution_yield_monthly": 1.7,
+            "expected_monthly_dividend_5m": 85000,
+            "expected_dividend_source": "recent_monthly_distribution_yield",
+        }
+        etf = {
+            "distribution_target_yield_monthly": 2.0,
+            "distribution_schedule": "monthly_15",
+        }
+
+        actual = uploader.apply_configured_etf_distribution_target(
+            etf,
+            result,
+            now=datetime(2026, 7, 28, tzinfo=uploader.KST),
+        )
+
+        self.assertEqual(actual["distribution_yield_monthly"], 1.7)
+        self.assertEqual(actual["expected_monthly_dividend_5m"], 85000)
+        self.assertEqual(actual["expected_dividend_source"], "recent_monthly_distribution_yield")
+
+    def test_distribution_update_is_due_only_after_product_record_day(self):
+        midmonth = {
+            "distribution_schedule": "monthly_15",
+            "distribution_actual_checked_month": "2026-07",
+        }
+        month_end = {
+            "distribution_schedule": "monthly_last_business_day",
+            "distribution_monitoring_start_month": "2026-07",
+        }
+
+        self.assertFalse(uploader.distribution_update_due(
+            midmonth,
+            now=datetime(2026, 7, 28, tzinfo=uploader.KST),
+        ))
+        self.assertTrue(uploader.distribution_update_due(
+            midmonth,
+            now=datetime(2026, 8, 15, tzinfo=uploader.KST),
+        ))
+        self.assertFalse(uploader.distribution_update_due(
+            month_end,
+            now=datetime(2026, 7, 28, tzinfo=uploader.KST),
+        ))
+        self.assertTrue(uploader.distribution_update_due(
+            month_end,
+            now=datetime(2026, 7, 31, tzinfo=uploader.KST),
+        ))
+        self.assertTrue(uploader.distribution_update_due(
+            month_end,
+            now=datetime(2026, 8, 1, tzinfo=uploader.KST),
+        ))
 
     def test_ma_status_ignores_missing_latest_close(self):
         closes = [100 + index for index in range(25)] + [float("nan")]

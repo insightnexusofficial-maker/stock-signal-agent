@@ -4,8 +4,6 @@ import os
 import time
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # === KIS API 설정 ===
 APP_KEY = os.getenv("KIS_APP_KEY")
 APP_SECRET = os.getenv("KIS_APP_SECRET")
@@ -120,7 +118,7 @@ def get_valuation(code):
     return result
 
 # === 메인 실행 ===
-stocks = {
+STOCKS = {
     "005930": "삼성전자",
     "000660": "SK하이닉스",
     "012450": "한화에어로",
@@ -129,51 +127,57 @@ stocks = {
     "035420": "LIG넥스원"
 }
 
-print("\n📊 토큰 발급 중...")
-token = get_access_token()
-if not token:
-    print("토큰 발급 실패!")
-    exit()
 
-print("\n" + "=" * 90)
-print(f"{'종목명':<10} {'현재가':>10} {'RSI':>6} {'Fwd PEG':>8} {'매출성장':>8} {'STEP1':^8} {'STEP2':^10}")
-print("=" * 90)
+def main():
+    global APP_KEY, APP_SECRET
+    load_dotenv()
+    APP_KEY = os.getenv("KIS_APP_KEY")
+    APP_SECRET = os.getenv("KIS_APP_SECRET")
 
-for code, name in stocks.items():
-    # KIS API
-    time.sleep(1)
-    price = get_current_price(token, code)
-    time.sleep(1)
-    prices = get_daily_prices(token, code)
-    rsi = calculate_rsi(prices) if prices else None
-    
-    # FnGuide
-    val = get_valuation(code)
-    peg = val.get("peg_forward")
-    rev_g = val.get("rev_growth")
-    
-    # 출력 포맷
-    price_str = f"{price:,}원" if price else "N/A"
-    rsi_str = f"{rsi}" if rsi else "N/A"
-    peg_str = f"{peg:.2f}" if peg else "N/A"
-    rev_str = f"{rev_g:.1f}%" if rev_g else "N/A"
-    
-    # STEP 1 판정: PEG < 1.0 AND Rev Growth >= 15%
-    step1_pass = (peg and peg < 1.0) and (rev_g and rev_g >= 15)
-    step1 = "✅ 사도됨" if step1_pass else "❌"
-    
-    # STEP 2 판정: RSI < 35
-    if rsi and rsi < 35:
-        step2 = "🔔 지금사세요"
-    elif rsi and rsi < 40:
-        step2 = "⚠️ 근접"
-    else:
-        step2 = "-"
-    
-    print(f"{name:<10} {price_str:>10} {rsi_str:>6} {peg_str:>8} {rev_str:>8} {step1:^8} {step2:^10}")
-    
-    time.sleep(0.5)
+    print("\n📊 토큰 발급 중...")
+    token = get_access_token()
+    if not token:
+        print("토큰 발급 실패!")
+        return 1
 
-print("=" * 90)
-print("STEP1: Forward PEG < 1.0 AND Revenue Growth ≥ 15%")
-print("STEP2: RSI(14) < 35 → 🔔 지금사세요")
+    print("\n" + "=" * 90)
+    print(f"{'종목명':<10} {'현재가':>10} {'RSI':>6} {'Fwd PEG':>8} {'매출성장':>8} {'STEP1':^8} {'STEP2':^10}")
+    print("=" * 90)
+
+    for code, name in STOCKS.items():
+        time.sleep(1)
+        price = get_current_price(token, code)
+        time.sleep(1)
+        prices = get_daily_prices(token, code)
+        rsi = calculate_rsi(prices) if prices else None
+
+        val = get_valuation(code)
+        peg = val.get("peg_forward")
+        rev_g = val.get("rev_growth")
+
+        price_str = f"{price:,}원" if price else "N/A"
+        rsi_str = f"{rsi}" if rsi else "N/A"
+        peg_str = f"{peg:.2f}" if peg else "N/A"
+        rev_str = f"{rev_g:.1f}%" if rev_g else "N/A"
+
+        step1_pass = (peg and peg < 1.0) and (rev_g and rev_g >= 15)
+        step1 = "✅ 사도됨" if step1_pass else "❌"
+
+        if rsi and rsi < 35:
+            step2 = "🔔 지금사세요"
+        elif rsi and rsi < 40:
+            step2 = "⚠️ 근접"
+        else:
+            step2 = "-"
+
+        print(f"{name:<10} {price_str:>10} {rsi_str:>6} {peg_str:>8} {rev_str:>8} {step1:^8} {step2:^10}")
+        time.sleep(0.5)
+
+    print("=" * 90)
+    print("STEP1: Forward PEG < 1.0 AND Revenue Growth ≥ 15%")
+    print("STEP2: RSI(14) < 35 → 🔔 지금사세요")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
