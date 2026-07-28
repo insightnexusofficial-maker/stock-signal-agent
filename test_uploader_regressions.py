@@ -721,6 +721,70 @@ class UploaderRegressionTests(unittest.TestCase):
         self.assertFalse(stock["step1"])
         self.assertEqual(stock["buy_level"], "none")
 
+    @patch("uploader.requests.get")
+    def test_event_feed_requires_fresh_official_contract(self, requests_get):
+        requests_get.return_value = FakeResponse({
+            "schema_version": "1.0",
+            "feed_id": "market-events-aaaaaaaaaaaaaaaa",
+            "content_sha256": "a" * 64,
+            "generated_at": "2026-07-28T23:40:00+09:00",
+            "expires_at": "2026-08-05T08:45:00+09:00",
+            "quality_gate": {"status": "passed", "mode": "official-only"},
+            "event_sync": {"calendar_status": "fresh"},
+            "shock_policy": {
+                "notification_time_kst": "07:00",
+                "mode": "objective-official-data-only",
+            },
+            "events": [{"id": "earnings-NVDA", "sync_status": "scheduled"}],
+            "recent_results": [],
+        })
+
+        feed = uploader.fetch_event_feed(
+            now=uploader.datetime.fromisoformat("2026-07-29T08:00:00+09:00")
+        )
+
+        self.assertEqual(feed["feed_id"], "market-events-aaaaaaaaaaaaaaaa")
+        self.assertEqual(feed["events"][0]["id"], "earnings-NVDA")
+
+    @patch("uploader.requests.get")
+    def test_expired_event_feed_keeps_previous_public_value(self, requests_get):
+        requests_get.return_value = FakeResponse({
+            "schema_version": "1.0",
+            "feed_id": "market-events-bbbbbbbbbbbbbbbb",
+            "content_sha256": "b" * 64,
+            "generated_at": "2026-07-20T08:00:00+09:00",
+            "expires_at": "2026-07-21T08:00:00+09:00",
+            "quality_gate": {"status": "passed", "mode": "official-only"},
+            "shock_policy": {"mode": "objective-official-data-only"},
+            "events": [],
+            "recent_results": [],
+        })
+
+        feed = uploader.fetch_event_feed(
+            now=uploader.datetime.fromisoformat("2026-07-29T08:00:00+09:00")
+        )
+
+        self.assertIsNone(feed)
+
+    def test_event_context_does_not_change_stock_signal(self):
+        stock = {
+            "peg_fwd": 1.1,
+            "rev_growth": 10,
+            "earnings_surprise_pct": 2,
+            "target_gap": 5,
+            "rsi": 50,
+            "vol_ratio": 1,
+            "event_context": {"sync_status": "due", "shock": {"is_shock": True}},
+        }
+        baseline = dict(stock)
+        baseline.pop("event_context")
+
+        event_result = uploader.check_stock_signal(stock, "ai_bigtech", {}, region="us")
+        baseline_result = uploader.check_stock_signal(baseline, "ai_bigtech", {}, region="us")
+
+        self.assertEqual(event_result, baseline_result)
+        self.assertEqual(stock["buy_level"], baseline["buy_level"])
+
 
 if __name__ == "__main__":
     unittest.main()

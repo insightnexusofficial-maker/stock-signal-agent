@@ -50,6 +50,10 @@ CYCLE_REPORT_URL = os.getenv(
     "SAYO_CYCLE_REPORT_URL",
     "https://stock-sayo-study.web.app/data/cycle-latest.json",
 )
+EVENT_FEED_URL = os.getenv(
+    "SAYO_EVENT_FEED_URL",
+    "https://stock-sayo-study.web.app/data/event-latest.json",
+)
 CYCLE_COVERED_SECTORS = {"semiconductor", "ai_bigtech", "industrial"}
 
 
@@ -257,6 +261,55 @@ def fetch_cycle_report(url=None, now=None):
             "quality_gate": {"status": "unavailable"},
             "company_cycle": [],
         }
+
+
+def fetch_event_feed(url=None, now=None):
+    """Study의 공식 일정 feed를 표시용으로만 읽는다.
+
+    실패하면 None을 반환해 Firestore의 직전 이벤트 feed를 덮어쓰지 않는다.
+    """
+    now = now or datetime.now(KST)
+    try:
+        response = requests.get(url or EVENT_FEED_URL, timeout=12)
+        response.raise_for_status()
+        feed = response.json()
+        expires_at = datetime.fromisoformat(str(feed.get("expires_at") or ""))
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=KST)
+        if (
+            feed.get("schema_version") != "1.0"
+            or feed.get("quality_gate", {}).get("status") != "passed"
+            or feed.get("quality_gate", {}).get("mode") != "official-only"
+            or feed.get("shock_policy", {}).get("mode") != "objective-official-data-only"
+            or expires_at <= now
+            or not re.fullmatch(r"[0-9a-f]{64}", str(feed.get("content_sha256") or ""))
+            or feed.get("feed_id") != f"market-events-{feed.get('content_sha256', '')[:16]}"
+            or not isinstance(feed.get("events"), list)
+            or not isinstance(feed.get("recent_results"), list)
+            or len(feed["events"]) > 24
+            or len(feed["recent_results"]) > 12
+        ):
+            raise ValueError("검증 또는 만료 조건을 통과하지 못한 이벤트 feed")
+        return {
+            "schema_version": "1.0",
+            "feed_id": feed.get("feed_id"),
+            "content_sha256": feed.get("content_sha256"),
+            "generated_at": feed.get("generated_at"),
+            "expires_at": feed.get("expires_at"),
+            "quality_gate": feed.get("quality_gate"),
+            "event_sync": feed.get("event_sync") or {},
+            "shock_policy": feed.get("shock_policy") or {},
+            "events": feed["events"],
+            "recent_results": feed["recent_results"],
+        }
+    except Exception as error:
+        _record_collection_error(
+            "stock_sayo_study",
+            "event_feed",
+            _classify_request_error(error),
+        )
+        print(f"   이벤트 feed 직전값 유지 ({_classify_request_error(error)})")
+        return None
 
 
 def attach_cycle_context(data, cycle_report):
@@ -2319,6 +2372,7 @@ def _run_upload_data(report, started_at):
     print("\n📈 매크로 지표 확인...")
     macro = get_macro_data()
     cycle_report = fetch_cycle_report()
+    event_feed = fetch_event_feed()
     
     vix_info = macro.get("vix")
     qqq_info = macro.get("qqq")
@@ -2353,6 +2407,13 @@ def _run_upload_data(report, started_at):
             "market_mode": mode_us,
             "market_mode_us": mode_us,
             "market_mode_kr": mode_kr,
+            "event_calendar": event_feed,
+            "event_last_attempt_at": _iso_kst(started_at),
+            "event_sync_status": "success" if event_feed else "unavailable",
+            **({
+                "event_feed_id": event_feed.get("feed_id"),
+                "event_last_success_at": event_feed.get("generated_at"),
+            } if event_feed else {}),
             "last_attempt_at": _iso_kst(started_at),
             "collection_status": "running",
             "collection_summary": _collection_summary(report),
@@ -2585,6 +2646,13 @@ def _run_upload_data(report, started_at):
             "expires_at": cycle_report.get("expires_at"),
             "quality_status": cycle_report.get("quality_gate", {}).get("status"),
         },
+        "event_calendar": event_feed,
+        "event_last_attempt_at": _iso_kst(started_at),
+        "event_sync_status": "success" if event_feed else "unavailable",
+        **({
+            "event_feed_id": event_feed.get("feed_id"),
+            "event_last_success_at": event_feed.get("generated_at"),
+        } if event_feed else {}),
         **collection_metadata,
     }
     

@@ -73,6 +73,18 @@ class FrontendEntryFlowTests(unittest.TestCase):
         self.assertIn("${pegSourceCaptionHtml}", self.source)
         self.assertNotIn('{ key: "PEG 기준"', self.source)
 
+    def test_official_event_feed_is_display_only(self):
+        parser = _IdCollector()
+        parser.feed(self.source)
+        self.assertIn("event-calendar-list", parser.ids)
+        self.assertIn("renderEventCalendar(data);", self.source)
+        self.assertIn("nextEventForTicker(stock.code)", self.source)
+        self.assertIn("다음 공식 실적:", self.source)
+        signal_function = self.source[
+            self.source.index("function check"):self.source.index("function renderMacro")
+        ] if "function check" in self.source else ""
+        self.assertNotIn("event_calendar", signal_function)
+
     def test_sensitive_values_are_not_used_in_performance_entries(self):
         self.assertIn('perfMark("market-subscribe-start")', self.source)
         self.assertIn('perfMark("gate-hidden")', self.source)

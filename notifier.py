@@ -9,6 +9,9 @@
 """
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
+import hashlib
+
+from event_alerts import due_shock_alerts
 
 try:
     firebase_admin.get_app()
@@ -35,17 +38,17 @@ def send_push(title, body, tag=None, data=None):
     tokens_ref = db.collection("fcm_tokens").stream()
     tokens = []
     for doc in tokens_ref:
-        data = doc.to_dict()
+        token_record = doc.to_dict()
         # 미승인 또는 알림 OFF는 제외
-        if data.get("approved") is not True:
+        if token_record.get("approved") is not True:
             continue
-        if data.get("notifications_enabled") is False:
+        if token_record.get("notifications_enabled") is False:
             continue
         tokens.append(doc.id)
     
     if not tokens:
         print(f"   ⚠️  토큰 없음: {title}")
-        return
+        return 0
     
     sent = 0
     failed = 0
@@ -79,6 +82,54 @@ def send_push(title, body, tag=None, data=None):
                     pass
     
     print(f"   📨 {title}: 발송 {sent} / 실패 {failed}")
+    return sent
+
+
+def send_due_event_shock_alerts(event_feed=None, now=None):
+    """검증된 쇼크 결과를 다음 날 07:00 KST에 한 번만 발송한다."""
+    if event_feed is None:
+        try:
+            doc = db.collection("stocks").document("data").get()
+            event_feed = doc.to_dict().get("event_calendar") if doc.exists else None
+        except Exception:
+            print("   ⚠️  이벤트 feed 로드 실패")
+            return 0
+
+    sent_count = 0
+    for alert in due_shock_alerts(event_feed, now=now):
+        state_id = "event_shock_" + hashlib.sha256(
+            alert["event_id"].encode("utf-8")
+        ).hexdigest()[:32]
+        try:
+            state_doc = db.collection("state").document(state_id).get()
+            already_sent = state_doc.exists and state_doc.to_dict().get("sent") is True
+        except Exception:
+            print("   ⚠️  이벤트 알림 중복 방지 상태 확인 실패")
+            continue
+        if already_sent:
+            continue
+        delivered = send_push(
+            alert["title"],
+            alert["body"],
+            tag=alert["tag"],
+            data=alert["data"],
+        )
+        if delivered <= 0:
+            continue
+        try:
+            db.collection("state").document(state_id).set({
+                "sent": True,
+                "event_id": alert["event_id"],
+                "notify_at": alert["notify_at"],
+            })
+        except Exception:
+            print("   ⚠️  이벤트 알림 중복 방지 상태 저장 실패")
+            continue
+        sent_count += 1
+
+    if sent_count == 0:
+        print("   📭 07:00 이벤트 쇼크 알림 없음")
+    return sent_count
 
 
 # ============================================================

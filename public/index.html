@@ -282,6 +282,46 @@ button {
 .macro-badge.warn { background: rgba(255, 184, 77, 0.15); color: var(--macro-warn); }
 .macro-badge.bad { background: rgba(255, 84, 84, 0.18); color: var(--macro-bad); }
 
+.event-panel {
+  margin: 14px 0 18px;
+  padding: 16px;
+  border: 1px solid var(--border-1);
+  border-radius: 14px;
+  background: var(--bg-2);
+}
+
+.event-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.event-panel-title { color: var(--fg-1); font-size: 14px; font-weight: 800; }
+.event-panel-meta { color: var(--fg-4); font-size: 11px; }
+.event-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+
+.event-card {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  background: var(--bg-1);
+}
+
+.event-card-top { display: flex; justify-content: space-between; gap: 8px; color: var(--fg-4); font-size: 10px; }
+.event-card-name { margin-top: 6px; color: var(--fg-1); font-size: 12px; font-weight: 750; line-height: 1.35; }
+.event-card-time { margin-top: 5px; color: var(--fg-3); font-size: 11px; }
+.event-card-status { color: var(--signal-info); white-space: nowrap; }
+.event-card-status.synced { color: var(--macro-good); }
+.event-card-status.due, .event-card-status.overdue { color: var(--macro-warn); }
+.event-empty { color: var(--fg-4); font-size: 12px; }
+
+@media (max-width: 720px) {
+  .event-list { grid-template-columns: 1fr; }
+}
+
 /* VIX 게이지 미니 */
 .vix-gauge {
   margin-top: 6px;
@@ -2019,6 +2059,16 @@ button {
           </div>
       
         </section>
+
+        <section class="event-panel" aria-labelledby="event-panel-title">
+          <div class="event-panel-head">
+            <div class="event-panel-title" id="event-panel-title">주요 실적·거시 일정</div>
+            <div class="event-panel-meta" id="event-panel-meta">공식 일정 확인 중</div>
+          </div>
+          <div class="event-list" id="event-calendar-list" aria-live="polite">
+            <div class="event-empty">공식 발표 일정을 불러오는 중입니다.</div>
+          </div>
+        </section>
         <!-- ============================================================
             탭 바
             ============================================================ -->
@@ -2783,6 +2833,60 @@ button {
         $("#updated-time").textContent = d.updated;
       }
     }
+
+    function formatEventKst(item) {
+      if (!item || !item.scheduled_at) {
+        return item?.scheduled_date ? `${item.scheduled_date} · 시각 재확인` : "일정 확인 중";
+      }
+      const value = new Date(item.scheduled_at);
+      if (Number.isNaN(value.getTime())) return item.scheduled_date || "일정 확인 중";
+      return new Intl.DateTimeFormat("ko-KR", {
+        timeZone: "Asia/Seoul",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(value);
+    }
+
+    function renderEventCalendar(data) {
+      const list = $("#event-calendar-list");
+      const meta = $("#event-panel-meta");
+      if (!list || !meta) return;
+      const feed = data?.event_calendar;
+      const events = Array.isArray(feed?.events) ? feed.events.slice(0, 6) : [];
+      meta.textContent = feed?.generated_at
+        ? `공식 일정 갱신 ${String(feed.generated_at).slice(0, 10)}`
+        : "직전 공식 일정 확인 중";
+      if (!events.length) {
+        list.innerHTML = '<div class="event-empty">확정된 공식 일정을 확인 중입니다.</div>';
+        return;
+      }
+      const statusLabel = {
+        scheduled: "발표 예정",
+        due: "결과 확인 중",
+        synced: "동기화 완료",
+        overdue: "검증 대기",
+      };
+      list.innerHTML = events.map((item) => `<article class="event-card">
+        <div class="event-card-top">
+          <span>${item.kind === "macro" ? "거시" : "기업"}${item.ticker ? ` · ${escapeHtml(item.ticker)}` : ""}</span>
+          <span class="event-card-status ${escapeHtml(item.sync_status || "")}">${escapeHtml(statusLabel[item.sync_status] || "일정 확인")}</span>
+        </div>
+        <div class="event-card-name">${escapeHtml(item.name || item.id || "공식 발표")}</div>
+        <div class="event-card-time">${escapeHtml(formatEventKst(item))} KST</div>
+      </article>`).join("");
+    }
+
+    function nextEventForTicker(code) {
+      const events = latestData?.event_calendar?.events;
+      if (!Array.isArray(events)) return null;
+      return events.find((item) =>
+        String(item.ticker || "").toUpperCase() === String(code || "").toUpperCase()
+        && ["scheduled", "due"].includes(item.sync_status)
+      ) || null;
+    }
     
     // ============================================================
     // 종목 행 렌더 — 미국 / 한국 주식
@@ -2818,6 +2922,10 @@ button {
         : (pegSource.startsWith("fnguide_") ? "FnGuide" : "");
     const pegSourceCaptionHtml = region !== "etf" && peg !== "—" && pegSourceName
         ? `<div class="detail-caption">PEG 출처: ${pegSourceName}</div>`
+        : "";
+    const nextEvent = region !== "etf" ? nextEventForTicker(stock.code) : null;
+    const eventCaptionHtml = nextEvent
+        ? `<div class="detail-caption">다음 공식 실적: ${escapeHtml(formatEventKst(nextEvent))} KST · ${escapeHtml(nextEvent.sync_status === "due" ? "결과 확인 중" : "발표 예정")}</div>`
         : "";
     const epsTrendText = epsTrend.arrow ? `${epsTrend.arrow} ${epsTrend.value}` : epsTrend.value;
     const targetTrendText = targetTrend.arrow ? `${targetTrend.arrow} ${targetTrend.value}` : targetTrend.value;
@@ -2915,6 +3023,7 @@ button {
             ${incomeHtml}
             <div class="detail-grid">${detailItemsHtml}</div>
             ${reasonsHtml}
+            ${eventCaptionHtml}
             ${pegSourceCaptionHtml}
         </div>
         </div>
@@ -3080,6 +3189,7 @@ button {
       latestData = data;
       
       renderMacro(data);
+      renderEventCalendar(data);
       
       // 미국 주식
       const usList = sortStocks(data.us_stock || []);
