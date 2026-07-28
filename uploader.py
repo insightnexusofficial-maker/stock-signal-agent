@@ -276,6 +276,40 @@ def fetch_event_feed(url=None, now=None):
         expires_at = datetime.fromisoformat(str(feed.get("expires_at") or ""))
         if expires_at.tzinfo is None:
             expires_at = expires_at.replace(tzinfo=KST)
+        event_times_valid = isinstance(feed.get("events"), list)
+        for event in feed.get("events") if event_times_valid else []:
+            try:
+                if not isinstance(event, dict):
+                    event_times_valid = False
+                    break
+                scheduled_at = event.get("scheduled_at")
+                scheduled = (
+                    datetime.fromisoformat(str(scheduled_at))
+                    if scheduled_at
+                    else None
+                )
+                monitor_after = datetime.fromisoformat(
+                    str(event.get("monitor_after") or "")
+                )
+                if (
+                    event.get("schedule_status") not in {"confirmed", "date_confirmed"}
+                    or (event.get("schedule_status") == "confirmed" and scheduled is None)
+                    or monitor_after.tzinfo is None
+                    or monitor_after.utcoffset() != timedelta(hours=9)
+                    or (
+                        scheduled is not None
+                        and (
+                            scheduled.tzinfo is None
+                            or scheduled.utcoffset() != timedelta(hours=9)
+                            or monitor_after < scheduled
+                        )
+                    )
+                ):
+                    event_times_valid = False
+                    break
+            except (TypeError, ValueError):
+                event_times_valid = False
+                break
         if (
             feed.get("schema_version") != "1.0"
             or feed.get("quality_gate", {}).get("status") != "passed"
@@ -288,6 +322,7 @@ def fetch_event_feed(url=None, now=None):
             or not isinstance(feed.get("recent_results"), list)
             or len(feed["events"]) > 24
             or len(feed["recent_results"]) > 12
+            or not event_times_valid
         ):
             raise ValueError("검증 또는 만료 조건을 통과하지 못한 이벤트 feed")
         return {

@@ -735,7 +735,13 @@ class UploaderRegressionTests(unittest.TestCase):
                 "notification_time_kst": "07:00",
                 "mode": "objective-official-data-only",
             },
-            "events": [{"id": "earnings-NVDA", "sync_status": "scheduled"}],
+            "events": [{
+                "id": "earnings-NVDA",
+                "schedule_status": "confirmed",
+                "scheduled_at": "2026-08-26T21:00:00+09:00",
+                "monitor_after": "2026-08-26T21:05:00+09:00",
+                "sync_status": "scheduled",
+            }],
             "recent_results": [],
         })
 
@@ -745,6 +751,36 @@ class UploaderRegressionTests(unittest.TestCase):
 
         self.assertEqual(feed["feed_id"], "market-events-aaaaaaaaaaaaaaaa")
         self.assertEqual(feed["events"][0]["id"], "earnings-NVDA")
+
+    @patch("uploader.requests.get")
+    def test_confirmed_event_without_exact_kst_time_is_rejected(self, requests_get):
+        requests_get.return_value = FakeResponse({
+            "schema_version": "1.0",
+            "feed_id": "market-events-cccccccccccccccc",
+            "content_sha256": "c" * 64,
+            "generated_at": "2026-07-28T23:40:00+09:00",
+            "expires_at": "2026-08-05T08:45:00+09:00",
+            "quality_gate": {"status": "passed", "mode": "official-only"},
+            "event_sync": {"calendar_status": "fresh"},
+            "shock_policy": {
+                "notification_time_kst": "07:00",
+                "mode": "objective-official-data-only",
+            },
+            "events": [{
+                "id": "earnings-NVDA",
+                "schedule_status": "confirmed",
+                "scheduled_at": None,
+                "monitor_after": "2026-08-27T05:00:00+09:00",
+                "sync_status": "scheduled",
+            }],
+            "recent_results": [],
+        })
+
+        feed = uploader.fetch_event_feed(
+            now=uploader.datetime.fromisoformat("2026-07-29T08:00:00+09:00")
+        )
+
+        self.assertIsNone(feed)
 
     @patch("uploader.requests.get")
     def test_expired_event_feed_keeps_previous_public_value(self, requests_get):
