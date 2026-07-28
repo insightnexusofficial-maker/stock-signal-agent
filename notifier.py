@@ -11,7 +11,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 import hashlib
 
-from event_alerts import due_shock_alerts
+from event_alerts import due_result_alerts, due_shock_alerts
 
 try:
     firebase_admin.get_app()
@@ -129,6 +129,45 @@ def send_due_event_shock_alerts(event_feed=None, now=None):
 
     if sent_count == 0:
         print("   📭 07:00 이벤트 쇼크 알림 없음")
+    return sent_count
+
+
+def send_due_event_result_alerts(event_feed, now=None):
+    """공식 확인이 끝난 주요 발표 결과를 검증 시각 기준으로 한 번 발송한다."""
+    sent_count = 0
+    for alert in due_result_alerts(event_feed, now=now):
+        state_id = "event_result_" + hashlib.sha256(
+            alert["event_id"].encode("utf-8")
+        ).hexdigest()[:32]
+        try:
+            state_doc = db.collection("state").document(state_id).get()
+            already_sent = state_doc.exists and state_doc.to_dict().get("sent") is True
+        except Exception:
+            print("   ⚠️  발표 결과 알림 중복 방지 상태 확인 실패")
+            continue
+        if already_sent:
+            continue
+        delivered = send_push(
+            alert["title"],
+            alert["body"],
+            tag=alert["tag"],
+            data=alert["data"],
+        )
+        if delivered <= 0:
+            continue
+        try:
+            db.collection("state").document(state_id).set({
+                "sent": True,
+                "event_id": alert["event_id"],
+                "retrieved_at": alert["retrieved_at"],
+            })
+        except Exception:
+            print("   ⚠️  발표 결과 알림 중복 방지 상태 저장 실패")
+            continue
+        sent_count += 1
+
+    if sent_count == 0:
+        print("   📭 새 공식 발표 결과 알림 없음")
     return sent_count
 
 

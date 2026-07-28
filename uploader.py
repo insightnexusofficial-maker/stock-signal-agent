@@ -2707,8 +2707,10 @@ def _run_upload_data(report, started_at):
         if os.getenv("SAYO_SKIP_NOTIFY") == "1":
             print("   알림 스킵: SAYO_SKIP_NOTIFY=1")
         else:
-            from notifier import check_and_notify
+            from notifier import check_and_notify, send_due_event_result_alerts
             check_and_notify(macro.get("vix"), macro.get("qqq"), macro.get("kospi"))
+            if event_feed:
+                send_due_event_result_alerts(event_feed)
     except Exception as e:
         print(f"   알림 에러: {e}")
 

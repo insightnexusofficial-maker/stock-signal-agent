@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from event_alerts import due_shock_alerts
+from event_alerts import due_result_alerts, due_shock_alerts
 
 
 def feed_with_result(result):
@@ -24,6 +24,9 @@ class EventAlertTests(unittest.TestCase):
             "kind": "macro",
             "status": "complete",
             "review_status": "verified",
+            "retrieved_at": "2026-08-12T21:40:00+09:00",
+            "source_published_at": "2026-08-12T21:30:00+09:00",
+            "source_urls": ["https://www.bls.gov/cpi/"],
             "summary": "공식 CPI 발표 확인",
             "shock": {
                 "is_shock": True,
@@ -34,6 +37,40 @@ class EventAlertTests(unittest.TestCase):
                 "notify_at": "2026-08-13T07:00:00+09:00",
             },
         }
+
+    def test_verified_result_is_alerted_after_official_retrieval(self):
+        alerts = due_result_alerts(
+            feed_with_result(self.result()),
+            now=datetime.fromisoformat("2026-08-12T21:45:00+09:00"),
+        )
+
+        self.assertEqual(len(alerts), 1)
+        self.assertEqual(alerts[0]["data"]["type"], "event_result")
+        self.assertIn("21:30 KST", alerts[0]["body"])
+
+    def test_result_is_not_alerted_before_verification(self):
+        result = self.result()
+        result["review_status"] = "pending"
+
+        self.assertEqual(
+            due_result_alerts(
+                feed_with_result(result),
+                now=datetime.fromisoformat("2026-08-12T21:45:00+09:00"),
+            ),
+            [],
+        )
+
+    def test_result_alert_requires_official_source_and_kst_times(self):
+        result = self.result()
+        result["source_urls"] = []
+
+        self.assertEqual(
+            due_result_alerts(
+                feed_with_result(result),
+                now=datetime.fromisoformat("2026-08-12T21:45:00+09:00"),
+            ),
+            [],
+        )
 
     def test_verified_shock_is_due_at_seven(self):
         alerts = due_shock_alerts(
