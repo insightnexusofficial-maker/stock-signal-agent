@@ -11,6 +11,9 @@ class NotifierSecurityTests(unittest.TestCase):
         cls.workflow = (root / ".github/workflows/event_shock_alert.yml").read_text(
             encoding="utf-8"
         )
+        cls.messaging_worker = (
+            root / "public" / "firebase-messaging-sw.js"
+        ).read_text(encoding="utf-8")
 
     def test_token_record_does_not_overwrite_notification_payload(self):
         send_push_source = self.source[
@@ -41,6 +44,36 @@ class NotifierSecurityTests(unittest.TestCase):
     def test_alert_workflow_has_read_only_repository_permission(self):
         self.assertRegex(self.workflow, r"permissions:\s+contents: read")
         self.assertIn("persist-credentials: false", self.workflow)
+
+    def test_candidate_is_not_a_buy_push_type(self):
+        buy_section = self.source[
+            self.source.index("# 1~2. 강력 매수 신규 진입"):
+            self.source.index("# 3. 🚨 기업 위기")
+        ]
+        self.assertNotIn("buy_zone_entry", buy_section)
+        self.assertNotIn("🟢 매수 후보:", buy_section)
+
+    def test_web_notification_is_not_manually_displayed_twice(self):
+        self.assertNotIn("onBackgroundMessage", self.messaging_worker)
+        self.assertNotIn("showNotification", self.messaging_worker)
+        self.assertIn("messaging.WebpushNotification(", self.source)
+        self.assertIn("tag=tag", self.source)
+        self.assertIn('"apns-collapse-id": tag', self.source)
+
+    def test_buy_alert_state_is_claimed_transactionally(self):
+        self.assertIn("@firestore.transactional", self.source)
+        buy_section = self.source[
+            self.source.index("# 1~2. 강력 매수 신규 진입"):
+            self.source.index("# 3. 🚨 기업 위기")
+        ]
+        self.assertLess(
+            buy_section.index("alert = _claim_buy_alert("),
+            buy_section.index("notification = build_buy_notification"),
+        )
+
+    def test_buy_delivery_result_is_auditable(self):
+        self.assertIn('"last_delivery_status": "delivered" if delivered > 0 else "failed"', self.source)
+        self.assertIn('"last_delivery_sample_id": sample_id', self.source)
 
 
 if __name__ == "__main__":

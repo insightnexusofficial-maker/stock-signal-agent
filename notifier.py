@@ -1,8 +1,8 @@
 """
-사여?! - 알림 발송 (v4: 매수 3단계 + 위기 트리거 + EPS 정보성)
+사여?! - 알림 발송 (v5: 강력 매수 + 지금 매수 + 위기 트리거)
 ==========================================================
-- 🟢 매수 후보 (candidate) / 🟢🟢 강력 매수 (strong)
-- 🚨 지금 매수! (RSI 상향 돌파, 10분마다 재발동 가능)
+- 🟢🟢 강력 매수 (strong 신규 진입)
+- 🚨 지금 매수! (RSI 임계값 상향 돌파)
 - 🚨 기업 위기 / 🌪️ 시장 위기 (3대 트리거)
 - 🟡 EPS 추세 정보성 (참고용)
 - ⚡ VIX 반전 (특별 기회)
@@ -12,6 +12,7 @@ from firebase_admin import credentials, firestore, messaging
 import hashlib
 
 from event_alerts import due_result_alerts, due_shock_alerts
+from notification_policy import build_buy_notification, evaluate_buy_alert
 
 try:
     firebase_admin.get_app()
@@ -58,10 +59,24 @@ def send_push(title, body, tag=None, data=None):
                 notification=messaging.Notification(title=title, body=body),
                 token=token,
                 data=data or {},
+                webpush=messaging.WebpushConfig(
+                    notification=messaging.WebpushNotification(
+                        title=title,
+                        body=body,
+                        icon="/icon-192.png",
+                        badge="/icon-72.png",
+                        tag=tag,
+                        renotify=False,
+                    ),
+                    fcm_options=messaging.WebpushFCMOptions(
+                        link="https://stock-sayo.web.app"
+                    ),
+                ),
                 android=messaging.AndroidConfig(
                     notification=messaging.AndroidNotification(tag=tag) if tag else None
                 ),
                 apns=messaging.APNSConfig(
+                    headers={"apns-collapse-id": tag} if tag else None,
                     payload=messaging.APNSPayload(
                         aps=messaging.Aps(
                             thread_id=tag or "default",
@@ -178,12 +193,11 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
     """
     매크로 + 종목 시그널 검토 후 알림 발송.
     
-    발송 대상:
-    1. 🟢 매수 후보 / 🟢🟢 강력 매수 (신규 진입)
-    2. 🚨 지금 매수! (RSI 임계값 상향 돌파, 매수 후보 종목)
-    3. 🚨 기업 위기 / 🌪️ 시장 위기
-    4. 🟡 EPS 추세 정보성 (참고용)
-    5. ⚡ VIX 반전 (공포 → 평온 전환)
+    매수 푸시 대상:
+    1. 🟢🟢 강력 매수 (신규 진입)
+    2. 🚨 지금 매수! (RSI 임계값 상향 돌파)
+
+    매수 후보는 화면에만 표시한다. 기존 위기·정보성·이벤트 알림은 유지한다.
     """
     print(f"\n📊 시장 모드: 미국 {_mode_emoji((qqq_data or {}).get('above_ma20', True) and 'normal' or 'adjust')} | "
           f"한국 {_mode_emoji((kospi_data or {}).get('above_ma20', True) and 'normal' or 'adjust')} "
@@ -200,7 +214,16 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
         print(f"   ⚠️  Firestore 로드 실패: {e}")
         return
     
-    all_stocks = (data.get("kr_stock") or []) + (data.get("us_stock") or []) + (data.get("kr_etf") or [])
+    all_stocks = (
+        [(stock, "stock") for stock in (data.get("kr_stock") or [])]
+        + [(stock, "stock") for stock in (data.get("us_stock") or [])]
+        + [(stock, "etf") for stock in (data.get("kr_etf") or [])]
+    )
+    sample_id = (
+        data.get("collection_finished_at")
+        or data.get("last_attempt_at")
+        or data.get("updated")
+    )
     
     # === 이전 RSI 상태 로드 (돌파 감지용) ===
     try:
@@ -213,7 +236,7 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
     sent_count = 0
     
     # === 종목별 시그널 처리 ===
-    for stock in all_stocks:
+    for stock, instrument_type in all_stocks:
         code = stock.get("code")
         name = stock.get("name", "?")
         if not code:
@@ -221,72 +244,50 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
         
         rsi = stock.get("rsi")
         rsi_threshold = stock.get("rsi_threshold")
-        buy_level = stock.get("buy_level", "none")
-        in_zone = stock.get("in_buy_zone", False)
-        step1 = stock.get("step1", False)
-        sector = stock.get("sector", "")
-        price = stock.get("price")
-        
         # 새 RSI 상태 저장용
         if rsi is not None:
             new_rsi_map[code] = rsi
         
         prev_rsi = prev_rsi_map.get(code)
-        
+
         # ============================================================
-        # 1. 🚨 지금 매수! — RSI 임계값 상향 돌파 (10분마다 재발동 가능)
+        # 1~2. 강력 매수 신규 진입 / RSI 상향 돌파
         # ============================================================
-        if step1 and in_zone and rsi is not None and rsi_threshold is not None and prev_rsi is not None:
-            crossed_up = prev_rsi < rsi_threshold and rsi >= rsi_threshold
-            if crossed_up:
-                emoji = "🚨💪" if buy_level == "strong" else "🚨"
-                level_label = "강력 매수" if buy_level == "strong" else "매수 후보"
-                
-                title = f"{emoji} 지금 매수! {name}"
-                body = (f"RSI {prev_rsi:.1f} → {rsi:.1f} (기준 {rsi_threshold}) | "
-                        f"{level_label} | {price}")
-                send_push(title, body, tag=f"buy-now-{code}", data={
-                    "type": "buy_now",
-                    "code": code,
-                    "level": buy_level,
-                })
-                sent_count += 1
-                continue  # "지금 매수" 떴으면 일반 매수 알림 중복 발송 안 함
-        
-        # ============================================================
-        # 2. 🟢 매수 후보 / 🟢🟢 강력 매수 — 첫 진입 시 알림
-        # ============================================================
-        # 이전엔 in_zone False였는데 이번에 True로 진입한 경우
+        # 상태 확인과 이번 회차 claim을 transaction으로 묶는다. FCM 발송보다
+        # 먼저 claim해 중복 방지를 우선하며, 상태 장애 시에는 발송하지 않는다.
         prev_state_doc_id = f"buy_zone_{code}"
         try:
-            prev_zone_doc = db.collection("state").document(prev_state_doc_id).get()
-            prev_in_zone = prev_zone_doc.to_dict().get("in_zone", False) if prev_zone_doc.exists else False
-        except:
-            prev_in_zone = False
-        
-        if step1 and in_zone and not prev_in_zone:
-            if buy_level == "strong":
-                title = f"🟢🟢 강력 매수: {name}"
-                body = f"RSI {rsi} (구간 {rsi_threshold}~{rsi_threshold + 10}) | EPS·목표 동반 개선 | {price}"
-            elif buy_level == "candidate":
-                title = f"🟢 매수 후보: {name}"
-                body = f"RSI {rsi} (구간 {rsi_threshold}~{rsi_threshold + 10}) | hits {stock.get('selection_hits', '?')}/3 | {price}"
-            else:
-                title = None
-            
-            if title:
-                send_push(title, body, tag=f"buy-{code}", data={
-                    "type": "buy_zone_entry",
-                    "code": code,
-                    "level": buy_level,
-                })
+            state_ref = db.collection("state").document(prev_state_doc_id)
+            alert = _claim_buy_alert(
+                db.transaction(),
+                state_ref,
+                stock,
+                prev_rsi,
+                sample_id,
+            )
+        except Exception:
+            print(f"   ⚠️  매수 알림 상태 갱신 실패: {code}")
+            alert = None
+
+        if alert:
+            notification = build_buy_notification(alert, stock, instrument_type)
+            delivered = send_push(
+                notification["title"],
+                notification["body"],
+                tag=notification["tag"],
+                data=notification["data"],
+            )
+            if delivered > 0:
                 sent_count += 1
-        
-        # 매수 구간 상태 저장
-        try:
-            db.collection("state").document(prev_state_doc_id).set({"in_zone": in_zone})
-        except:
-            pass
+            try:
+                state_ref.set({
+                    "last_delivery_status": "delivered" if delivered > 0 else "failed",
+                    "last_delivery_type": alert["type"],
+                    "last_delivery_sample_id": sample_id,
+                    "last_delivery_at": firestore.SERVER_TIMESTAMP,
+                }, merge=True)
+            except Exception:
+                print(f"   ⚠️  매수 알림 전달 상태 저장 실패: {code}")
         
         # ============================================================
         # 3. 🚨 기업 위기 / 🌪️ 시장 위기
@@ -402,3 +403,21 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
         print("   📭 새 시그널 없음")
     else:
         print(f"   ✅ 총 {sent_count}건 발송")
+
+
+@firestore.transactional
+def _claim_buy_alert(transaction, state_ref, stock, fallback_prev_rsi, sample_id):
+    snapshot = state_ref.get(transaction=transaction)
+    previous_state = snapshot.to_dict() if snapshot.exists else {}
+    alert, next_state = evaluate_buy_alert(
+        stock,
+        previous_state=previous_state,
+        fallback_prev_rsi=fallback_prev_rsi,
+        sample_id=sample_id,
+    )
+    next_state["observed_at"] = firestore.SERVER_TIMESTAMP
+    if alert:
+        next_state["last_claimed_type"] = alert["type"]
+        next_state["last_claimed_at"] = firestore.SERVER_TIMESTAMP
+    transaction.set(state_ref, next_state, merge=True)
+    return alert

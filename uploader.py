@@ -2144,6 +2144,7 @@ def check_stock_signal(data, sector, macro, region="us"):
     zone_upper = rsi_threshold + BUY_LEVELS.get("candidate_rsi_upper_offset", 10)
     in_zone = rsi is not None and rsi_threshold <= rsi <= zone_upper
     data["in_buy_zone"] = in_zone
+    data["rsi_zone_upper"] = zone_upper
     
     # === 매수 레벨 판정 (candidate / strong) ===
     # candidate: 펀더멘털 통과 (RSI 무관) — 관심 종목 워치리스트
@@ -2203,6 +2204,7 @@ def check_etf_signal(data, macro):
     data["selection_hits"] = len(hit_details)
     data["selection_hit_details"] = hit_details
     data["in_buy_zone"] = rsi_strong  # notifier가 RSI 돌파 감지용
+    data["rsi_zone_upper"] = zone_upper
     
     # === 매수 레벨 판정 ===
     # candidate: RSI 워치 구간 OR NAV 할인 OR 밴드 하단

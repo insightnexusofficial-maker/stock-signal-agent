@@ -66,7 +66,14 @@ class FrontendEntryFlowTests(unittest.TestCase):
         self.assertIn("fallbackLoadPromise", self.source)
 
     def test_app_version_changes_for_the_entry_flow_release(self):
-        self.assertIn('const APP_VERSION = "20260721-entry-flow-1";', self.source)
+        self.assertIn('const APP_VERSION = "20260729-buy-alerts-1";', self.source)
+
+    def test_buy_alert_guide_separates_watchlist_from_pushes(self):
+        self.assertIn("매수 후보만으로는 푸시 알림을 보내지 않아요.", self.source)
+        self.assertIn("ETF는 RSI 과매도와 NAV 할인 또는 52주 낮은 위치", self.source)
+        self.assertIn('region === "etf" ? "💪 ETF 강한 구간"', self.source)
+        self.assertIn("매수 시그널을 30분마다", self.source)
+        self.assertNotIn("매수 시그널을 10분마다", self.source)
 
     def test_peg_source_is_a_detail_caption_not_a_metric_widget(self):
         self.assertIn('`<div class="detail-caption">PEG 출처: ${pegSourceName}</div>`', self.source)

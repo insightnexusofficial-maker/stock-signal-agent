@@ -176,10 +176,10 @@ if __name__ == "__main__":
     # 즉시 1회 실행 (장외라도 테스트용)
     # check_signals()
     
-    # 10분마다 실행
-    schedule.every(10).minutes.do(check_signals)
+    # 운영 수집 주기와 동일하게 30분마다 실행
+    schedule.every(30).minutes.do(check_signals)
     
-    print("\n⏳ 10분마다 체크합니다. (Ctrl+C로 종료)")
+    print("\n⏳ 30분마다 체크합니다. (Ctrl+C로 종료)")
     
     while True:
         schedule.run_pending()

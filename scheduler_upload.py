@@ -36,13 +36,13 @@ if __name__ == "__main__":
     print("🚀 주식 사여?! 스케줄러 시작")
     print("   국장: 09:00~15:30 KST")
     print("   미장: 09:30~16:00 EST (22:30~05:00 KST)")
-    print("   주기: 10분\n")
+    print("   주기: 30분\n")
     
     # 시작 시 1회 실행
     upload_data()
     
-    # 10분마다 체크
-    schedule.every(10).minutes.do(run_if_market_open)
+    # 운영 수집 주기와 동일하게 30분마다 체크
+    schedule.every(30).minutes.do(run_if_market_open)
     
     while True:
         schedule.run_pending()

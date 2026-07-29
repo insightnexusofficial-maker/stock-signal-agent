@@ -1943,7 +1943,7 @@ button {
 
         <p class="gate-desc">
         관심 종목의 변화를 확인하고<br>
-        <strong>매수 시그널을 10분마다</strong> 알려드려요.
+        <strong>매수 시그널을 30분마다</strong> 확인해 알려드려요.
         </p>
         
         <button class="gate-cta" id="gate-cta">
@@ -2265,7 +2265,7 @@ button {
             <div class="guide-section">
                 <h3 class="guide-h3">🎯 한 줄로 요약하면</h3>
                 <div class="guide-summary">
-                SAYO가 매일 24개 종목을 살펴보고,<br>
+                SAYO가 감시 종목을 계속 살펴보고,<br>
                 <strong>지금 사기 좋은 타이밍이라고 판단되면</strong> 폰으로 알림을 보내드려요.
                 </div>
                 <p class="guide-text">
@@ -2281,29 +2281,29 @@ button {
                 <div class="guide-card">
                 <div class="guide-card-title"><span class="dot strong"></span> 매수 후보</div>
                 <p>
-                    <strong>"이 종목 지금 주목해보세요"</strong>라는 신호예요. 
-                    기업 펀더멘털도 괜찮고, 주가가 적정 구간에 들어왔어요.
+                    <strong>"이 종목을 지켜보세요"</strong>라는 화면 신호예요.
+                    주식은 기업 조건을, ETF는 RSI·NAV·52주 위치를 봅니다.
                 </p>
                 <p class="guide-quiet">
-                    무조건 사라는 뜻은 아니에요. 관심 종목으로 보고, 본인 판단으로 결정하세요.
+                    매수 후보만으로는 푸시 알림을 보내지 않아요.
                 </p>
                 </div>
         
                 <div class="guide-card">
                 <div class="guide-card-title"><span class="dot strong-plus"></span> 강력 매수</div>
                 <p>
-                    매수 후보 조건에 더해, <strong>회사 이익 전망이 빠르게 좋아지고 있을 때</strong>예요. 
-                    애널리스트들도 목표 주가를 올리고 있는 시점.
+                    주식은 이익·목표가 흐름과 RSI가 함께 좋아진 경우,
+                    ETF는 RSI 과매도와 NAV 할인 또는 52주 낮은 위치가 함께 확인된 경우예요.
                 </p>
                 <p class="guide-quiet">
-                    평소보다 더 적극적으로 봐도 좋은 타이밍이에요. 단, 본인 자금 여유 안에서요.
+                    강력 매수 구간에 새로 진입하면 푸시 알림이 와요.
                 </p>
                 </div>
         
                 <div class="guide-card">
                 <div class="guide-card-title"><span class="dot now"></span> 지금 매수!</div>
                 <p>
-                    매수 후보 종목이 <strong>오랜 하락 끝에 반등을 시작한 순간</strong>이에요. 
+                    매수 조건을 통과한 종목이 <strong>RSI 과매도 기준선을 위로 돌파한 순간</strong>이에요.
                     이 알림은 하루에도 여러 번 올 수 있어요. 시장 상황 따라 바닥을 여러 번 다지기 때문이에요.
                 </p>
                 <p class="guide-quiet">
@@ -2477,7 +2477,7 @@ button {
             <button type="button" id="guide-float-close" aria-label="가이드 닫기">×</button>
         </div>
         <footer class="app-footer">
-            <div class="mono">SAYO v4 · 10분 단위 시그널 감지</div>
+            <div class="mono">SAYO v5 · 30분 단위 시그널 감지</div>
             <div class="links">
                 <a href="/admin">admin</a>
             </div>
@@ -2502,7 +2502,7 @@ button {
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const APP_VERSION = "20260721-entry-flow-1";
+    const APP_VERSION = "20260729-buy-alerts-1";
 
     function perfMark(name) {
       try { performance.mark(`sayo:${name}`); } catch (e) {}
@@ -2639,7 +2639,7 @@ button {
     }
     
     // 시그널 우선순위 → 행 클래스 + 뱃지
-    function getSignalInfo(stock) {
+    function getSignalInfo(stock, region) {
       const triggers = stock.crisis_triggers || [];
       const buyLevel = stock.buy_level || "none";
       const infoLevel = stock.info_level;
@@ -2655,11 +2655,17 @@ button {
       // 매수 시그널
       else if (buyLevel === "strong") {
         rowClass = "signal-strong";
-        badges.push({ label: "💪 강력 매수", cls: "strong" });
+        badges.push({
+          label: region === "etf" ? "💪 ETF 강한 구간" : "💪 강력 매수",
+          cls: "strong",
+        });
       }
       else if (buyLevel === "candidate") {
         rowClass = "signal-candidate";
-        badges.push({ label: "🟢 매수 후보", cls: "candidate" });
+        badges.push({
+          label: region === "etf" ? "🟢 ETF 관심 구간" : "🟢 매수 후보",
+          cls: "candidate",
+        });
       }
       // 정보성 (뱃지로만 표시, 행 색상은 안 바꿈)
       if (infoLevel === "info_watch") {
@@ -2892,7 +2898,7 @@ button {
     // 종목 행 렌더 — 미국 / 한국 주식
     // ============================================================
     function renderStockRow(stock, region) {
-    const { rowClass, badges } = getSignalInfo(stock);
+    const { rowClass, badges } = getSignalInfo(stock, region);
     
     const epsTrend = trendIcon(stock.eps_trend_state, stock.trend_slope_mom_pct);
     const targetTrend = trendIcon(stock.target_trend_state, stock.target_slope_mom_pct);
@@ -2945,6 +2951,18 @@ button {
     const reasons = [];
     (stock.crisis_details || []).forEach(d => reasons.push(`<span class="reason-tag">${d}</span>`));
     (stock.info_reasons || []).forEach(d => reasons.push(`<span class="reason-tag">${d}</span>`));
+    if (region === "etf") {
+      const etfReasonLabels = {
+        rsi_watch: "RSI 관심 구간",
+        nav_discount: "NAV 할인",
+        band_position: "52주 낮은 위치",
+      };
+      (stock.selection_hit_details || []).forEach(key => {
+        if (etfReasonLabels[key]) {
+          reasons.push(`<span class="reason-tag">${etfReasonLabels[key]}</span>`);
+        }
+      });
+    }
     if (stock.cycle_reason) reasons.push(`<span class="reason-tag">사이클 · ${escapeHtml(stock.cycle_reason)}</span>`);
     const reasonsHtml = reasons.length > 0 ? `<div class="detail-reasons">${reasons.join(" ")}</div>` : "";
     
