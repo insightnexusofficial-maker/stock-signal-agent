@@ -655,6 +655,26 @@ class UploaderRegressionTests(unittest.TestCase):
         self.assertEqual(result["price_source"], "naver_mobile_realtime")
 
     @patch("uploader.requests.get")
+    def test_naver_quote_uses_provider_trade_date(self, requests_get):
+        requests_get.return_value = FakeResponse({
+            "closePrice": "130,300",
+            "marketStatus": "CLOSE",
+            "localTradedAt": "2026-07-29T16:10:20+09:00",
+        })
+
+        result = uploader.get_naver_stock_quote("267270")
+
+        self.assertEqual(result["price_as_of"], "20260729")
+        self.assertEqual(result["price_traded_at"], "2026-07-29T16:10:20+09:00")
+
+    def test_market_date_str_normalizes_timezone_and_rejects_invalid_values(self):
+        self.assertEqual(
+            uploader.market_date_str("2026-07-29T15:10:20+00:00"),
+            "20260730",
+        )
+        self.assertIsNone(uploader.market_date_str("not-a-date"))
+
+    @patch("uploader.requests.get")
     def test_naver_mobile_exchange_rate_is_normalized(self, requests_get):
         requests_get.return_value = FakeResponse({
             "result": {

@@ -159,6 +159,24 @@ def get_date_str():
     return datetime.now(KST).strftime("%Y%m%d")
 
 
+def market_date_str(value):
+    """공급자가 제공한 거래 시각/날짜를 한국 시장 기준 YYYYMMDD로 정규화한다."""
+    if value is None:
+        return None
+    if hasattr(value, "to_pydatetime"):
+        value = value.to_pydatetime()
+    elif isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value)
+        except ValueError:
+            return None
+    if not isinstance(value, datetime):
+        return None
+    if value.tzinfo is not None:
+        value = value.astimezone(KST)
+    return value.strftime("%Y%m%d")
+
+
 def get_month_str():
     return datetime.now(KST).strftime("%Y%m")
 
@@ -886,6 +904,7 @@ def dedupe_records(records, code_key="code", name_key="name"):
 KR_STOCK_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
     "price_source", "price_provider_gap_pct", "price_market_status",
+    "price_as_of", "price_traded_at",
     "eps_fwd", "eps_ttm", "eps_growth", "eps_growth_raw", "eps_growth_source", "eps_growth_quality",
     "annual_eps_prev", "annual_eps_fwd", "annual_eps_growth",
     "forward_eps_estimates", "forward_eps_cagr", "forward_eps_cagr_years",
@@ -907,6 +926,7 @@ KR_STOCK_DERIVED_FIELDS = {
 
 KR_ETF_SNAPSHOT_FIELDS = (
     "price", "rsi", "volume", "vol_avg_20", "vol_ratio",
+    "price_as_of",
     "nav", "nav_discount", "band_pct",
     "distribution_yield_ttm", "distribution_yield_monthly",
     "distribution_recent_yield_monthly", "distribution_recent_amount",
@@ -1099,6 +1119,8 @@ def get_naver_stock_quote(code):
         "price": int(price),
         "price_source": "naver_mobile_realtime",
         "price_market_status": payload.get("marketStatus"),
+        "price_as_of": market_date_str(payload.get("localTradedAt")),
+        "price_traded_at": payload.get("localTradedAt"),
     }
 
 
@@ -1128,6 +1150,7 @@ def get_kr_stock_data(token, code):
             result["rsi"] = calculate_rsi(prices)
 
             if candles:
+                result["price_as_of"] = str(candles[0].get("stck_bsop_date") or "") or None
                 if not result.get("price"):
                     result["price"] = int(candles[0]["stck_clpr"])
                     result["price_source"] = "kis_latest_close"
@@ -1866,6 +1889,7 @@ def get_etf_data(etf):
         if not hist.empty:
             result["price"] = round(float(hist["Close"].iloc[-1]), 0)
             result["volume"] = int(hist["Volume"].iloc[-1])
+            result["price_as_of"] = market_date_str(hist.index[-1])
             if len(hist) >= 15:
                 result["rsi"] = calculate_rsi(hist["Close"].tolist())
 
@@ -2499,7 +2523,7 @@ def _run_upload_data(report, started_at):
             # 스냅샷 저장
             save_snapshot(code, {
                 **{field: merged.get(field) for field in KR_STOCK_SNAPSHOT_FIELDS},
-                "data_as_of": merged.get("stale_as_of") or get_date_str(),
+                "data_as_of": merged.get("price_as_of") or merged.get("stale_as_of") or get_date_str(),
                 "is_stale": merged.get("is_stale", False),
             })
             
@@ -2507,7 +2531,9 @@ def _run_upload_data(report, started_at):
             step1, step2, reason = check_stock_signal(merged, sector, macro, region="kr")
             merged["step1"] = step1
             merged["step2"] = step2
-            merged["data_as_of"] = merged.get("stale_as_of") or get_date_str()
+            merged["data_as_of"] = (
+                merged.get("price_as_of") or merged.get("stale_as_of") or get_date_str()
+            )
             attach_cycle_context(merged, cycle_report)
             if reason:
                 merged["skip_reason"] = reason
@@ -2570,12 +2596,15 @@ def _run_upload_data(report, started_at):
             step1, step2, reason = check_etf_signal(data, macro)
             data["step1"] = step1
             data["step2"] = step2
+            data["data_as_of"] = (
+                data.get("price_as_of") or data.get("stale_as_of") or get_date_str()
+            )
             if reason:
                 data["skip_reason"] = reason
             
             save_snapshot(etf["ticker_krx"], {
                 **{field: data.get(field) for field in KR_ETF_SNAPSHOT_FIELDS},
-                "data_as_of": data.get("stale_as_of") or get_date_str(),
+                "data_as_of": data["data_as_of"],
                 "is_stale": data.get("is_stale", False),
             })
             
