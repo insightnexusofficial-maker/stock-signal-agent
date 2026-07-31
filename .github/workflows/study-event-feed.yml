@@ -17,6 +17,8 @@ jobs:
   update-verify-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
     defaults:
       run:
         working-directory: study
@@ -49,11 +51,9 @@ jobs:
           git push
 
       - name: Install Firebase CLI
-        if: ${{ secrets.FIREBASE_TOKEN != '' && steps.build.outputs.changed == 'true' }}
+        if: ${{ env.FIREBASE_TOKEN != '' && steps.build.outputs.changed == 'true' }}
         run: npm install --global firebase-tools
 
       - name: Deploy validated event feed
-        if: ${{ secrets.FIREBASE_TOKEN != '' && steps.build.outputs.changed == 'true' }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: ${{ env.FIREBASE_TOKEN != '' && steps.build.outputs.changed == 'true' }}
         run: firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"

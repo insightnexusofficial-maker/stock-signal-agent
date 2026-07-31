@@ -16,6 +16,9 @@ jobs:
   update-verify-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     defaults:
       run:
         working-directory: study
@@ -39,9 +42,8 @@ jobs:
           python scripts/build_event_feed.py
 
       - name: Extract and audit new evidence
-        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        if: ${{ env.OPENAI_API_KEY != '' }}
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_TERRA_MODEL: gpt-5.6-terra
           OPENAI_SOL_MODEL: gpt-5.6-sol
         run: |
@@ -65,11 +67,9 @@ jobs:
           git push
 
       - name: Install Firebase CLI
-        if: ${{ secrets.FIREBASE_TOKEN != '' }}
+        if: ${{ env.FIREBASE_TOKEN != '' }}
         run: npm install --global firebase-tools
 
       - name: Deploy validated report
-        if: ${{ secrets.FIREBASE_TOKEN != '' }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: ${{ env.FIREBASE_TOKEN != '' }}
         run: firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"
