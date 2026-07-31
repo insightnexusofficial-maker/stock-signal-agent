@@ -8,9 +8,10 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -330,7 +331,38 @@ def _atomic_write(path: Path, document: dict) -> None:
     temporary.replace(path)
 
 
-def collect(now: datetime | None = None, fetcher=_fetch) -> tuple[int, int]:
+def _is_collection_window(
+    event: dict,
+    now: datetime,
+    include_recent_overdue: bool,
+) -> bool:
+    capture_until = datetime.fromisoformat(event["capture_until"]).astimezone(KST)
+    if event.get("scheduled_at"):
+        monitor_after = datetime.fromisoformat(event["monitor_after"]).astimezone(KST)
+        if monitor_after <= now <= capture_until:
+            return True
+        if not include_recent_overdue or now <= capture_until:
+            return False
+        event_moment = datetime.fromisoformat(event["scheduled_at"]).astimezone(KST)
+        return now <= event_moment + timedelta(days=3)
+    scheduled_date = datetime.fromisoformat(event["scheduled_date"]).date()
+    if scheduled_date <= now.date() <= scheduled_date + timedelta(days=1):
+        return True
+    if not include_recent_overdue or now.date() <= scheduled_date:
+        return False
+    backfill_deadline = datetime.combine(
+        scheduled_date + timedelta(days=3),
+        time.max,
+        tzinfo=KST,
+    )
+    return now <= backfill_deadline
+
+
+def collect(
+    now: datetime | None = None,
+    fetcher=_fetch,
+    include_recent_overdue: bool = False,
+) -> tuple[int, int]:
     now = (now or datetime.now(KST)).astimezone(KST)
     calendar = validate_calendar(_read_json(CALENDAR_PATH))
     results = validate_results(_read_json(RESULTS_PATH), calendar)
@@ -341,16 +373,8 @@ def collect(now: datetime | None = None, fetcher=_fetch) -> tuple[int, int]:
     for event in calendar.get("events", []):
         if event.get("kind") != "earnings" or event["id"] in result_ids:
             continue
-        capture_until = datetime.fromisoformat(event["capture_until"]).astimezone(KST)
-        if event.get("scheduled_at"):
-            monitor_after = datetime.fromisoformat(event["monitor_after"]).astimezone(KST)
-            if not monitor_after <= now <= capture_until:
-                continue
-        else:
-            scheduled_date = datetime.fromisoformat(event["scheduled_date"]).date()
-            # 공식 날짜 당일과 다음 날까지만 확인한다.
-            if not scheduled_date <= now.date() <= scheduled_date + timedelta(days=1):
-                continue
+        if not _is_collection_window(event, now, include_recent_overdue):
+            continue
         page_url = event.get("result_source_url")
         if not page_url:
             continue
@@ -417,7 +441,10 @@ def collect(now: datetime | None = None, fetcher=_fetch) -> tuple[int, int]:
 
 
 def main() -> None:
-    checked, added = collect()
+    include_recent_overdue = (
+        os.environ.get("INCLUDE_RECENT_OVERDUE", "").lower() == "true"
+    )
+    checked, added = collect(include_recent_overdue=include_recent_overdue)
     print(f"발표 창 공식 결과 확인 {checked}건 · 검토 대기 추가 {added}건")
 
 

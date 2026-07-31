@@ -41,7 +41,9 @@ jobs:
         run: python scripts/check_due_events.py
 
       - name: Detect official earnings result publication
-        if: ${{ steps.due.outputs.active == 'true' }}
+        if: ${{ steps.due.outputs.active == 'true' || ((github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *') && steps.due.outputs.backfill_active == 'true') }}
+        env:
+          INCLUDE_RECENT_OVERDUE: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' }}
         run: python scripts/collect_earnings_results.py
 
       - name: Collect supported official macro results

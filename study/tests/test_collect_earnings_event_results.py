@@ -149,6 +149,21 @@ class CollectEarningsEventResultsTests(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result[0], exhibit_url)
 
+    def test_recent_overdue_collection_only_runs_in_daily_backfill_mode(self):
+        event = {
+            "scheduled_at": "2026-07-30T05:30:00+09:00",
+            "monitor_after": "2026-07-30T05:35:00+09:00",
+            "capture_until": "2026-07-31T18:00:00+09:00",
+        }
+        now = datetime.fromisoformat("2026-07-31T20:00:00+09:00")
+
+        self.assertFalse(
+            collect_earnings_results._is_collection_window(event, now, False)
+        )
+        self.assertTrue(
+            collect_earnings_results._is_collection_window(event, now, True)
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
