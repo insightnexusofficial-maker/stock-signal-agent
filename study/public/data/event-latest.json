@@ -1,8 +1,8 @@
 {
   "schema_version": "1.2",
-  "feed_id": "market-events-ffde37e9bd1e6fbb",
-  "content_sha256": "ffde37e9bd1e6fbb367ecc630848a200cc98f4192e51a58d8388aac41790c7ca",
-  "generated_at": "2026-07-31T23:38:11+09:00",
+  "feed_id": "market-events-c25e7356a93c6b47",
+  "content_sha256": "c25e7356a93c6b4751f8b343a0768507fd2a5be258ccb9c2ecdebc85c296ddd1",
+  "generated_at": "2026-08-01T08:14:35+09:00",
   "expires_at": "2026-08-08T12:00:00+09:00",
   "quality_gate": {
     "status": "passed",
@@ -699,6 +699,42 @@
     }
   ],
   "recent_results": [
+    {
+      "event_id": "earnings-LRCX-2026june",
+      "event_name": "Lam Research 2026년 6월 분기 실적",
+      "kind": "earnings",
+      "ticker": "LRCX",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-08-01T08:14:35+09:00",
+      "source_published_at": null,
+      "reference_period": "Lam Research 2026년 6월 분기 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://investor.lamresearch.com/quarterly-results"
+      ],
+      "revision_of": null,
+      "impact_review": null
+    },
+    {
+      "event_id": "earnings-VRT-2026q2",
+      "event_name": "Vertiv 2026 Q2 실적",
+      "kind": "earnings",
+      "ticker": "VRT",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-08-01T08:14:35+09:00",
+      "source_published_at": null,
+      "reference_period": "Vertiv 2026 Q2 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://investors.vertiv.com/financials/quarterly-results/default.aspx"
+      ],
+      "revision_of": null,
+      "impact_review": null
+    },
     {
       "event_id": "earnings-8035-fy2027q1",
       "event_name": "Tokyo Electron FY2027 Q1 실적",
