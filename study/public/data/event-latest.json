@@ -1,8 +1,8 @@
 {
   "schema_version": "1.2",
-  "feed_id": "market-events-5296eada1197cf41",
-  "content_sha256": "5296eada1197cf414cf9380ec5a015ab6292fd3016fafcf8ee6721661b425c06",
-  "generated_at": "2026-07-31T14:00:00+09:00",
+  "feed_id": "market-events-ffde37e9bd1e6fbb",
+  "content_sha256": "ffde37e9bd1e6fbb367ecc630848a200cc98f4192e51a58d8388aac41790c7ca",
+  "generated_at": "2026-07-31T23:38:11+09:00",
   "expires_at": "2026-08-08T12:00:00+09:00",
   "quality_gate": {
     "status": "passed",
@@ -794,6 +794,24 @@
     }
   ],
   "recent_results": [
+    {
+      "event_id": "earnings-8035-fy2027q1",
+      "event_name": "Tokyo Electron FY2027 Q1 실적",
+      "kind": "earnings",
+      "ticker": "8035",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-07-31T23:38:11+09:00",
+      "source_published_at": null,
+      "reference_period": "Tokyo Electron FY2027 Q1 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://www.tel.com/ir/library/report/"
+      ],
+      "revision_of": null,
+      "impact_review": null
+    },
     {
       "event_id": "earnings-MSFT-fy2026q4",
       "event_name": "Microsoft FY2026 Q4 실적",
