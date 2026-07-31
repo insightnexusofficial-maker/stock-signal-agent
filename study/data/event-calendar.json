@@ -1,0 +1,436 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-29T23:05:06+09:00",
+  "expires_at": "2026-08-05T08:45:00+09:00",
+  "allowed_domains": [
+    "amazon.com",
+    "aboutamazon.com",
+    "amd.com",
+    "asml.com",
+    "bls.gov",
+    "bea.gov",
+    "broadcom.com",
+    "federalreserve.gov",
+    "investor.nvidia.com",
+    "investors.micron.com",
+    "investor.tsmc.com",
+    "investor.atmeta.com",
+    "lamresearch.com",
+    "microsoft.com",
+    "news.samsung.com",
+    "skhynix.com",
+    "bok.or.kr",
+    "kostat.go.kr"
+  ],
+  "shock_policy": {
+    "version": "market-shock-v1-2026-07-28",
+    "notification_time_kst": "07:00",
+    "rules": [
+      {
+        "id": "company-revenue-yoy-20pct",
+        "description": "공식 분기 매출의 전년 동기 증감률 절대값이 20% 이상"
+      },
+      {
+        "id": "company-guidance-change-20pct",
+        "description": "동일 기준 공식 가이던스 중간값이 직전 가이던스보다 20% 이상 변동"
+      },
+      {
+        "id": "company-capex-change-20pct",
+        "description": "동일 기준 공식 자본지출 전망이 직전 전망보다 20% 이상 변동"
+      },
+      {
+        "id": "macro-inflation-mom-0_6pct",
+        "description": "공식 CPI 또는 PCE 전월 대비 변동률 절대값이 0.6% 이상"
+      },
+      {
+        "id": "macro-inflation-yoy-change-0_5pp",
+        "description": "공식 CPI 또는 PCE 전년 대비 상승률이 직전 발표보다 0.5%p 이상 변동"
+      },
+      {
+        "id": "macro-payroll-change-500k",
+        "description": "공식 비농업 고용 증감 절대값이 50만 명 이상"
+      },
+      {
+        "id": "macro-unemployment-change-0_5pp",
+        "description": "공식 실업률이 직전 발표보다 0.5%p 이상 변동"
+      },
+      {
+        "id": "fomc-rate-change-50bp",
+        "description": "FOMC 목표금리 범위가 한 번에 50bp 이상 변동"
+      },
+      {
+        "id": "emergency-policy-action",
+        "description": "공식 기관이 임시회의 또는 긴급 정책조치를 명시"
+      }
+    ]
+  },
+  "monitors": [
+    {
+      "id": "earnings-005930",
+      "kind": "earnings",
+      "ticker": "005930",
+      "name": "삼성전자",
+      "calendar_url": "https://news.samsung.com/global/tag/earnings-release",
+      "results_url": "https://news.samsung.com/global/tag/earnings-release",
+      "segments": ["memory_hbm_dram", "memory_nand", "foundry_logic"]
+    },
+    {
+      "id": "earnings-000660",
+      "kind": "earnings",
+      "ticker": "000660",
+      "name": "SK하이닉스",
+      "calendar_url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
+      "results_url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
+      "segments": ["memory_hbm_dram", "memory_nand"]
+    },
+    {
+      "id": "earnings-MU",
+      "kind": "earnings",
+      "ticker": "MU",
+      "name": "Micron",
+      "calendar_url": "https://investors.micron.com/events-and-presentations",
+      "results_url": "https://investors.micron.com/quarterly-results",
+      "segments": ["memory_hbm_dram", "memory_nand"]
+    },
+    {
+      "id": "earnings-TSM",
+      "kind": "earnings",
+      "ticker": "TSM",
+      "name": "TSMC",
+      "calendar_url": "https://investor.tsmc.com/english/financial-calendar",
+      "results_url": "https://investor.tsmc.com/english/quarterly-results/2026/q2",
+      "segments": ["foundry_logic"]
+    },
+    {
+      "id": "earnings-NVDA",
+      "kind": "earnings",
+      "ticker": "NVDA",
+      "name": "NVIDIA",
+      "calendar_url": "https://investor.nvidia.com/events-and-presentations/default.aspx",
+      "results_url": "https://investor.nvidia.com/financial-info/quarterly-results/default.aspx",
+      "segments": ["ai_compute_design"]
+    },
+    {
+      "id": "earnings-AMD",
+      "kind": "earnings",
+      "ticker": "AMD",
+      "name": "AMD",
+      "calendar_url": "https://ir.amd.com/news-events/ir-calendar",
+      "results_url": "https://ir.amd.com/financial-information/quarterly-results",
+      "segments": ["ai_compute_design", "foundry_logic"]
+    },
+    {
+      "id": "earnings-AVGO",
+      "kind": "earnings",
+      "ticker": "AVGO",
+      "name": "Broadcom",
+      "calendar_url": "https://investor.broadcom.com/",
+      "results_url": "https://investor.broadcom.com/financial-information/quarterly-results",
+      "segments": ["ai_compute_design", "cloud_capex"]
+    },
+    {
+      "id": "earnings-ASML",
+      "kind": "earnings",
+      "ticker": "ASML",
+      "name": "ASML",
+      "calendar_url": "https://www.asml.com/en/investors/financial-calendar",
+      "results_url": "https://www.asml.com/en/investors/financial-results",
+      "segments": ["equipment_materials"]
+    },
+    {
+      "id": "earnings-LRCX",
+      "kind": "earnings",
+      "ticker": "LRCX",
+      "name": "Lam Research",
+      "calendar_url": "https://investor.lamresearch.com/events",
+      "results_url": "https://investor.lamresearch.com/quarterly-results",
+      "segments": ["equipment_materials"]
+    },
+    {
+      "id": "earnings-MSFT",
+      "kind": "earnings",
+      "ticker": "MSFT",
+      "name": "Microsoft",
+      "calendar_url": "https://www.microsoft.com/en-us/Investor/events/FY-2026/earnings-fy-2026-q4",
+      "results_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "segments": ["cloud_capex", "ai_services"]
+    },
+    {
+      "id": "earnings-META",
+      "kind": "earnings",
+      "ticker": "META",
+      "name": "Meta",
+      "calendar_url": "https://investor.atmeta.com/investor-events/default.aspx",
+      "results_url": "https://investor.atmeta.com/financials/default.aspx",
+      "segments": ["cloud_capex", "ai_services"]
+    },
+    {
+      "id": "earnings-AMZN",
+      "kind": "earnings",
+      "ticker": "AMZN",
+      "name": "Amazon",
+      "calendar_url": "https://ir.aboutamazon.com/events/default.aspx",
+      "results_url": "https://ir.aboutamazon.com/quarterly-results/default.aspx",
+      "segments": ["cloud_capex", "ai_services"]
+    },
+    {
+      "id": "macro-us-cpi",
+      "kind": "macro",
+      "name": "미국 CPI",
+      "calendar_url": "https://www.bls.gov/schedule/news_release/cpi.htm",
+      "results_url": "https://www.bls.gov/cpi/",
+      "segments": []
+    },
+    {
+      "id": "macro-us-jobs",
+      "kind": "macro",
+      "name": "미국 고용보고서",
+      "calendar_url": "https://www.bls.gov/schedule/news_release/empsit.htm",
+      "results_url": "https://www.bls.gov/news.release/empsit.toc.htm",
+      "segments": []
+    },
+    {
+      "id": "macro-us-pce",
+      "kind": "macro",
+      "name": "미국 PCE",
+      "calendar_url": "https://www.bea.gov/news/schedule",
+      "results_url": "https://www.bea.gov/data/income-saving/personal-income",
+      "segments": []
+    },
+    {
+      "id": "macro-fomc",
+      "kind": "macro",
+      "name": "FOMC 금리결정",
+      "calendar_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "results_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "segments": []
+    },
+    {
+      "id": "macro-kr-cpi",
+      "kind": "macro",
+      "name": "한국 CPI",
+      "calendar_url": "https://www.kostat.go.kr/board.es?mid=a20101000000&bid=11751",
+      "results_url": "https://www.kostat.go.kr/board.es?mid=a20101000000&bid=11751",
+      "segments": []
+    },
+    {
+      "id": "macro-bok-rate",
+      "kind": "macro",
+      "name": "한국은행 기준금리",
+      "calendar_url": "https://www.bok.or.kr/eng/bbs/E0000627/list.do?menuNo=400022",
+      "results_url": "https://www.bok.or.kr/eng/main/contents.do?menuNo=400022",
+      "segments": []
+    }
+  ],
+  "events": [
+    {
+      "id": "macro-fomc-2026-07-29",
+      "kind": "macro",
+      "name": "FOMC 금리결정",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T03:00:00+09:00",
+      "monitor_after": "2026-07-30T03:05:00+09:00",
+      "capture_until": "2026-07-31T08:45:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 동부시간",
+      "schedule_source_name": "Federal Reserve",
+      "schedule_source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "result_source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "segments": []
+    },
+    {
+      "id": "earnings-MSFT-fy2026q4",
+      "kind": "earnings",
+      "ticker": "MSFT",
+      "name": "Microsoft FY2026 Q4 실적",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T06:30:00+09:00",
+      "monitor_after": "2026-07-30T06:35:00+09:00",
+      "capture_until": "2026-07-31T18:00:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "콘퍼런스콜 14:30 미국 태평양시간",
+      "schedule_source_name": "Microsoft",
+      "schedule_source_url": "https://news.microsoft.com/source/2026/07/08/microsoft-announces-quarterly-earnings-release-date-68/",
+      "result_source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "segments": ["cloud_capex", "ai_services"]
+    },
+    {
+      "id": "earnings-META-2026q2",
+      "kind": "earnings",
+      "ticker": "META",
+      "name": "Meta 2026 Q2 실적",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T05:30:00+09:00",
+      "monitor_after": "2026-07-30T05:35:00+09:00",
+      "capture_until": "2026-07-31T18:00:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "콘퍼런스콜 13:30 미국 태평양시간",
+      "schedule_source_name": "Meta",
+      "schedule_source_url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-to-Announce-Second-Quarter-2026-Results/default.aspx",
+      "result_source_url": "https://investor.atmeta.com/financials/default.aspx",
+      "segments": ["cloud_capex", "ai_services"]
+    },
+    {
+      "id": "earnings-LRCX-2026june",
+      "kind": "earnings",
+      "ticker": "LRCX",
+      "name": "Lam Research 2026년 6월 분기 실적",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T06:00:00+09:00",
+      "monitor_after": "2026-07-30T06:05:00+09:00",
+      "capture_until": "2026-07-31T18:00:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "Lam Research",
+      "schedule_source_url": "https://investor.lamresearch.com/events?item=93",
+      "result_source_url": "https://investor.lamresearch.com/quarterly-results",
+      "segments": ["equipment_materials"]
+    },
+    {
+      "id": "macro-us-pce-2026-06",
+      "kind": "macro",
+      "name": "미국 2026년 6월 PCE",
+      "scheduled_date": "2026-07-30",
+      "scheduled_at": "2026-07-30T21:30:00+09:00",
+      "monitor_after": "2026-07-30T21:35:00+09:00",
+      "capture_until": "2026-07-31T23:00:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "08:30 미국 동부시간",
+      "schedule_source_name": "U.S. Bureau of Economic Analysis",
+      "schedule_source_url": "https://www.bea.gov/news/schedule",
+      "result_source_url": "https://www.bea.gov/data/income-saving/personal-income",
+      "segments": []
+    },
+    {
+      "id": "earnings-AMZN-2026q2",
+      "kind": "earnings",
+      "ticker": "AMZN",
+      "name": "Amazon 2026 Q2 실적",
+      "scheduled_date": "2026-07-30",
+      "scheduled_at": "2026-07-31T06:00:00+09:00",
+      "monitor_after": "2026-07-31T06:05:00+09:00",
+      "capture_until": "2026-08-01T18:00:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "Amazon",
+      "schedule_source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-to-Webcast-Second-Quarter-2026-Financial-Results-Conference-Call/default.aspx",
+      "result_source_url": "https://ir.aboutamazon.com/quarterly-results/default.aspx",
+      "segments": ["cloud_capex", "ai_services"]
+    },
+    {
+      "id": "earnings-AMD-2026q2",
+      "kind": "earnings",
+      "ticker": "AMD",
+      "name": "AMD 2026 Q2 실적",
+      "scheduled_date": "2026-08-04",
+      "scheduled_at": "2026-08-05T06:00:00+09:00",
+      "monitor_after": "2026-08-05T06:05:00+09:00",
+      "capture_until": "2026-08-06T18:00:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "AMD",
+      "schedule_source_url": "https://ir.amd.com/news-events/press-releases/detail/1289/amd-to-report-fiscal-second-quarter-2026-financial-results",
+      "result_source_url": "https://ir.amd.com/financial-information/quarterly-results",
+      "segments": ["ai_compute_design", "foundry_logic"]
+    },
+    {
+      "id": "macro-us-jobs-2026-07",
+      "kind": "macro",
+      "name": "미국 2026년 7월 고용보고서",
+      "scheduled_date": "2026-08-07",
+      "scheduled_at": "2026-08-07T21:30:00+09:00",
+      "monitor_after": "2026-08-07T21:35:00+09:00",
+      "capture_until": "2026-08-08T23:00:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "08:30 미국 동부시간",
+      "schedule_source_name": "U.S. Bureau of Labor Statistics",
+      "schedule_source_url": "https://www.bls.gov/schedule/news_release/empsit.htm",
+      "result_source_url": "https://www.bls.gov/news.release/empsit.toc.htm",
+      "segments": []
+    },
+    {
+      "id": "company-TSM-monthly-revenue-2026-07",
+      "kind": "company_metric",
+      "ticker": "TSM",
+      "name": "TSMC 2026년 7월 월매출",
+      "scheduled_date": "2026-08-10",
+      "scheduled_at": "2026-08-10T14:30:00+09:00",
+      "monitor_after": "2026-08-10T14:35:00+09:00",
+      "capture_until": "2026-08-11T18:00:00+09:00",
+      "schedule_timezone": "Asia/Taipei",
+      "schedule_status": "confirmed",
+      "time_note": "13:30 대만시간",
+      "schedule_source_name": "TSMC",
+      "schedule_source_url": "https://investor.tsmc.com/english/financial-calendar",
+      "result_source_url": "https://investor.tsmc.com/english/monthly-revenue/2026",
+      "segments": ["foundry_logic"]
+    },
+    {
+      "id": "company-TSM-monthly-revenue-2026-08",
+      "kind": "company_metric",
+      "ticker": "TSM",
+      "name": "TSMC 2026년 8월 월매출",
+      "scheduled_date": "2026-09-10",
+      "scheduled_at": "2026-09-10T14:30:00+09:00",
+      "monitor_after": "2026-09-10T14:35:00+09:00",
+      "capture_until": "2026-09-11T18:00:00+09:00",
+      "schedule_timezone": "Asia/Taipei",
+      "schedule_status": "confirmed",
+      "time_note": "13:30 대만시간",
+      "schedule_source_name": "TSMC",
+      "schedule_source_url": "https://investor.tsmc.com/english/financial-calendar",
+      "result_source_url": "https://investor.tsmc.com/english/monthly-revenue/2026",
+      "segments": ["foundry_logic"]
+    },
+    {
+      "id": "macro-us-cpi-2026-07",
+      "kind": "macro",
+      "name": "미국 2026년 7월 CPI",
+      "scheduled_date": "2026-08-12",
+      "scheduled_at": "2026-08-12T21:30:00+09:00",
+      "monitor_after": "2026-08-12T21:35:00+09:00",
+      "capture_until": "2026-08-13T23:00:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "08:30 미국 동부시간",
+      "schedule_source_name": "U.S. Bureau of Labor Statistics",
+      "schedule_source_url": "https://www.bls.gov/schedule/news_release/cpi.htm",
+      "result_source_url": "https://www.bls.gov/cpi/",
+      "segments": []
+    },
+    {
+      "id": "earnings-NVDA-fy2027q2",
+      "kind": "earnings",
+      "ticker": "NVDA",
+      "name": "NVIDIA FY2027 Q2 실적",
+      "scheduled_date": "2026-08-26",
+      "scheduled_at": "2026-08-27T06:00:00+09:00",
+      "monitor_after": "2026-08-27T06:05:00+09:00",
+      "capture_until": "2026-08-28T18:00:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "NVIDIA",
+      "schedule_source_url": "https://investor.nvidia.com/events-and-presentations/events-and-presentations/event-details/2026/NVIDIA-2nd-Quarter-FY27-Financial-Results/default.aspx",
+      "result_source_url": "https://investor.nvidia.com/financial-info/quarterly-results/default.aspx",
+      "segments": ["ai_compute_design"],
+      "schedule_history": [
+        {
+          "recorded_at": "2026-07-29T08:06:34+09:00",
+          "scheduled_date": "2026-08-26",
+          "scheduled_at": null,
+          "schedule_status": "date_confirmed",
+          "time_note": "발표일 확정 · 정확한 시각 재확인"
+        }
+      ]
+    }
+  ]
+}

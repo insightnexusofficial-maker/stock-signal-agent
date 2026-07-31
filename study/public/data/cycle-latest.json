@@ -1,0 +1,687 @@
+{
+  "schema_version": "1.2",
+  "logic_version": "cycle-engine-v4-2026-07-19",
+  "methodology_version": "semiconductor-cycle-ai-roles-2026-07-18",
+  "evidence_sha256": "291ec94ed130f2fe61ccfdfe94fc043b0cb9f67320cdf9f1c1a84147214561db",
+  "report_id": "semiconductor-cycle-2026-07-28",
+  "generated_at": "2026-07-28T01:11:00+09:00",
+  "expires_at": "2026-08-05T01:11:00+09:00",
+  "fallback_status": "pending-neutral",
+  "quality_gate": {
+    "status": "passed",
+    "mode": "verified-only",
+    "evidence_count": 6,
+    "message": "검증된 공식 근거만 사이클 상태에 반영합니다."
+  },
+  "segments": [
+    {
+      "order": "01",
+      "id": "cloud_capex",
+      "label": "클라우드 설비투자",
+      "status": "neutral",
+      "confidence": 25,
+      "horizon_months": "3-6",
+      "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": []
+    },
+    {
+      "order": "02",
+      "id": "ai_compute_design",
+      "label": "AI 연산·칩 설계",
+      "status": "neutral",
+      "confidence": 25,
+      "horizon_months": "3-6",
+      "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": []
+    },
+    {
+      "order": "03",
+      "id": "memory_hbm_dram",
+      "label": "HBM·DRAM",
+      "status": "neutral",
+      "confidence": 39,
+      "horizon_months": "3-6",
+      "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
+      "supporting_evidence_ids": [
+        "semi-memory-investment-20260629"
+      ],
+      "contrary_evidence_ids": []
+    },
+    {
+      "order": "04",
+      "id": "memory_nand",
+      "label": "NAND",
+      "status": "neutral",
+      "confidence": 39,
+      "horizon_months": "3-6",
+      "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
+      "supporting_evidence_ids": [
+        "semi-nand-investment-20260629"
+      ],
+      "contrary_evidence_ids": []
+    },
+    {
+      "order": "05",
+      "id": "foundry_logic",
+      "label": "파운드리·로직",
+      "status": "favorable",
+      "confidence": 81,
+      "horizon_months": "3-6",
+      "reason": "서로 다른 출처군과 증거 축에서 긍정 근거가 확인됐습니다.",
+      "supporting_evidence_ids": [
+        "tsmc-q2-results-20260716",
+        "semi-logic-equipment-20260714"
+      ],
+      "contrary_evidence_ids": []
+    },
+    {
+      "order": "06",
+      "id": "equipment_materials",
+      "label": "장비·소부장",
+      "status": "neutral",
+      "confidence": 39,
+      "horizon_months": "3-6",
+      "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
+      "supporting_evidence_ids": [
+        "semi-equipment-forecast-20260714"
+      ],
+      "contrary_evidence_ids": []
+    },
+    {
+      "order": "07",
+      "id": "analog_auto_industrial",
+      "label": "아날로그·자동차·산업용",
+      "status": "neutral",
+      "confidence": 25,
+      "horizon_months": "3-6",
+      "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": []
+    },
+    {
+      "order": "08",
+      "id": "power_infrastructure",
+      "label": "전력·데이터센터 인프라",
+      "status": "neutral",
+      "confidence": 39,
+      "horizon_months": "3-6",
+      "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
+      "supporting_evidence_ids": [
+        "vertiv-malaysia-capacity-20260701"
+      ],
+      "contrary_evidence_ids": []
+    },
+    {
+      "order": "09",
+      "id": "ai_services",
+      "label": "AI 모델·서비스",
+      "status": "neutral",
+      "confidence": 25,
+      "horizon_months": "3-6",
+      "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": []
+    }
+  ],
+  "company_map_version": "company-cycle-map-v1-2026-07-19",
+  "company_cycle": [
+    {
+      "ticker": "005930",
+      "name": "삼성전자",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 54,
+      "primary_segment": "memory_hbm_dram",
+      "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "memory_hbm_dram",
+          "weight": 0.45
+        },
+        {
+          "segment": "foundry_logic",
+          "weight": 0.35
+        },
+        {
+          "segment": "memory_nand",
+          "weight": 0.2
+        }
+      ]
+    },
+    {
+      "ticker": "000660",
+      "name": "SK하이닉스",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "memory_hbm_dram",
+      "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "memory_hbm_dram",
+          "weight": 0.75
+        },
+        {
+          "segment": "memory_nand",
+          "weight": 0.25
+        }
+      ]
+    },
+    {
+      "ticker": "042700",
+      "name": "한미반도체",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "equipment_materials",
+      "reason": "주요 영역인 장비·소부장의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "equipment_materials",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "NVDA",
+      "name": "엔비디아",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "ai_compute_design",
+      "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "ai_compute_design",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "AVGO",
+      "name": "브로드컴",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "ai_compute_design",
+      "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "ai_compute_design",
+          "weight": 0.75
+        },
+        {
+          "segment": "cloud_capex",
+          "weight": 0.25
+        }
+      ]
+    },
+    {
+      "ticker": "MU",
+      "name": "마이크론",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "memory_hbm_dram",
+      "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "memory_hbm_dram",
+          "weight": 0.65
+        },
+        {
+          "segment": "memory_nand",
+          "weight": 0.35
+        }
+      ]
+    },
+    {
+      "ticker": "AMD",
+      "name": "AMD",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 36,
+      "primary_segment": "ai_compute_design",
+      "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "ai_compute_design",
+          "weight": 0.8
+        },
+        {
+          "segment": "foundry_logic",
+          "weight": 0.2
+        }
+      ]
+    },
+    {
+      "ticker": "TSM",
+      "name": "TSMC",
+      "status": "favorable",
+      "label": "사이클 우호",
+      "confidence": 81,
+      "primary_segment": "foundry_logic",
+      "reason": "주요 영역인 파운드리·로직의 검증 상태를 반영했습니다.",
+      "exposures": [
+        {
+          "segment": "foundry_logic",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "INTC",
+      "name": "인텔",
+      "status": "favorable",
+      "label": "사이클 우호",
+      "confidence": 64,
+      "primary_segment": "foundry_logic",
+      "reason": "주요 영역인 파운드리·로직의 검증 상태를 반영했습니다.",
+      "exposures": [
+        {
+          "segment": "foundry_logic",
+          "weight": 0.7
+        },
+        {
+          "segment": "ai_compute_design",
+          "weight": 0.3
+        }
+      ]
+    },
+    {
+      "ticker": "AMAT",
+      "name": "어플라이드 머티어리얼즈",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "equipment_materials",
+      "reason": "주요 영역인 장비·소부장의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "equipment_materials",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "LRCX",
+      "name": "램리서치",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "equipment_materials",
+      "reason": "주요 영역인 장비·소부장의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "equipment_materials",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "ASML",
+      "name": "ASML",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "equipment_materials",
+      "reason": "주요 영역인 장비·소부장의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "equipment_materials",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "8035",
+      "name": "도쿄일렉트론",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "equipment_materials",
+      "reason": "주요 영역인 장비·소부장의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "equipment_materials",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "MSFT",
+      "name": "마이크로소프트",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "cloud_capex",
+      "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "cloud_capex",
+          "weight": 0.6
+        },
+        {
+          "segment": "ai_services",
+          "weight": 0.4
+        }
+      ]
+    },
+    {
+      "ticker": "GOOGL",
+      "name": "구글",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "cloud_capex",
+      "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "cloud_capex",
+          "weight": 0.55
+        },
+        {
+          "segment": "ai_services",
+          "weight": 0.45
+        }
+      ]
+    },
+    {
+      "ticker": "META",
+      "name": "메타",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "cloud_capex",
+      "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "cloud_capex",
+          "weight": 0.7
+        },
+        {
+          "segment": "ai_services",
+          "weight": 0.3
+        }
+      ]
+    },
+    {
+      "ticker": "ORCL",
+      "name": "오라클",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "cloud_capex",
+      "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "cloud_capex",
+          "weight": 0.75
+        },
+        {
+          "segment": "ai_services",
+          "weight": 0.25
+        }
+      ]
+    },
+    {
+      "ticker": "AMZN",
+      "name": "아마존",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "cloud_capex",
+      "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "cloud_capex",
+          "weight": 0.6
+        },
+        {
+          "segment": "ai_services",
+          "weight": 0.4
+        }
+      ]
+    },
+    {
+      "ticker": "ANET",
+      "name": "아리스타 네트웍스",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 29,
+      "primary_segment": "cloud_capex",
+      "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "cloud_capex",
+          "weight": 0.7
+        },
+        {
+          "segment": "power_infrastructure",
+          "weight": 0.3
+        }
+      ]
+    },
+    {
+      "ticker": "VRT",
+      "name": "버티브",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "power_infrastructure",
+      "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "power_infrastructure",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "SMCI",
+      "name": "슈퍼마이크로",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 34,
+      "primary_segment": "power_infrastructure",
+      "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "power_infrastructure",
+          "weight": 0.65
+        },
+        {
+          "segment": "ai_compute_design",
+          "weight": 0.35
+        }
+      ]
+    },
+    {
+      "ticker": "VST",
+      "name": "비스트라",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "power_infrastructure",
+      "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "power_infrastructure",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "PLTR",
+      "name": "팔란티어",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "ai_services",
+      "reason": "주요 영역인 AI 모델·서비스의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "ai_services",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "TSLA",
+      "name": "테슬라",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 25,
+      "primary_segment": "analog_auto_industrial",
+      "reason": "주요 영역인 아날로그·자동차·산업용의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "analog_auto_industrial",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "010120",
+      "name": "LS ELECTRIC",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "power_infrastructure",
+      "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "power_infrastructure",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "ticker": "034020",
+      "name": "두산에너빌리티",
+      "status": "neutral",
+      "label": "사이클 중립",
+      "confidence": 39,
+      "primary_segment": "power_infrastructure",
+      "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
+      "exposures": [
+        {
+          "segment": "power_infrastructure",
+          "weight": 1.0
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "semi-memory-investment-20260629",
+      "source_id": "semi_news",
+      "segment": "memory_hbm_dram",
+      "pillar": "supply",
+      "direction": "positive",
+      "fact": "SEMI는 2026년 300mm 메모리 장비 투자가 29% 증가해 520억 달러에 이를 것으로 전망했다.",
+      "source_url": "https://www.semi.org/en/semi-press-release/semi-projects-300mm-memory-equipment-investment-to-surpass-50-billion-dollars-in-2026",
+      "published_at": "2026-06-29",
+      "max_age_days": 120,
+      "source_family": "industry_association_semi",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "codex-primary-source-review",
+      "audited_by": "codex-contrary-review"
+    },
+    {
+      "id": "semi-nand-investment-20260629",
+      "source_id": "semi_news",
+      "segment": "memory_nand",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "SEMI는 AI 배치에 따른 저장 수요를 배경으로 2026년 3D NAND 장비 투자가 28% 증가할 것으로 전망했다.",
+      "source_url": "https://www.semi.org/en/semi-press-release/semi-projects-300mm-memory-equipment-investment-to-surpass-50-billion-dollars-in-2026",
+      "published_at": "2026-06-29",
+      "max_age_days": 120,
+      "source_family": "industry_association_semi",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "codex-primary-source-review",
+      "audited_by": "codex-contrary-review"
+    },
+    {
+      "id": "tsmc-q2-results-20260716",
+      "source_id": "tsmc_monthly",
+      "segment": "foundry_logic",
+      "pillar": "earnings",
+      "direction": "positive",
+      "fact": "TSMC의 2분기 매출은 402억 달러였고 3분기 매출 가이던스는 446억~458억 달러로 제시됐다.",
+      "source_url": "https://investor.tsmc.com/english/quarterly-results/2026/q2",
+      "published_at": "2026-07-16",
+      "max_age_days": 45,
+      "source_family": "foundry_tsmc_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "codex-primary-source-review",
+      "audited_by": "codex-contrary-review"
+    },
+    {
+      "id": "semi-logic-equipment-20260714",
+      "source_id": "semi_news",
+      "segment": "foundry_logic",
+      "pillar": "supply",
+      "direction": "positive",
+      "fact": "SEMI는 2026년 파운드리·로직용 웨이퍼팹 장비 매출이 선단공정 증설에 힘입어 18.9% 증가할 것으로 전망했다.",
+      "source_url": "https://www.semi.org/en/taxonomy/term/45726",
+      "published_at": "2026-07-14",
+      "max_age_days": 120,
+      "source_family": "industry_association_semi",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "codex-primary-source-review",
+      "audited_by": "codex-contrary-review"
+    },
+    {
+      "id": "semi-equipment-forecast-20260714",
+      "source_id": "semi_news",
+      "segment": "equipment_materials",
+      "pillar": "earnings",
+      "direction": "positive",
+      "fact": "SEMI는 2026년 반도체 제조장비 매출이 전년 대비 23.2% 증가한 1,659억 달러에 이를 것으로 전망했다.",
+      "source_url": "https://www.semi.org/en/taxonomy/term/45726",
+      "published_at": "2026-07-14",
+      "max_age_days": 120,
+      "source_family": "industry_association_semi",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "codex-primary-source-review",
+      "audited_by": "codex-contrary-review"
+    },
+    {
+      "id": "vertiv-malaysia-capacity-20260701",
+      "source_id": "vertiv_ir",
+      "segment": "power_infrastructure",
+      "pillar": "supply",
+      "direction": "positive",
+      "fact": "Vertiv는 아시아의 AI·고밀도 컴퓨팅 인프라 수요에 대응하기 위해 말레이시아 생산시설을 새로 가동했다.",
+      "source_url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Increases-Manufacturing-Capacity-with-New-Facility-in-Malaysia-to-Support-Growing-Demand-for-AI-and-Digital-Infrastructure-Across-Asia/default.aspx",
+      "published_at": "2026-07-01",
+      "max_age_days": 120,
+      "source_family": "infrastructure_vertiv_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "codex-primary-source-review",
+      "audited_by": "codex-contrary-review"
+    }
+  ]
+}

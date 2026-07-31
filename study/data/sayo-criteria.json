@@ -1,0 +1,50 @@
+{
+  "logic_version": "stock-sayo-v4-2026-07-18",
+  "source_repository": "stock-sayo",
+  "criteria": {
+    "semiconductor": {
+      "peg_max": 0.8,
+      "slope_mom_min": 0.0,
+      "rev_growth_min": 5.0,
+      "consensus_gap_min": 0.0,
+      "target_gap_min": 0.0,
+      "kr_eps_growth_min": 5.0,
+      "kr_per_fallback_max": 10.0,
+      "kr_pbr_max": 4.0,
+      "kr_div_yield_min": 0.5
+    },
+    "ai_bigtech": {
+      "peg_max": 1.2,
+      "slope_mom_min": -1.0,
+      "rev_growth_min": 15.0,
+      "consensus_gap_min": -10.0,
+      "target_gap_min": 0.0
+    },
+    "industrial": {
+      "peg_max": 1.2,
+      "per_max": 12.0,
+      "slope_mom_min": 0.0,
+      "rev_growth_min": 5.0,
+      "consensus_gap_min": 0.0,
+      "target_gap_min": 0.0,
+      "kr_eps_growth_min": 5.0,
+      "kr_per_fallback_max": 12.0,
+      "kr_pbr_max": 2.5,
+      "kr_div_yield_min": 0.8
+    },
+    "growth": {
+      "peg_max": 1.5,
+      "slope_mom_min": -1.0,
+      "rev_growth_min": 15.0,
+      "consensus_gap_min": -10.0,
+      "target_gap_min": 0.0,
+      "kr_eps_growth_min": 15.0,
+      "kr_per_fallback_max": 15.0,
+      "kr_pbr_max": 3.0,
+      "ps_max": 5.0,
+      "band_max": 30.0,
+      "fallback_surprise_min": 5.0,
+      "fallback_target_gap_min": 20.0
+    }
+  }
+}

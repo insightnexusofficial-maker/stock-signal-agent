@@ -1,17 +1,15 @@
 """
-사여?! - 알림 발송 (v5: 강력 매수 + 지금 매수 + 위기 트리거)
-==========================================================
+사여?! - 알림 발송 (v6: 검증 쇼크 + 매수 상태 전환)
+=====================================================
 - 🟢🟢 강력 매수 (strong 신규 진입)
 - 🚨 지금 매수! (RSI 임계값 상향 돌파)
-- 🚨 기업 위기 / 🌪️ 시장 위기 (3대 트리거)
-- 🟡 EPS 추세 정보성 (참고용)
-- ⚡ VIX 반전 (특별 기회)
+- 🚨 검증된 공식 발표 쇼크 (별도 07:00 KST 실행)
 """
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 import hashlib
 
-from event_alerts import due_result_alerts, due_shock_alerts
+from event_alerts import due_shock_alerts
 from notification_policy import build_buy_notification, evaluate_buy_alert
 
 try:
@@ -101,7 +99,7 @@ def send_push(title, body, tag=None, data=None):
 
 
 def send_due_event_shock_alerts(event_feed=None, now=None):
-    """검증된 쇼크 결과를 다음 날 07:00 KST에 한 번만 발송한다."""
+    """검증된 쇼크 결과를 다음 날 07:00 KST에 최대 한 번 발송한다."""
     if event_feed is None:
         try:
             doc = db.collection("stocks").document("data").get()
@@ -115,31 +113,53 @@ def send_due_event_shock_alerts(event_feed=None, now=None):
         state_id = "event_shock_" + hashlib.sha256(
             alert["event_id"].encode("utf-8")
         ).hexdigest()[:32]
+        state_ref = db.collection("state").document(state_id)
         try:
-            state_doc = db.collection("state").document(state_id).get()
-            already_sent = state_doc.exists and state_doc.to_dict().get("sent") is True
+            claimed = _claim_event_shock(
+                db.transaction(),
+                state_ref,
+                alert["event_id"],
+                alert["notify_at"],
+            )
         except Exception:
-            print("   ⚠️  이벤트 알림 중복 방지 상태 확인 실패")
+            print("   ⚠️  이벤트 쇼크 알림 claim 실패")
             continue
-        if already_sent:
+        if not claimed:
             continue
-        delivered = send_push(
-            alert["title"],
-            alert["body"],
-            tag=alert["tag"],
-            data=alert["data"],
-        )
-        if delivered <= 0:
-            continue
+
         try:
-            db.collection("state").document(state_id).set({
+            delivered = send_push(
+                alert["title"],
+                alert["body"],
+                tag=alert["tag"],
+                data=alert["data"],
+            )
+        except Exception:
+            delivered = 0
+            print("   ⚠️  이벤트 쇼크 알림 발송 실패")
+
+        if delivered <= 0:
+            # 실제 전달 대상이 없거나 전송에 실패한 경우에만 재시도를 허용한다.
+            # 성공 토큰이 하나라도 있으면 성공 토큰의 중복을 막기 위해 release하지 않는다.
+            try:
+                _release_event_shock_claim(db.transaction(), state_ref)
+            except Exception:
+                print("   ⚠️  이벤트 쇼크 알림 claim 해제 실패")
+            continue
+
+        try:
+            state_ref.set({
                 "sent": True,
+                "status": "delivered",
                 "event_id": alert["event_id"],
                 "notify_at": alert["notify_at"],
-            })
+                "delivered_at": firestore.SERVER_TIMESTAMP,
+                "delivered_count": delivered,
+            }, merge=True)
         except Exception:
-            print("   ⚠️  이벤트 알림 중복 방지 상태 저장 실패")
-            continue
+            # claim은 그대로 둔다. 전달 뒤 상태 기록이 실패해도 재발송하지 않는
+            # at-most-once 정책이 사용자 중복 방지 요구에 더 안전하다.
+            print("   ⚠️  이벤트 쇼크 전달 상태 저장 실패 (claim 유지)")
         sent_count += 1
 
     if sent_count == 0:
@@ -148,42 +168,13 @@ def send_due_event_shock_alerts(event_feed=None, now=None):
 
 
 def send_due_event_result_alerts(event_feed, now=None):
-    """공식 확인이 끝난 주요 발표 결과를 검증 시각 기준으로 한 번 발송한다."""
-    sent_count = 0
-    for alert in due_result_alerts(event_feed, now=now):
-        state_id = "event_result_" + hashlib.sha256(
-            alert["event_id"].encode("utf-8")
-        ).hexdigest()[:32]
-        try:
-            state_doc = db.collection("state").document(state_id).get()
-            already_sent = state_doc.exists and state_doc.to_dict().get("sent") is True
-        except Exception:
-            print("   ⚠️  발표 결과 알림 중복 방지 상태 확인 실패")
-            continue
-        if already_sent:
-            continue
-        delivered = send_push(
-            alert["title"],
-            alert["body"],
-            tag=alert["tag"],
-            data=alert["data"],
-        )
-        if delivered <= 0:
-            continue
-        try:
-            db.collection("state").document(state_id).set({
-                "sent": True,
-                "event_id": alert["event_id"],
-                "retrieved_at": alert["retrieved_at"],
-            })
-        except Exception:
-            print("   ⚠️  발표 결과 알림 중복 방지 상태 저장 실패")
-            continue
-        sent_count += 1
+    """하위 호환 호출점. 일반 발표 결과는 푸시하지 않는다.
 
-    if sent_count == 0:
-        print("   📭 새 공식 발표 결과 알림 없음")
-    return sent_count
+    이벤트 피드는 화면에만 표시하고, 푸시는 ``send_due_event_shock_alerts``의
+    객관적 쇼크 감사 기준을 통과한 경우에만 발송한다.
+    """
+    print("   📭 일반 발표 결과 푸시 비활성 (검증 쇼크만 발송)")
+    return 0
 
 
 # ============================================================
@@ -197,7 +188,8 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
     1. 🟢🟢 강력 매수 (신규 진입)
     2. 🚨 지금 매수! (RSI 임계값 상향 돌파)
 
-    매수 후보는 화면에만 표시한다. 기존 위기·정보성·이벤트 알림은 유지한다.
+    매수 후보와 위기·정보성·VIX 변화는 화면에만 표시한다. 푸시는 매수 상태
+    전환과 별도 실행의 검증된 공식 발표 쇼크만 발송한다.
     """
     print(f"\n📊 시장 모드: 미국 {_mode_emoji((qqq_data or {}).get('above_ma20', True) and 'normal' or 'adjust')} | "
           f"한국 {_mode_emoji((kospi_data or {}).get('above_ma20', True) and 'normal' or 'adjust')} "
@@ -238,12 +230,10 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
     # === 종목별 시그널 처리 ===
     for stock, instrument_type in all_stocks:
         code = stock.get("code")
-        name = stock.get("name", "?")
         if not code:
             continue
         
         rsi = stock.get("rsi")
-        rsi_threshold = stock.get("rsi_threshold")
         # 새 RSI 상태 저장용
         if rsi is not None:
             new_rsi_map[code] = rsi
@@ -289,114 +279,12 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
             except Exception:
                 print(f"   ⚠️  매수 알림 전달 상태 저장 실패: {code}")
         
-        # ============================================================
-        # 3. 🚨 기업 위기 / 🌪️ 시장 위기
-        # ============================================================
-        triggers = stock.get("crisis_triggers") or []
-        details = stock.get("crisis_details") or []
-        
-        for i, trigger in enumerate(triggers):
-            detail = details[i] if i < len(details) else ""
-            
-            # 중복 발송 방지
-            crisis_state_id = f"crisis_{trigger}_{code}"
-            try:
-                prev_crisis = db.collection("state").document(crisis_state_id).get()
-                already_sent = prev_crisis.exists and prev_crisis.to_dict().get("sent", False)
-            except:
-                already_sent = False
-            
-            if already_sent:
-                continue
-            
-            if trigger == "company_crisis":
-                title = f"🚨 기업 위기: {name}"
-                body = detail if detail else "EPS+목표주가 동반 하락 + 매출/서프 쇼크"
-            elif trigger == "market_panic":
-                title = f"🌪️ 시장 위기 진입"
-                body = detail if detail else "VIX 40+ 및 지수 MA 하향. 현금화 검토."
-            else:
-                continue
-            
-            send_push(title, body, tag=f"crisis-{trigger}-{code}", data={
-                "type": "crisis",
-                "trigger": trigger,
-                "code": code,
-            })
-            sent_count += 1
-            
-            try:
-                db.collection("state").document(crisis_state_id).set({"sent": True})
-            except:
-                pass
-        
-        # ============================================================
-        # 4. 🟡 EPS 추세 정보성 (참고용, 매도 권고 아님)
-        # ============================================================
-        info_level = stock.get("info_level")
-        info_reasons = stock.get("info_reasons") or []
-        
-        if info_level:
-            # 같은 레벨 중복 발송 방지 (하루 1번)
-            info_state_id = f"info_{code}"
-            try:
-                prev_info_doc = db.collection("state").document(info_state_id).get()
-                prev_info_level = prev_info_doc.to_dict().get("level") if prev_info_doc.exists else None
-            except:
-                prev_info_level = None
-            
-            if prev_info_level != info_level:
-                if info_level == "info_watch":
-                    emoji_label = "🟠 관찰"
-                elif info_level == "info_warn":
-                    emoji_label = "🟡 주의"
-                else:
-                    emoji_label = "🔵 정보"
-                
-                title = f"{emoji_label}: {name}"
-                body = " | ".join(info_reasons) if info_reasons else "EPS 추세 변화"
-                send_push(title, body, tag=f"info-{code}", data={
-                    "type": "info",
-                    "level": info_level,
-                    "code": code,
-                })
-                sent_count += 1
-                
-                try:
-                    db.collection("state").document(info_state_id).set({"level": info_level})
-                except:
-                    pass
-    
     # === RSI 상태 저장 (다음 tick에서 돌파 감지용) ===
     if new_rsi_map:
         try:
             db.collection("state").document("rsi").set(new_rsi_map)
         except Exception as e:
             print(f"   ⚠️  RSI 상태 저장 실패: {e}")
-    
-    # ============================================================
-    # 5. ⚡ VIX 반전 (공포 → 평온 전환)
-    # ============================================================
-    if vix_data and vix_data.get("reversal"):
-        try:
-            vix_state = db.collection("state").document("vix_reversal").get()
-            already = vix_state.exists and vix_state.to_dict().get("sent_today", False)
-        except:
-            already = False
-        
-        if not already:
-            current = vix_data.get("current", "?")
-            send_push(
-                "⚡ VIX 하락 반전",
-                f"VIX {current} 꺾임. 공포 완화 시작 — 분할 매수 검토.",
-                tag="vix-reversal",
-                data={"type": "vix_reversal"},
-            )
-            sent_count += 1
-            try:
-                db.collection("state").document("vix_reversal").set({"sent_today": True})
-            except:
-                pass
     
     # === 결과 ===
     if sent_count == 0:
@@ -421,3 +309,38 @@ def _claim_buy_alert(transaction, state_ref, stock, fallback_prev_rsi, sample_id
         next_state["last_claimed_at"] = firestore.SERVER_TIMESTAMP
     transaction.set(state_ref, next_state, merge=True)
     return alert
+
+
+@firestore.transactional
+def _claim_event_shock(transaction, state_ref, event_id, notify_at):
+    """동시 실행 중 하나만 쇼크 발송 권한을 갖도록 원자적으로 선점한다."""
+    snapshot = state_ref.get(transaction=transaction)
+    previous_state = snapshot.to_dict() if snapshot.exists else {}
+    if (
+        previous_state.get("sent") is True
+        or previous_state.get("status") in {"claimed", "delivered"}
+    ):
+        return False
+
+    transaction.set(state_ref, {
+        "sent": False,
+        "status": "claimed",
+        "event_id": event_id,
+        "notify_at": notify_at,
+        "claimed_at": firestore.SERVER_TIMESTAMP,
+    }, merge=True)
+    return True
+
+
+@firestore.transactional
+def _release_event_shock_claim(transaction, state_ref):
+    """전달 0건인 선점만 재시도 가능 상태로 돌린다."""
+    snapshot = state_ref.get(transaction=transaction)
+    state = snapshot.to_dict() if snapshot.exists else {}
+    if state.get("sent") is True or state.get("status") != "claimed":
+        return False
+    transaction.set(state_ref, {
+        "status": "retryable",
+        "released_at": firestore.SERVER_TIMESTAMP,
+    }, merge=True)
+    return True

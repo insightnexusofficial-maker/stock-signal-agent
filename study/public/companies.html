@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기업·정량 — 반도체 · AI 스터디 지도</title>
+<meta name="description" content="반도체·AI 산업 흐름과 기업별 정량 Rating을 함께 읽는 학습 지도">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F5F1;
+  --ink:#1A2A21;
+  --board:#0D3527;      /* 짙은 그린 (사이드바·강조 패널) */
+  --board2:#155741;
+  --gold:#C9A227;
+  --gold-soft:#EBD98F;
+  --fund:#2F855A;       /* 펀더멘털 게이지 */
+  --price:#C05621;      /* 주가반영 게이지 */
+  --line:#DCE0D4;
+  --muted:#5E6E63;
+  --card:#FFFFFF;
+  --sidebar-w:256px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{animation:none!important;transition:none!important}}
+body{
+  font-family:'IBM Plex Sans KR',system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);
+  font-size:16px;line-height:1.8;
+}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* ================= 좌측 드로어 ================= */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);
+  background:var(--board);color:#DCE8DF;
+  overflow-y:auto;padding:26px 0 40px;z-index:60;
+  transition:transform .25s ease;
+}
+.sidebar .brand{
+  padding:0 22px 20px;border-bottom:1px solid rgba(255,255,255,.12);
+}
+.sidebar .brand .b-title{font-weight:700;font-size:17px;color:#fff;line-height:1.4}
+.sidebar .brand .b-sub{font-size:12px;color:#93AC9C;margin-top:4px}
+.sidebar .brand .b-date{
+  display:inline-block;margin-top:10px;font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--gold-soft);border:1px solid rgba(201,162,39,.45);
+  border-radius:999px;padding:2px 10px;
+}
+.nav-group{padding:18px 12px 4px}
+.nav-group .g-label{
+  font-size:11px;letter-spacing:.14em;color:#7E9A8A;
+  padding:0 12px 6px;font-weight:500;
+}
+.sidebar a{
+  display:flex;align-items:center;gap:9px;
+  color:#C6D6CB;text-decoration:none;font-size:14px;
+  padding:8px 12px;border-radius:8px;line-height:1.45;
+}
+.sidebar a .num{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);
+  width:18px;flex:none;
+}
+.sidebar a:hover{background:rgba(255,255,255,.08);color:#fff}
+.sidebar a.active{background:var(--board2);color:#fff;font-weight:500}
+.sidebar a.active .num{color:var(--gold-soft)}
+
+/* 모바일 드로어 */
+.menu-btn{
+  display:none;position:fixed;top:14px;left:14px;z-index:70;
+  width:44px;height:44px;border-radius:10px;border:1px solid var(--line);
+  background:var(--card);cursor:pointer;align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(13,53,39,.12);
+}
+.menu-btn span{display:block;width:18px;height:2px;background:var(--ink);position:relative}
+.menu-btn span::before,.menu-btn span::after{
+  content:"";position:absolute;left:0;width:18px;height:2px;background:var(--ink);
+}
+.menu-btn span::before{top:-6px}.menu-btn span::after{top:6px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,25,18,.45);z-index:55}
+@media(max-width:920px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .overlay.show{display:block}
+  .menu-btn{display:flex}
+}
+
+/* ================= 본문 ================= */
+.main{margin-left:var(--sidebar-w)}
+@media(max-width:920px){.main{margin-left:0}}
+.content{max-width:820px;margin:0 auto;padding:0 24px 60px}
+
+/* 상단 헤더 */
+.hero{
+  background:linear-gradient(165deg,#0D3527 0%,#0A2B20 100%);
+  color:#F2F4EF;position:relative;overflow:hidden;padding:64px 0 48px;
+}
+.hero svg.traces{position:absolute;inset:0;width:100%;height:100%;opacity:.13}
+.hero .content{position:relative;padding-bottom:0}
+.hero h1{font-size:clamp(27px,4.6vw,42px);font-weight:700;line-height:1.3;letter-spacing:-.02em;margin-bottom:14px}
+.hero h1 em{font-style:normal;color:var(--gold-soft)}
+.hero p{max-width:620px;color:#C9D8CD;font-size:16.5px}
+
+/* 섹션 공통 */
+section{padding-top:64px}
+.sec-num{
+  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;
+  color:var(--price);background:#F6E8DE;border-radius:6px;padding:3px 10px;
+  margin-bottom:10px;letter-spacing:.08em;
+}
+h2.sec-title{font-size:clamp(22px,3.2vw,29px);letter-spacing:-.01em;margin-bottom:12px;line-height:1.35}
+.sec-desc{color:#37493E;margin-bottom:24px;max-width:720px}
+.sec-desc b{color:var(--board)}
+
+/* 핵심 요약 */
+.summary-card{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:28px 30px;box-shadow:0 6px 24px rgba(13,53,39,.06);
+}
+.summary-card ol{padding-left:22px;display:grid;gap:14px}
+.summary-card li{font-size:16px}
+.summary-card li b{color:var(--board)}
+.summary-card li .lead{
+  display:block;font-weight:700;color:var(--board);margin-bottom:2px;
+}
+
+/* 산업 지도 (돈의 흐름) */
+.flow{display:grid;gap:8px;margin:8px 0 18px}
+.flow a{
+  display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:14px;
+  background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);
+  border-radius:10px;padding:13px 18px;text-decoration:none;color:inherit;
+  transition:background .15s,border-color .15s;
+}
+.flow a:hover{background:#FBF7E9;border-color:var(--gold)}
+.flow .fn{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--price);font-weight:600}
+.flow .ft{font-weight:700;font-size:15.5px;line-height:1.4}
+.flow .ft small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.flow .fa{font-size:13px;color:var(--gold);font-weight:500;white-space:nowrap}
+.arrow-note{
+  display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;margin-bottom:14px;
+}
+.arrow-note .mono{color:var(--price);font-size:12px}
+.legend{
+  background:#EDEFE7;border-radius:10px;padding:14px 18px;font-size:14px;color:#37493E;
+  margin-top:18px;
+}
+.legend b{color:var(--board)}
+.legend .sw{display:inline-block;width:22px;height:8px;border-radius:4px;vertical-align:1px;margin:0 4px}
+.legend .sw.f{background:var(--fund)}.legend .sw.p{background:var(--price)}
+
+/* 단계 설명 박스 */
+.stage-what{
+  background:#EDEFE7;border-radius:12px;padding:20px 22px;margin-bottom:18px;font-size:15.5px;
+}
+.stage-what b{color:var(--board)}
+.stage-what .row{display:block;margin-top:8px}
+.stage-what .k{
+  display:inline-block;font-size:12.5px;font-weight:700;color:#fff;background:var(--board2);
+  border-radius:5px;padding:1px 8px;margin-right:7px;vertical-align:1px;
+}
+
+/* 기업 카드 */
+details.co{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  margin-bottom:12px;overflow:hidden;
+}
+details.co[open]{border-color:var(--gold);box-shadow:0 4px 18px rgba(13,53,39,.07)}
+details.co summary{cursor:pointer;list-style:none;padding:16px 20px}
+details.co summary::-webkit-details-marker{display:none}
+.co-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.tick{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
+  background:var(--board);color:var(--gold-soft);border-radius:5px;padding:2px 8px;
+}
+.name{font-weight:700;font-size:17px}
+.tag{font-size:13.5px;color:var(--muted)}
+.gauges{display:flex;gap:22px;flex-wrap:wrap}
+.g{display:flex;align-items:center;gap:8px}
+.g-label{font-size:12px;color:var(--muted);white-space:nowrap}
+.g-bar{width:96px;height:8px;background:#E9EBE2;border-radius:4px;overflow:hidden;display:inline-block}
+.g-bar i{display:block;height:100%;width:var(--v);background:var(--fund);border-radius:4px;transition:width .5s ease}
+.g.price .g-bar i{background:var(--price)}
+.g-val{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink);width:24px}
+.co-body{padding:4px 22px 20px;border-top:1px dashed var(--line)}
+.plain{
+  background:#FBF7E9;border-left:3px solid var(--gold);
+  padding:12px 16px;border-radius:0 8px 8px 0;font-size:15px;margin:16px 0;
+}
+.plain b{color:var(--board)}
+.co-body dl{display:grid;gap:12px}
+.co-body dt{font-size:13px;font-weight:700;color:var(--price)}
+.co-body dd{font-size:15px}
+.co-body dd b{color:var(--board)}
+
+/* 고점 점검 */
+.verdict{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:760px){.verdict{grid-template-columns:1fr}}
+.v-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+.v-card h3{font-size:17px;margin-bottom:4px}
+.v-card .badge{
+  display:inline-block;font-size:12px;border-radius:999px;padding:3px 12px;
+  margin-bottom:12px;font-weight:500;
+}
+.badge.ok{background:#E3F1E8;color:var(--fund)}
+.badge.warn{background:#F8E9DF;color:var(--price)}
+.v-card ul{padding-left:19px;display:grid;gap:9px;font-size:14.5px}
+.rule{background:var(--board);color:#EAF0E8;border-radius:12px;padding:20px 24px;font-size:15.5px}
+.rule b{color:var(--gold-soft)}
+
+/* 시나리오 */
+.scen{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin-bottom:12px}
+.scen .p{
+  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;
+  color:#fff;background:var(--price);border-radius:5px;padding:2px 10px;margin-bottom:8px;
+}
+.scen.win .p{background:var(--fund)}
+.scen h3{font-size:17px;margin-bottom:8px}
+.scen p.body{font-size:15px;color:#33463B}
+.scen p.body b{color:var(--board)}
+.scen.win{border-color:var(--gold);box-shadow:0 4px 18px rgba(201,162,39,.15)}
+
+/* 용어 사전 */
+.gloss details{border-bottom:1px dashed var(--line);padding:12px 4px}
+.gloss summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary .term{
+  font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#fff;
+  background:var(--board2);border-radius:5px;padding:2px 8px;margin-right:9px;
+}
+.gloss p{font-size:14.5px;color:#37493E;padding:8px 0 4px}
+
+/* 푸터 */
+footer{margin-top:70px;background:var(--board);color:#93AC9C;padding:30px 0;font-size:13.5px}
+footer .content{padding-bottom:0;display:grid;gap:6px}
+footer b{color:var(--gold-soft)}
+</style>
+<link rel="stylesheet" href="assets/site.css?v=20260731a">
+<script src="assets/site.js?v=20260731a" defer></script>
+<script src="assets/quant-sync.js?v=20260718j" defer></script>
+</head>
+<body class="companies-page">
+
+<a class="skip-link" href="#main">본문으로 건너뛰기</a>
+<button class="menu-btn" type="button" aria-label="메뉴 열기" aria-controls="sidebar" aria-expanded="false"><span></span></button>
+<div class="overlay" aria-hidden="true"></div>
+
+<!-- ================= 좌측 메뉴 ================= -->
+<aside class="sidebar" id="sidebar" aria-label="기업 지도 탐색">
+  <div class="brand">
+    <div class="b-title">SEMICONDUCTOR<br>AI MAP</div>
+    <div class="b-sub">반도체 · AI 학습 지도</div>
+    <span class="b-date">7일 주기 갱신</span>
+  </div>
+  <nav>
+    <div class="nav-group page-links">
+      <div class="g-label">빠른 이동</div>
+      <a href="#summary" class="navlink active"><span class="num">01</span>핵심 요약</a>
+      <a href="#cycle-status" class="navlink"><span class="num">02</span>현재 사이클</a>
+      <a href="#map" class="navlink"><span class="num">03</span>산업 흐름</a>
+      <a href="#verdict" class="navlink"><span class="num">04</span>리스크 점검</a>
+      <a href="#event-calendar" class="navlink"><span class="num">05</span>주요 발표 일정</a>
+      <a href="cycle.html"><span class="num">↗</span>사이클 근거</a>
+      <a href="methodology.html"><span class="num">↗</span>방법론</a>
+    </div>
+    <div class="nav-group legacy-deep-links">
+      <div class="g-label">밸류체인 7단계</div>
+      <a href="#s1" class="navlink"><span class="num">01</span>클라우드 빅테크</a>
+      <a href="#s2" class="navlink"><span class="num">02</span>AI 칩 설계</a>
+      <a href="#s3" class="navlink"><span class="num">03</span>반도체 위탁생산</a>
+      <a href="#s4" class="navlink"><span class="num">04</span>메모리 반도체</a>
+      <a href="#s5" class="navlink"><span class="num">05</span>반도체 제조 장비</a>
+      <a href="#s6" class="navlink"><span class="num">06</span>전력 · 인프라</a>
+      <a href="#s7" class="navlink"><span class="num">07</span>AI 모델 · 서비스</a>
+    </div>
+    <div class="nav-group legacy-analysis-links">
+      <div class="g-label">심화 분석</div>
+      <a href="#future" class="navlink"><span class="num">—</span>시나리오</a>
+      <a href="#gloss" class="navlink"><span class="num">—</span>용어 사전</a>
+    </div>
+  </nav>
+</aside>
+
+<!-- ================= 본문 ================= -->
+<main class="main" id="main">
+  <header class="hero">
+    <svg class="traces" viewBox="0 0 960 300" preserveAspectRatio="none" aria-hidden="true">
+      <g stroke="#C9A227" stroke-width="1.5" fill="none">
+        <path d="M0 50 H240 V130 H520 V50 H960"/>
+        <path d="M0 180 H180 V260 H430 V180 H760 V260 H960"/>
+        <path d="M120 0 V90 H360 V0"/>
+      </g>
+      <g fill="#C9A227">
+        <circle cx="240" cy="50" r="4"/><circle cx="520" cy="130" r="4"/>
+        <circle cx="180" cy="180" r="4"/><circle cx="430" cy="260" r="4"/>
+        <circle cx="760" cy="180" r="4"/><circle cx="360" cy="90" r="4"/>
+      </g>
+    </svg>
+    <div class="content">
+      <p class="eyebrow">INDUSTRY STUDY MAP</p>
+      <h1>산업의 흐름과 <em>기업별 학습 기준</em></h1>
+    <p>산업의 돈 흐름, 기업별 정량 Rating, 영역별 사이클 상태를 한 화면에서 비교합니다.</p>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ===== 핵심 요약 ===== -->
+    <section id="summary">
+      <h2 class="sec-title">핵심 요약</h2>
+      <div class="summary-card">
+        <ol>
+          <li>
+            <span class="lead">산업 구조</span>
+            클라우드 빅테크의 설비투자가 이 산업 전체의 출발점입니다. 이 지출은 칩 설계 → 제조·메모리 → 장비·전력 기업의 매출과 비용으로 연결됩니다.
+          </li>
+          <li>
+            <span class="lead">사이클 판정</span>
+            영역별 사이클 우호 / 중립 / 주의만 사용합니다. 근거가 부족하거나 충돌하면 중립이 기본값이며, 매수·매도 판단으로 쓰지 않습니다.
+          </li>
+          <li>
+            <span class="lead">산업의 미래</span>
+            장기 시나리오는 학습용 가설입니다. 정량 Rating과 사이클 상태는 서로 다른 질문에 답하며, 공식 근거 검증을 통과한 데이터만 현재 상태에 반영합니다.
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="cycle-status">
+      <h2 class="sec-title">영역별 현재 사이클</h2>
+      <p class="sec-desc">반도체·AI 산업을 여러 영역으로 나눠 현재 흐름을 읽습니다. 우호는 매수 추천이 아니고, 주의는 매도 지시가 아닙니다. 근거가 부족하면 중립으로 표시합니다.</p>
+      <div data-cycle-summary><div class="notice">현재 상태를 불러오는 중입니다.</div></div>
+      <div class="grid grid-3 data-contract" data-cycle-cards><div class="notice">영역별 상태를 불러오는 중입니다.</div></div>
+    </section>
+
+    <!-- ===== 산업 전체 지도 ===== -->
+    <section id="map">
+      <h2 class="sec-title">산업 전체 지도 — 돈의 흐름 7단계</h2>
+      <p class="sec-desc">핵심은 병목입니다. <b>대체하기 어려운 구간일수록 가격 결정력과 이익률이 강해질 수 있습니다.</b> 다만 병목 여부는 매주 공식 근거로 다시 확인합니다.</p>
+      <div class="arrow-note"><span class="mono">비용·매출 연결 ↓</span> 위 단계의 지출은 아래 단계의 매출이 됩니다</div>
+      <nav class="flow" aria-label="밸류체인 7단계">
+        <a href="#s1"><span class="fn">01</span><span class="ft">클라우드 빅테크<small>AI 데이터센터를 짓고 컴퓨팅 파워를 임대</small></span><span class="fa">돈을 쓰는 쪽</span></a>
+        <a href="#s2"><span class="fn">02</span><span class="ft">AI 칩 설계 기업<small>GPU·AI 가속기를 설계해 빅테크에 판매</small></span><span class="fa">칩 판매</span></a>
+        <a href="#s3"><span class="fn">03</span><span class="ft">반도체 위탁생산<small>설계도를 받아 실제 칩으로 제조</small></span><span class="fa">제조 서비스</span></a>
+        <a href="#s4"><span class="fn">04</span><span class="ft">메모리 반도체<small>AI 연산에 필요한 초고속 저장장치(HBM·D램) 공급</small></span><span class="fa">메모리 판매</span></a>
+        <a href="#s5"><span class="fn">05</span><span class="ft">반도체 제조 장비<small>칩 공장 안에 들어가는 기계를 제작</small></span><span class="fa">장비 판매</span></a>
+        <a href="#s6"><span class="fn">06</span><span class="ft">전력 · 인프라<small>데이터센터의 전기·냉각·네트워크 담당</small></span><span class="fa">전력·설비</span></a>
+        <a href="#s7"><span class="fn">07</span><span class="ft">AI 모델 · 서비스<small>완성된 인프라 위에서 최종적으로 돈을 버는 층</small></span><span class="fa">수익화</span></a>
+      </nav>
+      <div class="legend">
+        <b>Rating 읽는 법</b><br>
+        50점은 중간 수준입니다. <span class="sw f"></span><b>펀더멘털 Rating</b>은 높을수록 실적 체력이 강하고, <span class="sw p"></span><b>주가반영 Rating</b>은 높을수록 성장 기대가 가격에 많이 들어왔다는 뜻입니다. 펀더멘털이 높아도 주가반영이 높으면 가격 부담을 함께 봐야 하며, 어느 점수도 매수·매도 지시가 아닙니다.
+      </div>
+    </section>
+
+    <!-- ===== 01 클라우드 빅테크 ===== -->
+    <section id="s1">
+      <span class="sec-num">1단계</span>
+      <h2 class="sec-title">클라우드 빅테크 (하이퍼스케일러)</h2>
+      <div class="stage-what">
+        <b>무엇을 하는 기업인가?</b> 초대형 AI 데이터센터를 직접 짓고, 그 컴퓨팅 파워를 전 세계 기업에 임대하는 빅테크입니다. 이들이 쓰는 투자금이 아래 모든 단계의 매출이 되므로, 이 산업의 출발점입니다.
+        <span class="row"><span class="k">파는 것</span>클라우드 사용료, AI 비서 구독</span>
+        <span class="row"><span class="k">사는 것</span>GPU, 서버, 메모리, 전력 — 구체 수치는 공식 실적발표와 공시에서 확인된 항목만 주간 리포트에 반영</span>
+      </div>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">MSFT</span><span class="name">마이크로소프트</span><span class="tag">클라우드 2위 Azure · OpenAI 최대 파트너</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 전 세계 기업에 컴퓨팅 파워를 빌려주는 최대급 임대 사업자이면서, ChatGPT를 만든 OpenAI의 핵심 파트너 지위까지 가진 회사입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>Azure 클라우드(기업), Copilot·Office 구독(직장인). 기업 고객 기반이 업계에서 가장 넓습니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>클라우드가 꾸준히 성장 중이며 2026년 설비투자를 1,100억~1,200억 달러 규모로 확대. AI 수요가 데이터센터 공급을 앞서는 상태가 지속되고 있습니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>높은 편. 'AI 수익화 1순위'라는 기대가 미리 반영돼 있어, 시장은 이제 투자한 돈이 실제 이익으로 돌아오는지(ROIC)를 검증하는 단계입니다.</dd>
+            <dt>핵심 리스크</dt><dd>OpenAI와의 계약 관계 재편, 급증한 투자에서 발생하는 감가상각비가 이익률을 누르는 구간.</dd>
+            <dt>한 줄 정리</dt><dd>AI 수익화 경로가 비교적 명확한 대형 기업입니다. 다만 안정성 기대가 이미 가격에 반영됐는지 함께 봐야 합니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">GOOGL</span><span class="name">알파벳 (구글)</span><span class="tag">검색 1위 · 자체 AI칩(TPU) 보유</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — AI에 필요한 칩(TPU), 모델(Gemini), 서비스(검색·유튜브)를 전부 자체 보유한 유일한 기업입니다. 엔비디아 칩을 덜 사도 되는 구조라 원가 우위가 있습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>검색·유튜브 광고(전 세계 광고주), 구글 클라우드, Gemini 구독. 최근엔 자체칩 TPU 기반 컴퓨팅 파워를 외부에도 판매하기 시작했습니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>검색 광고라는 강력한 현금창출원으로 연 1,750억 달러 규모의 AI 투자를 자체 조달. 칩부터 서비스까지 수직계열화된 유일한 풀스택 기업입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중간. 빅테크 중 상대적으로 낮은 가격 반영(주가수익비율 20배 초중반)에 머물러 있습니다. 'AI 챗봇이 검색을 잠식할 것'이라는 우려가 할인 요인.</dd>
+            <dt>핵심 리스크</dt><dd>AI 챗봇의 검색 광고 잠식 가능성, 반독점 규제.</dd>
+            <dt>한 줄 정리</dt><dd>실적 체력과 가격 기대의 균형을 함께 봐야 하는 풀스택 기업입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">AMZN</span><span class="name">아마존</span><span class="tag">클라우드 1위 AWS · 물류 로봇</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 세계에서 가장 큰 클라우드(AWS)를 운영하면서, 자체 AI칩(트레이니움)도 만들고, 물류창고에는 로봇을 가장 많이 투입한 회사입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>AWS 클라우드(스타트업부터 대기업까지), 이커머스, 광고. AI 기업 앤트로픽에 대규모 투자·공급 관계를 맺고 있습니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>약 2,000억 달러 규모의 투자로 AWS 인프라와 물류 자동화(로봇)에 집중. AI 수요로 AWS 성장이 다시 빨라지는 중입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상. 이커머스 마진 개선과 AWS 재가속 기대가 반영됐지만 극단적인 수준은 아닙니다.</dd>
+            <dt>핵심 리스크</dt><dd>자체칩과 엔비디아 칩의 성능 격차, 소매 부문의 경기 민감성.</dd>
+            <dt>한 줄 정리</dt><dd>AI(클라우드)와 로보틱스(물류)라는 두 흐름을 동시에 가진 흔치 않은 조합입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">META</span><span class="name">메타</span><span class="tag">클라우드 임대 없이 광고 사업에 AI 전량 투입</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 사들인 GPU를 남에게 빌려주지 않고, 전부 자기 광고 사업(인스타그램·페이스북)의 효율을 올리는 데 씁니다. AI 투자가 광고 수익으로 가장 빨리 되돌아오는 회사입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>인스타그램·페이스북 광고(광고주). AI는 외부 판매용이 아니라 광고 타겟팅·추천 정확도를 올리는 내부 무기입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>AI 투자가 광고 단가·효율 상승으로 즉시 회수되는, 수익화가 가장 먼저 증명된 사례입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상. 다만 설비투자 확대 발표 때마다 주가가 민감하게 반응하는, "얼마나 쓰는가"에 시장이 예민한 종목입니다.</dd>
+            <dt>핵심 리스크</dt><dd>클라우드 매출이 없어 투자 회수 경로가 광고 하나에 집중, 초대형 모델 개발 경쟁 비용.</dd>
+            <dt>한 줄 정리</dt><dd>AI 투자와 수익의 연결고리가 가장 짧고 명확 — 대신 투자 규모 발표가 주가 변동의 방아쇠입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">ORCL</span><span class="name">오라클</span><span class="tag">AI 전용 데이터센터로 급성장한 후발주자</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 클라우드 후발주자였지만 OpenAI 등과 초대형 장기 계약을 따내며 단숨에 주목받은 회사입니다. 계약서는 두툼한데, 그 계약을 이행할 데이터센터는 아직 빚을 내서 짓는 중입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>데이터베이스 소프트웨어(전통 주력) + AI 특화 클라우드(OCI). AI 기업들에게 GPU 데이터센터를 통째로 임대합니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>계약 잔고(수주잔고)가 폭발적으로 증가. 다만 이행에 필요한 데이터센터를 부채로 짓는 구조라 재무 부담이 커지고 있습니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>매우 높음. '계약이 매출로 바뀐다'는 가정이 상당 부분 미리 반영돼, 실행이 조금만 늦어져도 실망 폭이 큽니다.</dd>
+            <dt>핵심 리스크</dt><dd>차입 확대, 소수 대형 고객(특히 OpenAI) 의존, 전력·부지 확보 지연.</dd>
+            <dt>한 줄 정리</dt><dd>이번 사이클에서 가장 공격적으로 베팅한 클라우드 기업 — 잘되면 크게 벌고, 삐끗해도 크게 흔들립니다.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== 02 AI 칩 설계 ===== -->
+    <section id="s2">
+      <span class="sec-num">2단계</span>
+      <h2 class="sec-title">AI 칩 설계 기업 (팹리스)</h2>
+      <div class="stage-what">
+        <b>무엇을 하는 기업인가?</b> AI 연산의 핵심인 GPU·AI 가속기를 설계해서 파는 기업입니다. 자체 공장(Fab)이 없어 '팹리스'라 부르며, 제조는 3단계의 TSMC 같은 위탁생산 기업에 맡깁니다.
+        <span class="row"><span class="k">파는 것</span>AI 칩 (하드웨어 + 개발 소프트웨어 생태계)</span>
+        <span class="row"><span class="k">누가 사나</span>1단계 클라우드 빅테크가 최대 고객 — 빅테크가 사들이는 '기계 설비'가 바로 이들의 제품</span>
+      </div>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">NVDA</span><span class="name">엔비디아</span><span class="tag">AI GPU 시장의 사실상 표준</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — AI 학습에 필요한 GPU를 사실상 독점 공급하는 회사입니다. 하드웨어만이 아니라 개발 소프트웨어(CUDA)까지 묶어 팔기 때문에, 한 번 쓰기 시작한 고객은 다른 칩으로 갈아타기 어렵습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>데이터센터용 GPU(블랙웰 등), 칩 간 연결 기술(NVLink), CUDA 소프트웨어 생태계. 빅테크·AI 기업·각국 정부가 줄 서서 구매합니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>데이터센터 매출이 실적을 견인하며 업계 최고 수준의 성장률과 이익률을 유지. 수요가 공급을 계속 초과하고 있습니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>높음. 주가수익비율(PER) 50배 전후로, 시장이 '완벽한 실행과 끊김 없는 수요 증가'를 전제로 가격을 매기고 있어 실수 허용 폭이 좁습니다.</dd>
+            <dt>핵심 리스크</dt><dd>빅테크가 직접 만드는 맞춤형 칩(ASIC)의 점유율 잠식, 중국 수출 규제, 고객사의 투자 감속.</dd>
+            <dt>한 줄 정리</dt><dd>AI GPU 생태계의 기준점 — 점유율, 이익률, 고객사 자체칩 변화를 분리해 추적해야 합니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">AMD</span><span class="name">AMD</span><span class="tag">GPU 2위 · 서버 CPU 강자</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 엔비디아의 유일한 직접 경쟁자입니다. 하드웨어 성능은 많이 따라잡았지만, 개발자들이 익숙한 소프트웨어 생태계에서는 아직 격차가 있습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>AI 가속기 MI 시리즈, 서버 CPU(EPYC). 엔비디아 의존도를 낮추고 싶은 빅테크·AI 기업이 '두 번째 공급사'로 채택합니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>OpenAI 등과의 대형 공급 계약으로 체급이 올라갔고, 서버 CPU에서는 인텔 점유율을 꾸준히 잠식 중입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>높음. 대형 계약 발표로 기대가 크게 선반영돼, 이제 실제 출하량이 기대를 따라와야 하는 구간입니다.</dd>
+            <dt>핵심 리스크</dt><dd>소프트웨어 생태계(ROCm)가 엔비디아 CUDA 대비 열세, 계약의 실제 이행 속도.</dd>
+            <dt>한 줄 정리</dt><dd>'2등의 몫'만 챙겨도 충분히 큰 시장 — 단, 그 몫이 이미 주가에 상당히 들어가 있습니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">AVGO</span><span class="name">브로드컴</span><span class="tag">빅테크 맞춤형 칩(ASIC) 설계 파트너</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 엔비디아 GPU가 너무 비싸다고 느낀 빅테크들이 자기 전용 칩을 만들 때, 그 설계를 함께 해주는 회사입니다. 구글의 자체칩 TPU도 이 회사와 함께 만듭니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>빅테크 자체칩(맞춤형 AI 가속기) 공동 설계·생산 관리, AI 데이터센터용 네트워킹 칩, 인프라 소프트웨어(VMware). 구글·메타·OpenAI급 초대형 고객이 대상입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>빅테크의 자체칩 확대 흐름과 연결된 맞춤형 칩·네트워킹 공급사입니다. 고객 집중도와 프로젝트 지속성을 함께 봐야 합니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>높음. 맞춤형 칩 시장 확대에 대한 기대가 강하게 반영돼 있습니다.</dd>
+            <dt>핵심 리스크</dt><dd>소수의 초대형 고객에 집중된 구조 — 고객 한 곳의 프로젝트 변경만으로 매출이 흔들릴 수 있습니다.</dd>
+            <dt>한 줄 정리</dt><dd>엔비디아의 가장 실질적인 대항마 — 자기 칩을 파는 게 아니라 '고객의 칩'을 만들어주는 방식으로.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== 03 반도체 위탁생산 ===== -->
+    <section id="s3">
+      <span class="sec-num">3단계</span>
+      <h2 class="sec-title">반도체 위탁생산 (파운드리)</h2>
+      <div class="stage-what">
+        <b>무엇을 하는 기업인가?</b> 2단계 설계 기업이 그린 설계도를 받아 실제 칩으로 만들어주는 제조 전문 기업입니다. 머리카락 수만분의 1 굵기의 회로를 새기는, 제조업의 정점에 있는 산업입니다.
+        <span class="row"><span class="k">파는 것</span>제조 서비스(가공된 웨이퍼) + 첨단 패키징(CoWoS: GPU와 HBM 메모리를 한 판에 붙이는 기술)</span>
+        <span class="row"><span class="k">누가 사나</span>엔비디아·AMD·브로드컴·애플 등 2단계 설계 기업 전부</span>
+      </div>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">TSM</span><span class="name">TSMC</span><span class="tag">첨단 반도체 제조 사실상 독점 (대만)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 엔비디아, 애플, AMD의 최첨단 칩이 전부 이 회사 공장에서 만들어집니다. 칩 설계 기업들끼리는 경쟁하지만, 누가 이기든 제조 주문은 TSMC로 갑니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>3나노·2나노급 첨단 공정 제조와 CoWoS 패키징. 현존 AI 칩의 사실상 전부가 여기서 생산됩니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>첨단 공정과 패키징 수요가 실적 체력을 좌우합니다. 최신 수치는 주간 검증 파이프라인의 공식 근거가 확보될 때 별도 근거 카드로 노출합니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상. 성장률 대비 가격 반영은 엔비디아보다 낮은 편 — 대만이라는 위치 때문에 '지정학 할인'이 항상 붙어 있는 종목입니다.</dd>
+            <dt>핵심 리스크</dt><dd>대만 지정학 리스크, 미국·일본 해외 공장의 원가 부담, 삼성·인텔의 추격.</dd>
+            <dt>한 줄 정리</dt><dd>AI 사이클의 핵심적인 '통행료 징수소' — 칩 전쟁의 승자가 누구든 통행료는 TSMC가 받습니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">005930</span><span class="name">삼성 파운드리</span><span class="tag">위탁생산 2위 · 대형 수주로 반등 (삼성전자 사업부)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — TSMC를 추격하는 세계 2위 위탁생산 사업입니다. 오랫동안 수율(양품 비율)과 고객 확보에서 밀렸지만, 최근 테슬라 자율주행 칩 같은 굵직한 주문을 따내며 반등 중입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>첨단 공정 위탁 제조. 최근 테슬라 자율주행 AI칩, 엔비디아 LPU 등 대형 수주에 성공하며 존재감을 회복하고 있습니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>수율 개선과 대형 수주로 흑자 전환 조짐 — TSMC CEO가 실적발표에서 한국 경쟁사를 직접 언급하며 경계할 정도로 분위기가 달라졌습니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>낮음. 삼성전자 주가에서 파운드리 사업의 가치는 아직 거의 계산되지 않은 상태 — 잘되면 추가 상승 요인, 안돼도 이미 기대가 낮습니다.</dd>
+            <dt>핵심 리스크</dt><dd>첨단 공정 수율과 고객 신뢰에서 TSMC와의 격차, 핵심 인력 이탈.</dd>
+            <dt>한 줄 정리</dt><dd>기대가 낮아서 오히려 서프라이즈 여지가 있는 사업 — 대형 수주 뉴스가 나올 때마다 재평가되는 구조입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">INTC</span><span class="name">인텔</span><span class="tag">미국 대표 종합 반도체 · 위탁생산 재건 중</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 한때 반도체 제조 기술 1위였다가 TSMC에 밀렸던 회사입니다. 지금은 미국 정부의 지원을 등에 업고 '남의 칩도 만들어주는' 위탁생산 사업으로 재기를 노리고 있습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>PC·서버 CPU(전통 주력) + 위탁생산 서비스(18A·14A 공정).</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>18A 공정 수율이 65%에서 85%로 개선되는 등 기술 재건에 뚜렷한 진전. 미국의 자국 반도체 제조 육성 정책이 순풍입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상. 주가가 100달러 선까지 회복하며 '부활 스토리'가 상당 부분 반영 — 이제 실제 외부 고객 확보를 증명해야 하는 단계입니다.</dd>
+            <dt>핵심 리스크</dt><dd>대형 외부 고객 확보 실패, 막대한 공장 투자 부담.</dd>
+            <dt>한 줄 정리</dt><dd>기술은 따라잡는 중, 사업(고객)은 아직 — 미국 정책이라는 뒷바람이 최대 변수입니다.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== 04 메모리 ===== -->
+    <section id="s4">
+      <span class="sec-num">4단계</span>
+      <h2 class="sec-title">메모리 반도체 (HBM · D램)</h2>
+      <div class="stage-what">
+        <b>무엇을 하는 기업인가?</b> AI가 학습하고 답을 만들 때 데이터를 초고속으로 넣고 빼는 저장장치(D램·낸드)를 만듭니다. 특히 <b>HBM</b>은 D램을 12층 이상 수직으로 쌓아 GPU 바로 옆에 붙인 고성능 메모리로, AI 칩 성능의 병목을 풀어주는 필수 부품입니다.
+        <span class="row"><span class="k">파는 것</span>HBM(GPU 제조사에), 범용 D램·낸드(서버·스마트폰·PC 업체에)</span>
+        <span class="row"><span class="k">시장 상황</span>HBM은 장기 공급계약과 고객 인증이 중요해진 영역입니다. 계약 기간·가격·고객 집중도는 공식 근거가 확인될 때만 사이클 판단에 반영합니다</span>
+      </div>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">000660</span><span class="name">SK하이닉스</span><span class="tag">HBM 세계 1위 · 엔비디아 주력 공급사</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 엔비디아 GPU에 들어가는 HBM 메모리의 주요 공급사입니다. GPU 출하, HBM 인증, 장기계약 구조가 실적 민감도를 좌우합니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>HBM3E·HBM4(엔비디아가 최대 고객), 서버용 D램, 낸드. 차세대 HBM4E 12단 샘플까지 공급하며 세대 전환을 주도하고 있습니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>HBM 믹스, 범용 D램 가격, 증설 속도가 동시에 작동합니다. 공식 실적·공시 근거가 확인될 때 사이클 근거로 승격합니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>높음. HBM 리더십 기대가 가격에 반영될 수 있어 정량 Rating과 함께 확인합니다.</dd>
+            <dt>핵심 리스크</dt><dd>삼성의 HBM4 추격으로 독점 프리미엄 희석, 사이클 후반의 공격적 증설이 미래 공급과잉의 씨앗이 될 가능성.</dd>
+            <dt>한 줄 정리</dt><dd>HBM 중심 실적 개선이 뚜렷한 기업입니다. 논점은 실적 체력과 주가반영을 분리해 보는 것입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">005930</span><span class="name">삼성전자</span><span class="tag">메모리 종합 1위 · HBM 추격 중</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 메모리와 파운드리를 함께 가진 종합 반도체 기업입니다. HBM 경쟁력, 범용 메모리 가격, 파운드리 수주가 서로 다른 속도로 주가와 실적에 영향을 줍니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>범용 D램·낸드(세계 1위), HBM(1c D램 기반 HBM4로 추격), 위탁생산, 스마트폰·가전.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>메모리 가격, HBM 인증, 파운드리 수주가 함께 작동합니다. 사업부별 근거가 분리되지 않으면 사이클 상태는 중립으로 둡니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중간. HBM 경쟁력 회복과 범용 메모리 회복 기대가 어느 정도 반영됐는지 정량 기준으로 확인합니다.</dd>
+            <dt>핵심 리스크</dt><dd>HBM 주도권 회복에 실패하면 가장 비싼 시장을 계속 SK하이닉스에 내주는 시나리오.</dd>
+            <dt>한 줄 정리</dt><dd>종합 반도체 기업이라 사업부별 회복 속도를 따로 읽어야 합니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">MU</span><span class="name">마이크론</span><span class="tag">메모리 3강 중 유일한 미국 기업</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 한국 두 회사가 장악한 메모리 시장의 세 번째 기업이자 유일한 미국 회사입니다. 미국 내 AI 데이터센터 붐 덕에 '미국산' 프리미엄을 누리며, 지금은 물건이 없어서 못 파는 상태입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>D램·HBM·낸드. 미국 기업이라는 지정학적 이점으로 미국 내 AI 데이터센터 수요에 밀착해 있습니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>매출총이익률 86% 가이던스를 제시할 만큼 극단적 호황 — TSMC CEO가 "메모리 기업의 마진이 부럽다"고 공개 발언했을 정도입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>높음. 급등 이후 '이 마진이 얼마나 유지되느냐'를 두고 고평가 논쟁이 진행 중입니다.</dd>
+            <dt>핵심 리스크</dt><dd>메모리 3사 중 사이클 민감도가 가장 큼 — 업황이 꺾일 때 가장 크게 흔들려온 역사가 있습니다.</dd>
+            <dt>한 줄 정리</dt><dd>호황의 온도계 같은 기업 — 마이크론의 마진이 꺾이는 순간이 사이클 변곡의 첫 신호일 수 있습니다.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== 05 장비 ===== -->
+    <section id="s5">
+      <span class="sec-num">5단계</span>
+      <h2 class="sec-title">반도체 제조 장비</h2>
+      <div class="stage-what">
+        <b>무엇을 하는 기업인가?</b> 3·4단계 기업들의 공장 안에 들어가는 기계를 만듭니다. 칩 회사들이 증설 경쟁을 벌일수록 — 그 경쟁에서 누가 이기든 — 장비 주문은 늘어나는 구조입니다.
+        <span class="row"><span class="k">파는 것</span>노광기(빛으로 회로를 새김), 식각·증착 장비(깎고 쌓음), 본딩 장비(칩을 쌓아 붙임)</span>
+        <span class="row"><span class="k">누가 사나</span>TSMC·삼성·SK하이닉스·마이크론·인텔 — 이들의 설비투자 발표가 곧 장비사의 수주 예고편</span>
+      </div>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">ASML</span><span class="name">ASML</span><span class="tag">EUV 노광기 세계 유일 제조사 (네덜란드)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 첨단 칩을 만들 때 반드시 필요한 EUV 노광 장비를 지구상에서 유일하게 만드는 회사입니다. 한 대에 수천억 원인데도 주문이 밀려 있습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>EUV(극자외선) 노광 장비 — 3나노 이하 첨단 공정의 필수품. TSMC·삼성·인텔·SK하이닉스가 고객입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>AI발 첨단 공정·메모리 증설 경쟁으로 수주 호조, 연간 실적 전망 상향 흐름. 차세대(High-NA) 장비로 독점을 연장하고 있습니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상. 독점 프리미엄은 늘 반영돼 있으나, 중국 수출 규제로 인한 매출 공백 우려가 할인 요인으로 작용합니다.</dd>
+            <dt>핵심 리스크</dt><dd>대중국 수출 통제 강화, 고객사 설비투자 지연 시 장비주 특유의 주문 절벽.</dd>
+            <dt>한 줄 정리</dt><dd>산업 전체의 '기술 천장'을 정하는 회사 — 반도체가 발전하는 한 우회할 방법이 없습니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">AMAT</span><span class="name">어플라이드 머티어리얼즈</span><span class="tag">장비 종류 최다 보유 (미국)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 특정 장비 하나를 독점하지는 않지만, 공장에 필요한 기계를 종류별로 가장 많이 갖춘 회사입니다. 세계 어느 칩 공장에 가도 이 회사 장비가 있습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>증착·식각·이온주입·검사 등 전(前)공정 장비 최다 라인업. 모든 칩 제조사가 고객입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>첨단 공정·HBM 투자 확대의 폭넓은 수혜. 특정 공정 쏠림이 적어 실적이 상대적으로 안정적입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중간. 장비 대장주로서 무난한 프리미엄 — 극단적인 기대는 아닙니다.</dd>
+            <dt>핵심 리스크</dt><dd>중국 매출 비중에 대한 규제, 사이클 후반의 주문 둔화.</dd>
+            <dt>한 줄 정리</dt><dd>장비 섹터 전반을 함께 관찰할 때 참고하기 좋은 대표 기업입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">LRCX</span><span class="name">램리서치</span><span class="tag">식각·적층 장비 강자 · HBM 수혜 (미국)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 반도체를 '깎고 뚫는' 공정의 최강자입니다. 메모리를 고층으로 쌓을수록(HBM 12단, 낸드 수백단) 이 회사의 정밀 장비가 더 많이 필요해집니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>식각(에칭)·증착 장비. 메모리 3사 매출 비중이 상대적으로 높아 메모리 설비투자와 실적이 함께 움직입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>HBM·낸드 적층 고도화로 장비 수요가 구조적으로 증가 — 메모리 슈퍼사이클의 직접 수혜입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상. 메모리 호황 기대가 반영돼 있고, 메모리 설비투자 뉴스에 민감하게 움직입니다.</dd>
+            <dt>핵심 리스크</dt><dd>메모리 편중 — 메모리 사이클이 꺾이면 가장 먼저 반영됩니다.</dd>
+            <dt>한 줄 정리</dt><dd>'HBM 증설'이라는 뉴스가 나올 때마다 주문서가 쌓이는 회사입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">8035</span><span class="name">도쿄일렉트론</span><span class="tag">일본 대표 장비사 · 특정 공정 사실상 독점</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — ASML의 노광기가 회로를 '인쇄'하기 전후로 감광액을 바르고 현상하는 장비(코터/디벨로퍼)를 사실상 독점하는 일본 회사입니다. 이 공정에서는 대체자가 없습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>감광액 도포·현상 장비(점유율 압도적), 식각·증착·세정 장비. 글로벌 전 제조사가 고객입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>글로벌 설비투자 확대가 일본 소재·부품·장비 수요로 이어지는 흐름의 대표 수혜 기업입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상. 일본 증시 AI 랠리의 주도주 중 하나로 기대가 쌓여 있습니다.</dd>
+            <dt>핵심 리스크</dt><dd>중국 매출 비중, 엔화 환율 변동.</dd>
+            <dt>한 줄 정리</dt><dd>'AI 설비투자 확대 → 일본 장비주 수혜'라는 파급 경로의 표준 사례입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">042700</span><span class="name">한미반도체</span><span class="tag">HBM 적층 장비(TC본더) 강자 (한국)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — HBM은 D램을 12층 이상 쌓아 만드는데, 그 층들을 열과 압력으로 정밀하게 붙이는 장비(TC본더)를 만드는 한국 회사입니다. SK하이닉스의 HBM 증설과 실적이 직결됩니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>TC본더(D램 적층 접합 장비) — SK하이닉스가 핵심 고객입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>HBM 세대가 올라가고 적층 단수가 높아질수록 장비 수요가 늘어나는 구조 — HBM 투자와 실적이 직결됩니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>높음. HBM 성장 기대가 강하게 반영돼 있어 주가 변동성이 큰 종목입니다.</dd>
+            <dt>핵심 리스크</dt><dd>단일 고객 의존, 글로벌 장비사의 본더 시장 진입, 차세대 접합 기술(하이브리드 본딩)로의 전환.</dd>
+            <dt>한 줄 정리</dt><dd>한국 시장에서 'HBM 설비투자'를 가장 순도 높게 담은 종목 — 순도가 높은 만큼 출렁임도 큽니다.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== 06 전력·인프라 ===== -->
+    <section id="s6">
+      <span class="sec-num">6단계</span>
+      <h2 class="sec-title">전력 · 데이터센터 인프라</h2>
+      <div class="stage-what">
+        <b>무엇을 하는 기업인가?</b> 칩이 아무리 많아도 전기·냉각·네트워크가 없으면 데이터센터는 돌아가지 않습니다. 이 물리적 병목을 채우는 기업들 — AI 사이클에서 가장 늦게 주목받았지만 가장 오래갈 수 있는 구간입니다. 북미 데이터센터 공실률은 1%로 사상 최저 수준입니다.
+        <span class="row"><span class="k">파는 것</span>전력(장기계약), 냉각·배전 장비, 네트워크 스위치, 조립 서버</span>
+        <span class="row"><span class="k">누가 사나</span>1단계 클라우드 빅테크와 데이터센터 운영사</span>
+      </div>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">VRT</span><span class="name">버티브</span><span class="tag">데이터센터 전력·냉각 장비 (미국)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — GPU는 전기를 많이 먹는 만큼 열도 엄청나게 냅니다. 그 전기를 안정적으로 공급하고(배전) 열을 식히는(냉각) 설비를 데이터센터에 넣어주는 회사입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>전력관리 장비(UPS·배전), 액체냉각 시스템. 클라우드 빅테크와 데이터센터 운영사가 고객입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>GPU 세대 변화와 냉각 방식 전환은 수주잔고에 영향을 줄 수 있습니다. 공식 수주·마진 근거가 확인될 때 사이클 근거로 반영합니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상~높음. 'AI 인프라 필수 기업'으로의 재평가가 이미 상당히 진행됐습니다.</dd>
+            <dt>핵심 리스크</dt><dd>대형 산업기업(슈나이더 등)과의 경쟁, 빅테크 투자 감속 시 동반 조정.</dd>
+            <dt>한 줄 정리</dt><dd>칩을 만들지 않으면서 칩 사이클을 그대로 타는 대표적 수혜 기업입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">ANET</span><span class="name">아리스타 네트웍스</span><span class="tag">AI 데이터센터용 네트워크 장비 (미국)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — AI는 GPU 수만 개가 하나의 팀처럼 통신하며 일합니다. 그 GPU들을 초고속으로 연결하는 네트워크 스위치를 만드는 회사입니다. GPU가 늘수록 연결(배선)은 그보다 빠르게 늘어납니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>초고속 이더넷 스위치와 네트워크 운영체제. 메타·마이크로소프트 등 대형 클라우드가 주요 고객입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>AI 클러스터가 커질수록 GPU 간 통신량이 폭증 — 엔비디아 전용 규격(인피니밴드)에 맞서는 개방형 이더넷 진영의 대표 수혜 기업입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중상. 고성장 프리미엄이 붙어 있으며, 고객사의 투자 규모에 실적이 연동됩니다.</dd>
+            <dt>핵심 리스크</dt><dd>소수 대형 고객 집중, 엔비디아의 네트워킹 자체 공급 확대.</dd>
+            <dt>한 줄 정리</dt><dd>'GPU 다음 병목은 연결'이라는 논리의 최전선에 있는 기업입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">SMCI</span><span class="name">슈퍼마이크로</span><span class="tag">GPU 서버 조립·판매 (미국)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 엔비디아 칩을 받아 완성품 서버로 조립해 파는 회사입니다. 매출은 크지만 부품값이 대부분이라 남는 이익이 얇습니다. '같은 AI 매출이라도 병목이 아니면 이익은 얇다'는 것을 보여주는 사례입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>GPU 서버 완제품(랙 단위 조립, 수냉 포함). AI 데이터센터를 빨리 세우고 싶은 고객에게 조립 스피드가 무기입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>매출 성장은 크지만 이익률이 낮고 델 등과의 경쟁이 심화 — 밸류체인에서 협상력이 약한 위치입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>중간. 급등락을 반복해왔고 과거 회계 이슈 전력이 있어 신뢰 프리미엄이 낮습니다.</dd>
+            <dt>핵심 리스크</dt><dd>저마진 구조, 대형 IT 업체와의 수주 경쟁, 회계·지배구조 신뢰.</dd>
+            <dt>한 줄 정리</dt><dd>AI 밸류체인 안에 있다고 모두가 크게 버는 것은 아니라는 점을 배울 수 있는 기업입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">VST</span><span class="name">비스트라</span><span class="tag">발전소 보유 전력회사 · 데이터센터 전력 공급 (미국)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 데이터센터가 아무리 많아도 전기가 없으면 돌아가지 않습니다. 원자력·가스 발전소를 보유하고 데이터센터에 10~20년 장기계약으로 전기를 파는 전력회사입니다. 발전소는 빨리 못 지으니, 이미 가진 쪽이 유리해졌습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>전력 — 특히 데이터센터와 장기 전력구매계약(PPA)을 맺어 프리미엄 가격에 판매합니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>미국 전력 수요가 데이터센터발로 수십 년 만에 구조적 증가로 전환 — 기존 발전 자산의 가치가 재평가되고 있습니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>높음. '전력회사가 성장주로' 재평가되며 가격 반영이 이미 크게 올랐습니다.</dd>
+            <dt>핵심 리스크</dt><dd>전기요금·규제 정책 변화, 가스 가격 변동, AI 수요 둔화 시 프리미엄 반납.</dd>
+            <dt>한 줄 정리</dt><dd>AI 사이클의 마지막 병목(전력)을 담는 대표 기업 — 칩보다 사이클이 길 수 있습니다.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== 07 AI 모델·서비스 ===== -->
+    <section id="s7">
+      <span class="sec-num">7단계</span>
+      <h2 class="sec-title">AI 모델 · 서비스</h2>
+      <div class="stage-what">
+        <b>무엇을 하는 기업인가?</b> 아래 여섯 단계가 깔아준 인프라 위에서 실제로 돈을 버는 층입니다. 챗봇 구독, 기업용 API, 업무 자동화 — <b>이 층이 얼마나 빨리 수익을 내느냐가 전체 사이클의 지속 여부를 결정</b>합니다. 현재 인프라 투자 속도는 AI가 돈을 버는 속도보다 1~2년 앞서 있다는 것이 핵심 긴장 지점입니다.
+        <span class="row"><span class="k">파는 것</span>구독(개인), API 사용료(개발사), 도입 컨설팅(기업)</span>
+        <span class="row"><span class="k">누가 사나</span>최종 소비자와 모든 산업의 기업</span>
+      </div>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">비상장</span><span class="name">OpenAI</span><span class="tag">ChatGPT 운영사 · 소비자 AI 대표</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 이번 AI 붐을 촉발한 회사입니다. 매출은 빠르게 늘지만 AI를 돌리는 비용(연산)이 워낙 커서 아직 큰 적자를 내며 계속 투자금을 조달하고 있습니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>ChatGPT 구독(개인·기업), API. 오라클·마이크로소프트 등과 맺은 초대형 인프라 계약의 '수요 그 자체'이기도 합니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>매출은 급성장하나 대규모 적자와 자금 조달이 계속되는 구조 — 이 회사의 지불 능력이 상류(오라클, 엔비디아, 반도체) 매출의 전제가 되고 있습니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>비상장이지만 기업가치 평가는 매우 높은 수준(게이지는 비상장 가치평가 기준). 산업 전체가 이 회사의 성공을 어느 정도 미리 반영한 상태입니다.</dd>
+            <dt>핵심 리스크</dt><dd>수익화 속도가 인프라 계약 약속을 따라가지 못할 가능성 — 이 경우 충격이 밸류체인 전체로 역류합니다.</dd>
+            <dt>한 줄 정리</dt><dd>'AI 버블이냐'는 질문의 실질적 시험지 — 반도체를 보는 사람도 이 회사의 재무 뉴스를 봐야 하는 이유입니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">비상장</span><span class="name">앤트로픽</span><span class="tag">Claude 운영사 · 기업용 AI 강세</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — 소비자 시장보다 기업 대상 판매(B2B)에 집중하는 AI 모델 회사입니다. 아마존과 구글이 대규모 투자자이자 인프라 공급자인 전략적 관계입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>Claude API와 기업용 구독 — 특히 코딩·업무 자동화 영역의 기업 고객 비중이 높습니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>기업용 API 매출 중심의 고성장. 아마존·구글의 투자를 받아 이들의 자체칩(트레이니움·TPU)의 대형 수요처 역할도 겸합니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>비상장 가치평가가 높은 수준 — OpenAI와 함께 '모델 층의 수익화'를 증명해야 하는 위치입니다.</dd>
+            <dt>핵심 리스크</dt><dd>모델 개발 경쟁 비용, 빅테크 파트너십에 기댄 인프라 구조.</dd>
+            <dt>한 줄 정리</dt><dd>기업용 시장에서의 수익화 증명이 관건 — 성공하면 '자체칩 진영(구글·아마존)'의 논리도 함께 강해집니다.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="co">
+        <summary>
+          <div class="co-top"><span class="tick">PLTR</span><span class="name">팔란티어</span><span class="tag">기업·정부용 AI 운영 플랫폼 (미국)</span></div>
+          <div class="gauges quant-sync" aria-live="polite">
+            <div class="quant-chip is-pending"><span class="q-label">정량 Rating</span><span class="q-value">불러오는 중</span></div>
+          </div>
+        </summary>
+        <div class="co-body">
+          <p class="plain"><b>쉽게 말하면</b> — AI 모델을 만드는 게 아니라, 기업과 정부가 AI를 실제 업무(국방·제조·금융)에 쓸 수 있게 시스템을 통째로 구축해주는 회사입니다.</p>
+          <dl>
+            <dt>무엇을 팔고, 누가 사나</dt><dd>기업·정부용 AI 운영 플랫폼(AIP 등) — 데이터를 실제 의사결정과 업무에 연결합니다. 국방·제조·금융 고객이 중심입니다.</dd>
+            <dt>펀더멘털 (실적 체력)</dt><dd>미국 기업·정부 부문 성장률이 높고 이익도 흑자 — AI '적용 단계'에서 수익화를 증명한 드문 사례입니다.</dd>
+            <dt>주가에 반영된 기대</dt><dd>극단적으로 높음 — 매출 대비 수십 배의 가격 반영. '기대가 주가에 반영된다'는 개념을 배우기에 가장 좋은 사례입니다.</dd>
+            <dt>핵심 리스크</dt><dd>성장이 조금만 둔화돼도 가격 반영 수축 폭이 큼, 정부 예산 의존.</dd>
+            <dt>한 줄 정리</dt><dd>사업은 진짜인데 가격이 미래를 아주 멀리까지 당겨온 기업 — '좋은 회사'와 '좋은 주가'는 다르다는 살아있는 예시입니다.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== 고점 점검 ===== -->
+    <section id="verdict">
+      <h2 class="sec-title">리스크 점검 — 실적과 가격을 분리해서 판독</h2>
+      <p class="sec-desc">가장 흔한 실수는 실적 체력과 주가에 반영된 기대를 하나로 묶어 보는 것입니다. 정량 Rating과 사이클 상태는 서로 다른 질문에 답합니다.</p>
+      <div class="verdict">
+        <div class="v-card">
+          <h3>실적 (펀더멘털)</h3>
+          <span class="badge ok">확인할 지표</span>
+          <ul>
+            <li>클라우드 설비투자 계획, HBM·DRAM 가격, 재고, 장비 수주, 이익률을 산업 영역별로 분리해 봅니다.</li>
+            <li>공식 근거가 부족하면 확장 국면처럼 보여도 사이클 상태는 중립으로 유지합니다.</li>
+            <li>HBM의 강한 수요를 NAND·아날로그·파운드리 전체로 일반화하지 않습니다.</li>
+            <li>최신 실적 수치는 출처 URL·발행일·출처군 검증을 통과한 뒤 근거 카드에 표시합니다.</li>
+            <li>긍정 근거만큼 반대 근거가 사용자에게 보이는지 확인합니다.</li>
+          </ul>
+        </div>
+        <div class="v-card">
+          <h3>주가 (가격 반영)</h3>
+          <span class="badge warn">분리해서 볼 항목</span>
+          <ul>
+            <li>기대가 이미 크게 반영된 구간은 주가반영 Rating에서 높게 표시됩니다. 숫자는 최신 정량 데이터 기준으로 갱신합니다.</li>
+            <li>이익 전망치, 공매도, 수급 같은 시장 데이터는 사이클 근거가 아니라 가격 반영 점검 자료로 봅니다.</li>
+            <li>인프라 투자 속도와 AI 서비스 수익화 속도의 차이가 커지면 구매 행동이 바뀔 수 있습니다.</li>
+            <li>시장의 질문이 '얼마나 투자하나'에서 <b>'투자한 돈이 이익으로 돌아오나(ROIC)'</b>로 이동하는지 확인합니다.</li>
+            <li>실적 체력이 좋아도 가격 반영이 빠르면 Rating은 낮아질 수 있습니다.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="rule">
+        제1원칙: <b>펀더멘털 Rating ≠ 주가반영 Rating ≠ 사이클 상태.</b> 세 값은 서로 보완하지만 어느 하나도 매수·매도 지시가 아닙니다.
+      </div>
+    </section>
+
+    <!-- ===== 미래 시나리오 ===== -->
+    <section id="future">
+      <h2 class="sec-title">산업의 미래 — 장기 시나리오 학습</h2>
+      <p class="sec-desc">장기 시나리오는 확정 전망이 아니라 사고 실험입니다. 매주 갱신되는 사이클 상태에는 공식 근거로 검증된 3–6개월 판단만 반영합니다.</p>
+
+      <div class="scen win">
+        <span class="p">학습 가정 A</span>
+        <h3>불균등 확산: 지능은 공짜에 가까워지고, 물리적 재화는 비싸진다</h3>
+        <p class="body">'AI 사용 비용'(토큰 단가)만 극적으로 떨어지고, 주택·에너지·의료 인건비 같은 물리 세계의 가격은 느리게 움직이는 이중 경제. 사무직 업무부터 재편되고, 로봇이 물리 세계로 확산되는 것은 그보다 5~10년 뒤입니다. 대화형 AI → 에이전트 AI → 피지컬 AI(로봇)로 수요가 확산되는 지금의 흐름과 일치합니다. <b>학습 관점: 소프트웨어 가치와 물리적 병목(전력, 로봇 부품, 희소한 제조능력)을 분리해 관찰합니다.</b></p>
+      </div>
+      <div class="scen">
+        <span class="p">학습 가정 B</span>
+        <h3>AI·로봇발 가격 하락 압력</h3>
+        <p class="body">기술은 특정 재화와 서비스의 단가를 낮출 수 있습니다. 다만 전력·부동산·의료·규제 비용처럼 물리 세계의 병목은 별도로 움직이므로 전체 물가로 일반화하지 않습니다.</p>
+      </div>
+      <div class="scen">
+        <span class="p">학습 가정 C</span>
+        <h3>AI 겨울: 수익화 실패로 투자 급감</h3>
+        <p class="body">7단계(모델·서비스)의 수익화가 인프라 약속을 끝내 따라가지 못하면, 투자 삭감이 밸류체인을 거슬러 올라가며 2000년 닷컴 붕괴의 축소판이 재현되는 시나리오. 다만 당시와 달리 지금은 현금이 풍부한 빅테크가 투자 주체이고 HBM 등이 장기계약 구조라, '붕괴'보다는 '급브레이크'에 가까울 가능성이 큽니다.</p>
+      </div>
+      <div class="scen">
+        <span class="p">학습 가정 D</span>
+        <h3>소득 보전 정책 확대</h3>
+        <p class="body">기술의 문제가 아니라 정치·재정의 문제입니다. AI가 근로소득세라는 세수 기반을 흔들면 논의는 커지겠지만, '대부분의 필수재 무료'는 생산성 혁명 + 정치적 합의 + 재원 구조 개편이 모두 필요한 3단계 조건입니다. 특정 계층 대상의 현금 지원 확대 같은 부분적 형태로만 순차 도입될 가능성이 높습니다.</p>
+      </div>
+      <div class="rule" style="margin-top:16px">
+        한 줄 결론: 장기 시나리오는 정답표가 아니라 관찰 프레임입니다. <b>소프트웨어 비용, 전력, 첨단 제조, 물리적 자원</b>을 분리해 추적합니다.
+      </div>
+    </section>
+
+    <!-- ===== 용어 사전 ===== -->
+    <section id="gloss">
+      <h2 class="sec-title">용어 사전</h2>
+      <div class="gloss">
+        <details><summary><span class="term">HBM</span>고대역폭 메모리</summary><p>D램을 12층 이상 수직으로 쌓아 GPU 바로 옆에 붙인 초고속 메모리. AI 반도체의 필수 부품으로 이번 사이클의 주인공입니다.</p></details>
+        <details><summary><span class="term">파운드리</span>반도체 위탁생산</summary><p>다른 회사가 설계한 칩을 위탁받아 제조만 전문으로 하는 기업. TSMC가 대표입니다.</p></details>
+        <details><summary><span class="term">팹리스</span>설계 전문 기업</summary><p>공장(Fab) 없이(less) 설계만 하는 기업. 엔비디아·AMD·브로드컴이 대표입니다.</p></details>
+        <details><summary><span class="term">하이퍼스케일러</span>클라우드 빅테크</summary><p>초대형 데이터센터를 직접 짓고 클라우드·AI 인프라를 임대하는 빅테크. 마이크로소프트·구글·아마존·메타·오라클을 가리킵니다.</p></details>
+        <details><summary><span class="term">CAPEX</span>설비투자</summary><p>공장·데이터센터·장비 등에 쓰는 돈. 이 산업에서는 클라우드 빅테크의 설비투자 발표가 모든 하류 기업의 매출 예고편입니다.</p></details>
+        <details><summary><span class="term">EUV</span>극자외선 노광</summary><p>극도로 짧은 파장의 빛으로 초미세 회로를 새기는 기술. 이 장비는 네덜란드 ASML만 만듭니다.</p></details>
+        <details><summary><span class="term">CoWoS</span>첨단 패키징</summary><p>GPU와 HBM 메모리를 한 기판 위에 나란히 붙이는 TSMC의 패키징 기술. AI 칩 생산의 대표적 병목 공정입니다.</p></details>
+        <details><summary><span class="term">ASIC</span>맞춤형 칩</summary><p>특정 용도에 맞춰 설계한 전용 칩. 빅테크가 엔비디아 의존을 줄이려고 브로드컴 등과 함께 만드는 자체칩(구글 TPU 등)이 대표입니다.</p></details>
+        <details><summary><span class="term">PER</span>주가수익비율</summary><p>주가 ÷ 주당순이익. '이익의 몇 년치를 미리 내고 사는가'를 뜻하며, 높을수록 기대가 많이 반영된 상태입니다.</p></details>
+        <details><summary><span class="term">매출총이익률</span>GM</summary><p>매출에서 원가를 뺀 이익의 비율. 협상력(병목 여부)을 보여주는 가장 정직한 지표 — TSMC 67%, 호황기 메모리 80%대인 반면 서버 조립은 한 자릿수입니다.</p></details>
+        <details><summary><span class="term">ROIC</span>투자자본수익률</summary><p>투자한 돈이 얼마의 이익으로 돌아오는가. 2026년 들어 시장이 AI 기업들에 본격적으로 묻기 시작한 핵심 질문입니다.</p></details>
+      </div>
+    </section>
+
+    <!-- ===== 공식 발표·뉴스 ===== -->
+    <section id="event-calendar" class="event-calendar-section">
+      <details class="event-disclosure">
+        <summary>
+          <span>
+            <span class="sec-num">공식 발표</span>
+            <strong>주요 실적·거시 발표 일정과 결과</strong>
+          </span>
+          <span class="event-disclosure-action" aria-hidden="true">펼쳐보기</span>
+        </summary>
+        <div class="event-disclosure-body">
+          <p class="sec-desc">시그널 종목과 산업 지도를 모두 확인한 뒤 필요할 때 펼쳐볼 수 있습니다. 공식 IR과 정부·중앙은행 일정에서 확정된 항목만 표시하며, 일정이나 수치가 매수·매도 판단을 직접 바꾸지 않습니다.</p>
+          <div class="grid grid-3 data-contract" data-event-cards>
+            <div class="notice">공식 발표 일정을 불러오는 중입니다.</div>
+          </div>
+          <div data-event-results></div>
+        </div>
+      </details>
+    </section>
+
+  </div><!-- /content -->
+
+  <footer>
+    <div class="content">
+      <div><b>반도체 · AI 산업 지도</b> — 학습용 페이지입니다. 상태 변경은 공식 출처·발행일·출처군·증거 축을 통과한 JSON만 기준으로 삼습니다.</div>
+    </div>
+  </footer>
+</main><!-- /main -->
+
+<script>
+// 현재 위치한 섹션을 메뉴에서 강조 (스크롤 스파이)
+const pairs = [...document.querySelectorAll('.navlink[href^="#"]')]
+  .map((link) => [link, document.querySelector(link.getAttribute('href'))])
+  .filter(([, section]) => section);
+const spy=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      pairs.forEach(([link])=>link.classList.remove('active'));
+      const match=pairs.find(([, section])=>section===e.target);
+      if(match) match[0].classList.add('active');
+    }
+  });
+},{rootMargin:'-30% 0px -60% 0px'});
+pairs.forEach(([, section])=>spy.observe(section));
+// 기업 카드가 열릴 때 게이지 채우기
+document.querySelectorAll('details.co').forEach(d=>{
+  const bars=d.querySelectorAll('.g-bar i');
+  bars.forEach(b=>{b.dataset.v=b.style.getPropertyValue('--v');});
+  d.addEventListener('toggle',()=>{
+    if(d.open){
+      bars.forEach(b=>{
+        b.style.width='0';
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{b.style.width=b.dataset.v;}));
+      });
+    }
+  });
+});
+</script>
+</body>
+</html>

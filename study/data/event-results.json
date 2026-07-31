@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-30T21:53:40+09:00",
+  "results": [
+    {
+      "event_id": "macro-fomc-2026-07-29",
+      "status": "complete",
+      "review_status": "verified",
+      "retrieved_at": "2026-07-30T13:00:48+09:00",
+      "source_published_at": "2026-07-30T03:00:00+09:00",
+      "reference_period": "2026-07-28~29 FOMC meeting",
+      "summary": "연방공개시장위원회는 연방기금금리 목표 범위를 3.50%~3.75%로 유지했다.",
+      "facts": [
+        {
+          "metric": "federal_funds_target_range_lower",
+          "value": 3.5,
+          "unit": "percent"
+        },
+        {
+          "metric": "federal_funds_target_range_upper",
+          "value": 3.75,
+          "unit": "percent"
+        },
+        {
+          "metric": "federal_funds_target_range_change",
+          "value": 0,
+          "unit": "basis_points",
+          "comparison": "previous meeting"
+        }
+      ],
+      "source_urls": [
+        "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm"
+      ]
+    },
+    {
+      "event_id": "macro-us-pce-2026-06",
+      "status": "complete",
+      "review_status": "verified",
+      "retrieved_at": "2026-07-30T21:53:40+09:00",
+      "source_published_at": "2026-07-30T21:30:00+09:00",
+      "reference_period": "2026-06",
+      "summary": "BEA는 2026년 6월 PCE 물가지수가 전월 대비 0.1% 하락, 전년 동월 대비 3.7% 상승했다고 발표했다.",
+      "facts": [
+        {
+          "metric": "pce_price_index_mom",
+          "value": -0.1,
+          "unit": "percent",
+          "comparison": "previous month"
+        },
+        {
+          "metric": "pce_price_index_yoy",
+          "value": 3.7,
+          "unit": "percent",
+          "comparison": "same month previous year"
+        },
+        {
+          "metric": "core_pce_price_index_mom",
+          "value": 0.1,
+          "unit": "percent",
+          "comparison": "previous month"
+        },
+        {
+          "metric": "core_pce_price_index_yoy",
+          "value": 3.3,
+          "unit": "percent",
+          "comparison": "same month previous year"
+        }
+      ],
+      "source_urls": [
+        "https://www.bea.gov/news/2026/personal-income-and-outlays-june-2026"
+      ]
+    }
+  ]
+}

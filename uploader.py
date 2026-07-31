@@ -641,6 +641,62 @@ def _get_usdkrw_from_naver_html():
     return _make_exchange_rate(current, prev, source="naver_html")
 
 
+def _get_kospi_from_naver_api():
+    """네이버가 공개한 KOSPI 현재값과 일별 종가로 동일 기준 MA20을 만든다."""
+    headers = {"User-Agent": "Mozilla/5.0"}
+    basic_response = requests.get(
+        "https://m.stock.naver.com/api/index/KOSPI/basic",
+        headers=headers,
+        timeout=10,
+    )
+    basic_response.raise_for_status()
+    basic = basic_response.json()
+
+    history_response = requests.get(
+        "https://m.stock.naver.com/api/index/KOSPI/price",
+        params={"pageSize": 30, "page": 1},
+        headers=headers,
+        timeout=10,
+    )
+    history_response.raise_for_status()
+    history = history_response.json()
+    if not isinstance(history, list):
+        raise ValueError("invalid KOSPI history")
+
+    current = _to_float(basic.get("closePrice"))
+    traded_at = str(basic.get("localTradedAt") or "")
+    current_date = traded_at[:10] if len(traded_at) >= 10 else ""
+    if current is None or current <= 0 or not current_date:
+        raise ValueError("invalid KOSPI current quote")
+
+    closes_by_date = {}
+    for item in history:
+        if not isinstance(item, dict):
+            continue
+        traded_date = str(item.get("localTradedAt") or "")[:10]
+        close = _to_float(item.get("closePrice"))
+        if traded_date and close is not None and close > 0:
+            closes_by_date[traded_date] = close
+    closes_by_date[current_date] = current
+    ordered_closes = [
+        closes_by_date[traded_date] for traded_date in sorted(closes_by_date)
+    ]
+    if len(ordered_closes) < MACRO_GUARDS.get("kospi_ma_period", 20):
+        raise ValueError("insufficient KOSPI history")
+
+    status = _calc_ma_status(
+        pd.DataFrame({"Close": ordered_closes}),
+        period=MACRO_GUARDS.get("kospi_ma_period", 20),
+        buffer_pct=MACRO_GUARDS.get("qqq_whipsaw_buffer", 0.01),
+        confirm_days=MACRO_GUARDS.get("qqq_confirm_days", 2),
+    )
+    if not status:
+        raise ValueError("invalid KOSPI moving average")
+    status["source"] = "naver_mobile"
+    status["data_as_of"] = traded_at
+    return status
+
+
 def _get_published_payload():
     global _published_payload_cache
     if _published_payload_cache is None:
@@ -718,21 +774,30 @@ def get_macro_data():
         _record_collection_error("yahoo", "macro_qqq", _classify_request_error(e))
         print(f"   QQQ 에러: {e}")
     
-    # KOSPI
+    # KOSPI: 한국 장중 현재값과 거래일 이력을 같은 공급원에서 가져온다.
+    # Yahoo는 한국 종가가 하루 늦는 구간이 있어 공개 네이버 지수를 우선한다.
     try:
-        kospi = yf.Ticker(MACRO_GUARDS.get("kospi_ticker", "^KS11"))
-        hist = kospi.history(period="2mo")
-        status = _calc_ma_status(
-            hist,
-            period=MACRO_GUARDS.get("kospi_ma_period", 20),
-            buffer_pct=buf,
-            confirm_days=confirm,
-        )
-        if status:
-            result["kospi"] = status
+        result["kospi"] = _get_kospi_from_naver_api()
     except Exception as e:
-        _record_collection_error("yahoo", "macro_kospi", _classify_request_error(e))
-        print(f"   KOSPI 에러: {e}")
+        _record_collection_error("naver", "macro_kospi", _classify_request_error(e))
+        print(f"   네이버 KOSPI 에러: {_classify_request_error(e)}")
+
+    if result["kospi"] is None:
+        try:
+            kospi = yf.Ticker(MACRO_GUARDS.get("kospi_ticker", "^KS11"))
+            hist = kospi.history(period="2mo")
+            status = _calc_ma_status(
+                hist,
+                period=MACRO_GUARDS.get("kospi_ma_period", 20),
+                buffer_pct=buf,
+                confirm_days=confirm,
+            )
+            if status:
+                status["source"] = "yahoo_fallback"
+                result["kospi"] = status
+        except Exception as e:
+            _record_collection_error("yahoo", "macro_kospi", _classify_request_error(e))
+            print(f"   Yahoo KOSPI 폴백 에러: {_classify_request_error(e)}")
     
     # 환율 (USD/KRW): HTML 구조나 단일 공급원 장애에 묶이지 않도록 순차 폴백.
     rate_providers = (
@@ -1417,7 +1482,23 @@ def get_kr_valuation(code):
     # 네이버 요약표에는 다음 해 한 개 전망만 노출된다. PEG에는 과거 실적을
     # 섞지 않고 FnGuide의 복수 연도 순수 forward EPS 컨센서스를 사용한다.
     try:
-        result.update(get_fnguide_forward_consensus(code))
+        fnguide = get_fnguide_forward_consensus(code)
+        # 화면의 예상 PER/EPS는 네이버가 공개한 현재 컨센서스를 우선한다.
+        # FnGuide 복수 연도 자료는 forward EPS CAGR 계산에 사용하되 현재
+        # 컨센서스 값을 뒤늦게 덮어쓰지 않는다.
+        if result.get("per_fwd") is not None and fnguide.get("per_fwd") is not None:
+            result["fnguide_per_fwd"] = fnguide["per_fwd"]
+        if result.get("eps_fwd") is not None and fnguide.get("eps_fwd") is not None:
+            result["fnguide_eps_fwd"] = fnguide["eps_fwd"]
+        protected = set()
+        if result.get("per_fwd") is not None:
+            protected.update({"per_fwd", "per_source", "annual_per_fwd"})
+        if result.get("eps_fwd") is not None:
+            protected.update({"eps_fwd", "eps_source", "annual_eps_fwd"})
+        result.update({
+            key: value for key, value in fnguide.items()
+            if key not in protected
+        })
     except Exception as e:
         _record_collection_error("fnguide", "kr_consensus", _classify_request_error(e))
         print(f"   FnGuide 복수 연도 컨센서스 에러 ({code}): {e}")

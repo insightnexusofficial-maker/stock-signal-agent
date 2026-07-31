@@ -1,0 +1,339 @@
+{
+  "schema_version": "1.0",
+  "feed_id": "market-events-5f235571df49ffc6",
+  "content_sha256": "5f235571df49ffc6995e397124a27fa37c92c1f42564b648118c4d900e1222e1",
+  "generated_at": "2026-07-30T21:53:40+09:00",
+  "expires_at": "2026-08-05T08:45:00+09:00",
+  "quality_gate": {
+    "status": "passed",
+    "mode": "official-only",
+    "message": "공식 일정과 검증된 발표 결과만 표시합니다."
+  },
+  "event_sync": {
+    "calendar_status": "fresh",
+    "monitored_company_count": 12,
+    "monitored_macro_count": 6,
+    "due_event_ids": [
+      "earnings-MSFT-fy2026q4",
+      "earnings-META-2026q2",
+      "earnings-LRCX-2026june",
+      "earnings-AMZN-2026q2"
+    ],
+    "overdue_event_ids": [],
+    "unsupported_due_event_ids": [
+      "earnings-MSFT-fy2026q4",
+      "earnings-META-2026q2",
+      "earnings-LRCX-2026june",
+      "earnings-AMZN-2026q2"
+    ]
+  },
+  "shock_policy": {
+    "version": "market-shock-v1-2026-07-28",
+    "notification_time_kst": "07:00",
+    "mode": "objective-official-data-only"
+  },
+  "events": [
+    {
+      "id": "macro-fomc-2026-07-29",
+      "kind": "macro",
+      "ticker": null,
+      "name": "FOMC 금리결정",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T03:00:00+09:00",
+      "monitor_after": "2026-07-30T03:05:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 동부시간",
+      "schedule_source_name": "Federal Reserve",
+      "schedule_source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "segments": [],
+      "sync_status": "synced",
+      "result_collection_status": "automated-official"
+    },
+    {
+      "id": "earnings-META-2026q2",
+      "kind": "earnings",
+      "ticker": "META",
+      "name": "Meta 2026 Q2 실적",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T05:30:00+09:00",
+      "monitor_after": "2026-07-30T05:35:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "콘퍼런스콜 13:30 미국 태평양시간",
+      "schedule_source_name": "Meta",
+      "schedule_source_url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-to-Announce-Second-Quarter-2026-Results/default.aspx",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "sync_status": "due",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "earnings-LRCX-2026june",
+      "kind": "earnings",
+      "ticker": "LRCX",
+      "name": "Lam Research 2026년 6월 분기 실적",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T06:00:00+09:00",
+      "monitor_after": "2026-07-30T06:05:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "Lam Research",
+      "schedule_source_url": "https://investor.lamresearch.com/events?item=93",
+      "segments": [
+        "equipment_materials"
+      ],
+      "sync_status": "due",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "earnings-MSFT-fy2026q4",
+      "kind": "earnings",
+      "ticker": "MSFT",
+      "name": "Microsoft FY2026 Q4 실적",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T06:30:00+09:00",
+      "monitor_after": "2026-07-30T06:35:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "콘퍼런스콜 14:30 미국 태평양시간",
+      "schedule_source_name": "Microsoft",
+      "schedule_source_url": "https://news.microsoft.com/source/2026/07/08/microsoft-announces-quarterly-earnings-release-date-68/",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "sync_status": "due",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "macro-us-pce-2026-06",
+      "kind": "macro",
+      "ticker": null,
+      "name": "미국 2026년 6월 PCE",
+      "scheduled_date": "2026-07-30",
+      "scheduled_at": "2026-07-30T21:30:00+09:00",
+      "monitor_after": "2026-07-30T21:35:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "08:30 미국 동부시간",
+      "schedule_source_name": "U.S. Bureau of Economic Analysis",
+      "schedule_source_url": "https://www.bea.gov/news/schedule",
+      "segments": [],
+      "sync_status": "synced",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "earnings-AMZN-2026q2",
+      "kind": "earnings",
+      "ticker": "AMZN",
+      "name": "Amazon 2026 Q2 실적",
+      "scheduled_date": "2026-07-30",
+      "scheduled_at": "2026-07-31T06:00:00+09:00",
+      "monitor_after": "2026-07-31T06:05:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "Amazon",
+      "schedule_source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-to-Webcast-Second-Quarter-2026-Financial-Results-Conference-Call/default.aspx",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "sync_status": "due",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "earnings-AMD-2026q2",
+      "kind": "earnings",
+      "ticker": "AMD",
+      "name": "AMD 2026 Q2 실적",
+      "scheduled_date": "2026-08-04",
+      "scheduled_at": "2026-08-05T06:00:00+09:00",
+      "monitor_after": "2026-08-05T06:05:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "AMD",
+      "schedule_source_url": "https://ir.amd.com/news-events/press-releases/detail/1289/amd-to-report-fiscal-second-quarter-2026-financial-results",
+      "segments": [
+        "ai_compute_design",
+        "foundry_logic"
+      ],
+      "sync_status": "scheduled",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "macro-us-jobs-2026-07",
+      "kind": "macro",
+      "ticker": null,
+      "name": "미국 2026년 7월 고용보고서",
+      "scheduled_date": "2026-08-07",
+      "scheduled_at": "2026-08-07T21:30:00+09:00",
+      "monitor_after": "2026-08-07T21:35:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "08:30 미국 동부시간",
+      "schedule_source_name": "U.S. Bureau of Labor Statistics",
+      "schedule_source_url": "https://www.bls.gov/schedule/news_release/empsit.htm",
+      "segments": [],
+      "sync_status": "scheduled",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "company-TSM-monthly-revenue-2026-07",
+      "kind": "company_metric",
+      "ticker": "TSM",
+      "name": "TSMC 2026년 7월 월매출",
+      "scheduled_date": "2026-08-10",
+      "scheduled_at": "2026-08-10T14:30:00+09:00",
+      "monitor_after": "2026-08-10T14:35:00+09:00",
+      "schedule_timezone": "Asia/Taipei",
+      "schedule_status": "confirmed",
+      "time_note": "13:30 대만시간",
+      "schedule_source_name": "TSMC",
+      "schedule_source_url": "https://investor.tsmc.com/english/financial-calendar",
+      "segments": [
+        "foundry_logic"
+      ],
+      "sync_status": "scheduled",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "macro-us-cpi-2026-07",
+      "kind": "macro",
+      "ticker": null,
+      "name": "미국 2026년 7월 CPI",
+      "scheduled_date": "2026-08-12",
+      "scheduled_at": "2026-08-12T21:30:00+09:00",
+      "monitor_after": "2026-08-12T21:35:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "08:30 미국 동부시간",
+      "schedule_source_name": "U.S. Bureau of Labor Statistics",
+      "schedule_source_url": "https://www.bls.gov/schedule/news_release/cpi.htm",
+      "segments": [],
+      "sync_status": "scheduled",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "earnings-NVDA-fy2027q2",
+      "kind": "earnings",
+      "ticker": "NVDA",
+      "name": "NVIDIA FY2027 Q2 실적",
+      "scheduled_date": "2026-08-26",
+      "scheduled_at": "2026-08-27T06:00:00+09:00",
+      "monitor_after": "2026-08-27T06:05:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "NVIDIA",
+      "schedule_source_url": "https://investor.nvidia.com/events-and-presentations/events-and-presentations/event-details/2026/NVIDIA-2nd-Quarter-FY27-Financial-Results/default.aspx",
+      "segments": [
+        "ai_compute_design"
+      ],
+      "sync_status": "scheduled",
+      "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "company-TSM-monthly-revenue-2026-08",
+      "kind": "company_metric",
+      "ticker": "TSM",
+      "name": "TSMC 2026년 8월 월매출",
+      "scheduled_date": "2026-09-10",
+      "scheduled_at": "2026-09-10T14:30:00+09:00",
+      "monitor_after": "2026-09-10T14:35:00+09:00",
+      "schedule_timezone": "Asia/Taipei",
+      "schedule_status": "confirmed",
+      "time_note": "13:30 대만시간",
+      "schedule_source_name": "TSMC",
+      "schedule_source_url": "https://investor.tsmc.com/english/financial-calendar",
+      "segments": [
+        "foundry_logic"
+      ],
+      "sync_status": "scheduled",
+      "result_collection_status": "manual-official-review"
+    }
+  ],
+  "recent_results": [
+    {
+      "event_id": "macro-us-pce-2026-06",
+      "event_name": "미국 2026년 6월 PCE",
+      "kind": "macro",
+      "ticker": null,
+      "status": "complete",
+      "review_status": "verified",
+      "retrieved_at": "2026-07-30T21:53:40+09:00",
+      "source_published_at": "2026-07-30T21:30:00+09:00",
+      "reference_period": "2026-06",
+      "summary": "BEA는 2026년 6월 PCE 물가지수가 전월 대비 0.1% 하락, 전년 동월 대비 3.7% 상승했다고 발표했다.",
+      "facts": [
+        {
+          "metric": "pce_price_index_mom",
+          "value": -0.1,
+          "unit": "percent",
+          "comparison": "previous month"
+        },
+        {
+          "metric": "pce_price_index_yoy",
+          "value": 3.7,
+          "unit": "percent",
+          "comparison": "same month previous year"
+        },
+        {
+          "metric": "core_pce_price_index_mom",
+          "value": 0.1,
+          "unit": "percent",
+          "comparison": "previous month"
+        },
+        {
+          "metric": "core_pce_price_index_yoy",
+          "value": 3.3,
+          "unit": "percent",
+          "comparison": "same month previous year"
+        }
+      ],
+      "source_urls": [
+        "https://www.bea.gov/news/2026/personal-income-and-outlays-june-2026"
+      ],
+      "revision_of": null
+    },
+    {
+      "event_id": "macro-fomc-2026-07-29",
+      "event_name": "FOMC 금리결정",
+      "kind": "macro",
+      "ticker": null,
+      "status": "complete",
+      "review_status": "verified",
+      "retrieved_at": "2026-07-30T13:00:48+09:00",
+      "source_published_at": "2026-07-30T03:00:00+09:00",
+      "reference_period": "2026-07-28~29 FOMC meeting",
+      "summary": "연방공개시장위원회는 연방기금금리 목표 범위를 3.50%~3.75%로 유지했다.",
+      "facts": [
+        {
+          "metric": "federal_funds_target_range_lower",
+          "value": 3.5,
+          "unit": "percent"
+        },
+        {
+          "metric": "federal_funds_target_range_upper",
+          "value": 3.75,
+          "unit": "percent"
+        },
+        {
+          "metric": "federal_funds_target_range_change",
+          "value": 0,
+          "unit": "basis_points",
+          "comparison": "previous meeting"
+        }
+      ],
+      "source_urls": [
+        "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm"
+      ],
+      "revision_of": null
+    }
+  ]
+}

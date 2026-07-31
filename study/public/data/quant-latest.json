@@ -1,0 +1,3062 @@
+{
+  "schema_version": "1.2",
+  "logic_version": "stock-sayo-v4-2026-07-18",
+  "rating_logic_version": "study-rating-v2-2026-07-19",
+  "criteria_sha256": "3577fcdc76fc80ee49afd5845f8f94ad7c9166fb210a1a334d2b6ddf815f4c53",
+  "generated_at": "2026-07-28T01:07:20+09:00",
+  "expires_at": "2026-08-05T01:07:20+09:00",
+  "source": "Stock SAYO public Firestore snapshot",
+  "source_updated_at": "07월 28일 01:01",
+  "alignment": {
+    "mode": "reproduce-and-verify-step1",
+    "aligned": 29,
+    "drift": 0,
+    "pending": 0
+  },
+  "stocks": [
+    {
+      "ticker": "005930",
+      "name": "삼성전자",
+      "market": "kr",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 0.28,
+        "per_fwd": 5.35,
+        "pbr": 3.53,
+        "ps": null,
+        "forward_eps_growth": 18.8,
+        "revenue_growth": null,
+        "earnings_surprise": null,
+        "eps_revision_1m": null,
+        "target_gap": 102.3,
+        "band_pct": null,
+        "dividend_yield": 1.39,
+        "peg_source": "fnguide_forward_eps_cagr_calculated",
+        "peg_quality": "multi_year_forward_consensus",
+        "eps_growth_source": "naver_annual_consensus_yoy",
+        "operating_margin": 13.07,
+        "return_on_equity": 10.85,
+        "free_cash_flow_margin": null,
+        "debt_to_equity": 29.94
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 5,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.28,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 75,
+        "price_reflection": 21,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 3,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 72
+            },
+            {
+              "id": "profitability",
+              "score": 79
+            },
+            {
+              "id": "balance_sheet",
+              "score": 73
+            }
+          ],
+          "level": "medium",
+          "peer_percentile": 1,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 3,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 24
+            },
+            {
+              "id": "forward_per",
+              "score": 19
+            },
+            {
+              "id": "pbr",
+              "score": 59
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 1,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "000660",
+      "name": "SK하이닉스",
+      "market": "kr",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 0.31,
+        "per_fwd": 5.6,
+        "pbr": 7.83,
+        "ps": null,
+        "forward_eps_growth": 17.8,
+        "revenue_growth": null,
+        "earnings_surprise": null,
+        "eps_revision_1m": null,
+        "target_gap": 99.7,
+        "band_pct": null,
+        "dividend_yield": 0.46,
+        "peg_source": "fnguide_forward_eps_cagr_calculated",
+        "peg_quality": "multi_year_forward_consensus",
+        "eps_growth_source": "naver_annual_consensus_yoy",
+        "operating_margin": 48.59,
+        "return_on_equity": 44.15,
+        "free_cash_flow_margin": null,
+        "debt_to_equity": 45.95
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.31,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 80,
+        "price_reflection": 39,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 3,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 71
+            },
+            {
+              "id": "profitability",
+              "score": 100
+            },
+            {
+              "id": "balance_sheet",
+              "score": 66
+            }
+          ],
+          "level": "medium",
+          "peer_percentile": 50,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 3,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 25
+            },
+            {
+              "id": "forward_per",
+              "score": 19
+            },
+            {
+              "id": "pbr",
+              "score": 96
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 50,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "042700",
+      "name": "한미반도체",
+      "market": "kr",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 1.52,
+        "per_fwd": 55.14,
+        "pbr": 30.5,
+        "ps": null,
+        "forward_eps_growth": 36.3,
+        "revenue_growth": null,
+        "earnings_surprise": null,
+        "eps_revision_1m": null,
+        "target_gap": 85.8,
+        "band_pct": null,
+        "dividend_yield": 0.63,
+        "peg_source": "fnguide_forward_eps_cagr_calculated",
+        "peg_quality": "multi_year_forward_consensus",
+        "eps_growth_source": "naver_annual_consensus_yoy",
+        "operating_margin": 43.59,
+        "return_on_equity": 34.76,
+        "free_cash_flow_margin": null,
+        "debt_to_equity": 17.82
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.52,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 89,
+        "price_reflection": 94,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 3,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 86
+            },
+            {
+              "id": "profitability",
+              "score": 99
+            },
+            {
+              "id": "balance_sheet",
+              "score": 78
+            }
+          ],
+          "level": "medium",
+          "peer_percentile": 100,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 3,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 83
+            },
+            {
+              "id": "forward_per",
+              "score": 97
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 100,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "267270",
+      "name": "HD현대건설기계",
+      "market": "kr",
+      "sector": "industrial",
+      "metrics": {
+        "peg_fwd": 0.61,
+        "per_fwd": 12.0,
+        "pbr": 1.37,
+        "ps": null,
+        "forward_eps_growth": 19.6,
+        "revenue_growth": null,
+        "earnings_surprise": null,
+        "eps_revision_1m": null,
+        "target_gap": 60.6,
+        "band_pct": null,
+        "dividend_yield": 0.56,
+        "peg_source": "fnguide_forward_eps_cagr_calculated",
+        "peg_quality": "multi_year_forward_consensus",
+        "eps_growth_source": "naver_annual_consensus_yoy",
+        "operating_margin": 4.52,
+        "return_on_equity": 5.74,
+        "free_cash_flow_margin": null,
+        "debt_to_equity": 86.64
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg_or_per",
+        "value": 0.61,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 64,
+        "price_reflection": 22,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 3,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 73
+            },
+            {
+              "id": "profitability",
+              "score": 63
+            },
+            {
+              "id": "balance_sheet",
+              "score": 47
+            }
+          ],
+          "level": "medium",
+          "peer_percentile": 1,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 3,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 29
+            },
+            {
+              "id": "forward_per",
+              "score": 31
+            },
+            {
+              "id": "pbr",
+              "score": 25
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 1,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "034020",
+      "name": "두산에너빌리티",
+      "market": "kr",
+      "sector": "industrial",
+      "metrics": {
+        "peg_fwd": 2.51,
+        "per_fwd": 155.41,
+        "pbr": 5.65,
+        "ps": null,
+        "forward_eps_growth": 61.8,
+        "revenue_growth": null,
+        "earnings_surprise": null,
+        "eps_revision_1m": null,
+        "target_gap": 110.3,
+        "band_pct": null,
+        "dividend_yield": 0.0,
+        "peg_source": "fnguide_forward_eps_cagr_calculated",
+        "peg_quality": "multi_year_forward_consensus",
+        "eps_growth_source": "naver_annual_consensus_yoy",
+        "operating_margin": 4.47,
+        "return_on_equity": 1.11,
+        "free_cash_flow_margin": null,
+        "debt_to_equity": 129.1
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 2,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg_or_per",
+        "value": 2.51,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 68,
+        "price_reflection": 94,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 3,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 96
+            },
+            {
+              "id": "profitability",
+              "score": 58
+            },
+            {
+              "id": "balance_sheet",
+              "score": 27
+            }
+          ],
+          "level": "medium",
+          "peer_percentile": 50,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 3,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 88
+            },
+            {
+              "id": "forward_per",
+              "score": 100
+            },
+            {
+              "id": "pbr",
+              "score": 85
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 100,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260724"
+    },
+    {
+      "ticker": "010120",
+      "name": "LS ELECTRIC",
+      "market": "kr",
+      "sector": "industrial",
+      "metrics": {
+        "peg_fwd": 1.54,
+        "per_fwd": 55.98,
+        "pbr": 14.38,
+        "ps": null,
+        "forward_eps_growth": 36.4,
+        "revenue_growth": null,
+        "earnings_surprise": null,
+        "eps_revision_1m": null,
+        "target_gap": 50.0,
+        "band_pct": null,
+        "dividend_yield": 0.65,
+        "peg_source": "fnguide_forward_eps_cagr_calculated",
+        "peg_quality": "multi_year_forward_consensus",
+        "eps_growth_source": "naver_annual_consensus_yoy",
+        "operating_margin": 8.59,
+        "return_on_equity": 14.67,
+        "free_cash_flow_margin": null,
+        "debt_to_equity": 131.48
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 2,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg_or_per",
+        "value": 1.54,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 70,
+        "price_reflection": 75,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 3,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 86
+            },
+            {
+              "id": "profitability",
+              "score": 77
+            },
+            {
+              "id": "balance_sheet",
+              "score": 26
+            }
+          ],
+          "level": "medium",
+          "peer_percentile": 100,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 3,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 62
+            },
+            {
+              "id": "forward_per",
+              "score": 97
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 50,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "251270",
+      "name": "넷마블",
+      "market": "kr",
+      "sector": "growth",
+      "metrics": {
+        "peg_fwd": null,
+        "per_fwd": 7.5,
+        "pbr": 0.53,
+        "ps": null,
+        "forward_eps_growth": -8.3,
+        "revenue_growth": null,
+        "earnings_surprise": null,
+        "eps_revision_1m": null,
+        "target_gap": 67.0,
+        "band_pct": null,
+        "dividend_yield": 1.82,
+        "peg_source": "fnguide_forward_eps_cagr_calculated",
+        "peg_quality": "unavailable_non_positive_forward_growth",
+        "eps_growth_source": "naver_annual_consensus_yoy",
+        "operating_margin": 12.43,
+        "return_on_equity": 4.15,
+        "free_cash_flow_margin": null,
+        "debt_to_equity": 47.36
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 2,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "growth_fallback",
+        "checks": {
+          "ps": false,
+          "band": false,
+          "surprise": false,
+          "target_gap": true
+        }
+      },
+      "ratings": {
+        "fundamental": 57,
+        "price_reflection": 20,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 3,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 40
+            },
+            {
+              "id": "profitability",
+              "score": 71
+            },
+            {
+              "id": "balance_sheet",
+              "score": 66
+            }
+          ],
+          "level": "medium",
+          "peer_group_size": 1,
+          "note": "peer_group_too_small"
+        },
+        "price_reflection": {
+          "available": 2,
+          "total": 4,
+          "components": [
+            {
+              "id": "forward_per",
+              "score": 22
+            },
+            {
+              "id": "pbr",
+              "score": 16
+            }
+          ],
+          "level": "medium",
+          "peer_group_size": 1,
+          "note": "peer_group_too_small"
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "NVDA",
+      "name": "엔비디아",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 0.57,
+        "per_fwd": 15.253675,
+        "pbr": 24.324661,
+        "ps": 18.753548,
+        "forward_eps_growth": 43.2,
+        "revenue_growth": 85.2,
+        "earnings_surprise": 5.54,
+        "eps_revision_1m": 1.1,
+        "target_gap": 54.3,
+        "band_pct": 44.4,
+        "dividend_yield": 0.48,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 65.6,
+        "return_on_equity": 114.3,
+        "free_cash_flow_margin": 18.3,
+        "debt_to_equity": 6.6
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.57,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 89,
+        "price_reflection": 52,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 94
+            },
+            {
+              "id": "profitability",
+              "score": 100
+            },
+            {
+              "id": "cash_generation",
+              "score": 92
+            },
+            {
+              "id": "balance_sheet",
+              "score": 81
+            },
+            {
+              "id": "outlook",
+              "score": 63
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 100,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 28
+            },
+            {
+              "id": "forward_per",
+              "score": 38
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 100
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 38,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "AVGO",
+      "name": "브로드컴",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 0.43,
+        "per_fwd": 19.341715,
+        "pbr": 20.479109,
+        "ps": 23.794521,
+        "forward_eps_growth": 67.4,
+        "revenue_growth": 47.9,
+        "earnings_surprise": 1.74,
+        "eps_revision_1m": 0.46,
+        "target_gap": 39.2,
+        "band_pct": 44.9,
+        "dividend_yield": 0.68,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 49.0,
+        "return_on_equity": 37.3,
+        "free_cash_flow_margin": 36.1,
+        "debt_to_equity": 74.0
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.43,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 84,
+        "price_reflection": 60,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 95
+            },
+            {
+              "id": "profitability",
+              "score": 99
+            },
+            {
+              "id": "cash_generation",
+              "score": 99
+            },
+            {
+              "id": "balance_sheet",
+              "score": 53
+            },
+            {
+              "id": "outlook",
+              "score": 54
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 50,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 24
+            },
+            {
+              "id": "forward_per",
+              "score": 48
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 100
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 63,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "MU",
+      "name": "마이크론",
+      "market": "us",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 0.14,
+        "per_fwd": 5.631863,
+        "pbr": 9.705095,
+        "ps": null,
+        "forward_eps_growth": 109.3,
+        "revenue_growth": 345.7,
+        "earnings_surprise": 21.25,
+        "eps_revision_1m": 12.07,
+        "target_gap": 74.1,
+        "band_pct": 66.2,
+        "dividend_yield": 0.06,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 80.4,
+        "return_on_equity": 66.6,
+        "free_cash_flow_margin": 8.5,
+        "debt_to_equity": 6.3
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.14,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 92,
+        "price_reflection": 26,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 100
+            },
+            {
+              "id": "profitability",
+              "score": 100
+            },
+            {
+              "id": "cash_generation",
+              "score": 76
+            },
+            {
+              "id": "balance_sheet",
+              "score": 81
+            },
+            {
+              "id": "outlook",
+              "score": 92
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 100,
+          "peer_group_size": 8
+        },
+        "price_reflection": {
+          "available": 3,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 18
+            },
+            {
+              "id": "forward_per",
+              "score": 19
+            },
+            {
+              "id": "pbr",
+              "score": 99
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 1,
+          "peer_group_size": 8
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "MSFT",
+      "name": "마이크로소프트",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 1.18,
+        "per_fwd": 20.24753,
+        "pbr": 7.0325584,
+        "ps": 9.155162,
+        "forward_eps_growth": 15.5,
+        "revenue_growth": 18.3,
+        "earnings_surprise": 4.9,
+        "eps_revision_1m": 0.07,
+        "target_gap": 41.9,
+        "band_pct": 20.9,
+        "dividend_yield": 0.95,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 46.3,
+        "return_on_equity": 34.0,
+        "free_cash_flow_margin": 11.6,
+        "debt_to_equity": 30.3
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 1.18,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 78,
+        "price_reflection": 66,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 69
+            },
+            {
+              "id": "profitability",
+              "score": 99
+            },
+            {
+              "id": "cash_generation",
+              "score": 82
+            },
+            {
+              "id": "balance_sheet",
+              "score": 73
+            },
+            {
+              "id": "outlook",
+              "score": 59
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 38,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 49
+            },
+            {
+              "id": "forward_per",
+              "score": 51
+            },
+            {
+              "id": "pbr",
+              "score": 94
+            },
+            {
+              "id": "ps",
+              "score": 84
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 75,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "GOOGL",
+      "name": "구글",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 1.26,
+        "per_fwd": 22.208467,
+        "pbr": 6.4295816,
+        "ps": 8.976069,
+        "forward_eps_growth": 294.0,
+        "revenue_growth": 24.2,
+        "earnings_surprise": 214.23,
+        "eps_revision_1m": 1.34,
+        "target_gap": 30.8,
+        "band_pct": 63.1,
+        "dividend_yield": 0.28,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_earnings_growth_fallback",
+        "operating_margin": 34.0,
+        "return_on_equity": 48.7,
+        "free_cash_flow_margin": 5.1,
+        "debt_to_equity": 18.9
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.26,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 85,
+        "price_reflection": 71,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 90
+            },
+            {
+              "id": "profitability",
+              "score": 99
+            },
+            {
+              "id": "cash_generation",
+              "score": 66
+            },
+            {
+              "id": "balance_sheet",
+              "score": 77
+            },
+            {
+              "id": "outlook",
+              "score": 76
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 69,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 52
+            },
+            {
+              "id": "forward_per",
+              "score": 55
+            },
+            {
+              "id": "pbr",
+              "score": 91
+            },
+            {
+              "id": "ps",
+              "score": 83
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 88,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "META",
+      "name": "메타",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 0.87,
+        "per_fwd": 16.27419,
+        "pbr": 6.2735257,
+        "ps": 7.112824,
+        "forward_eps_growth": 16.7,
+        "revenue_growth": 33.1,
+        "earnings_surprise": 56.79,
+        "eps_revision_1m": null,
+        "target_gap": 37.1,
+        "band_pct": 29.7,
+        "dividend_yield": 0.35,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 40.6,
+        "return_on_equity": 32.9,
+        "free_cash_flow_margin": 11.9,
+        "debt_to_equity": 35.6
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.87,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 85,
+        "price_reflection": 46,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 76
+            },
+            {
+              "id": "profitability",
+              "score": 98
+            },
+            {
+              "id": "cash_generation",
+              "score": 83
+            },
+            {
+              "id": "balance_sheet",
+              "score": 71
+            },
+            {
+              "id": "outlook",
+              "score": 100
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 69,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 38
+            },
+            {
+              "id": "forward_per",
+              "score": 41
+            },
+            {
+              "id": "pbr",
+              "score": 90
+            },
+            {
+              "id": "ps",
+              "score": 70
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 26,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "ORCL",
+      "name": "오라클",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 0.65,
+        "per_fwd": 11.028315,
+        "pbr": 9.210123,
+        "ps": 5.1359854,
+        "forward_eps_growth": 35.3,
+        "revenue_growth": 20.6,
+        "earnings_surprise": 7.52,
+        "eps_revision_1m": null,
+        "target_gap": 106.6,
+        "band_pct": 2.3,
+        "dividend_yield": 1.74,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 36.2,
+        "return_on_equity": 53.4,
+        "free_cash_flow_margin": -36.4,
+        "debt_to_equity": 388.9
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.65,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 61,
+        "price_reflection": 36,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 80
+            },
+            {
+              "id": "profitability",
+              "score": 99
+            },
+            {
+              "id": "cash_generation",
+              "score": 1
+            },
+            {
+              "id": "balance_sheet",
+              "score": 1
+            },
+            {
+              "id": "outlook",
+              "score": 78
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 1,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 30
+            },
+            {
+              "id": "forward_per",
+              "score": 29
+            },
+            {
+              "id": "pbr",
+              "score": 98
+            },
+            {
+              "id": "ps",
+              "score": 51
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 13,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "쿠팡",
+      "market": "us",
+      "sector": "growth",
+      "metrics": {
+        "peg_fwd": 0.45,
+        "per_fwd": 54.80517,
+        "pbr": 7.300966,
+        "ps": 0.8106659,
+        "forward_eps_growth": 180.6,
+        "revenue_growth": 7.5,
+        "earnings_surprise": -70.45,
+        "eps_revision_1m": 6.02,
+        "target_gap": 63.2,
+        "band_pct": 4.9,
+        "dividend_yield": 0.0,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": -2.8,
+        "return_on_equity": -4.0,
+        "free_cash_flow_margin": 0.7,
+        "debt_to_equity": 137.3
+      },
+      "fundamental_gate": {
+        "status": "fail",
+        "selection_hits": 1,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.45,
+        "limit": 1.5
+      },
+      "ratings": {
+        "fundamental": 52,
+        "price_reflection": 47,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 82
+            },
+            {
+              "id": "profitability",
+              "score": 41
+            },
+            {
+              "id": "cash_generation",
+              "score": 52
+            },
+            {
+              "id": "balance_sheet",
+              "score": 24
+            },
+            {
+              "id": "outlook",
+              "score": 41
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 1,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 22
+            },
+            {
+              "id": "forward_per",
+              "score": 97
+            },
+            {
+              "id": "pbr",
+              "score": 95
+            },
+            {
+              "id": "ps",
+              "score": 16
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 1,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "TSLA",
+      "name": "테슬라",
+      "market": "us",
+      "sector": "growth",
+      "metrics": {
+        "peg_fwd": 4.45,
+        "per_fwd": 138.72908,
+        "pbr": 13.746262,
+        "ps": 11.736696,
+        "forward_eps_growth": 23.4,
+        "revenue_growth": 25.5,
+        "earnings_surprise": -38.35,
+        "eps_revision_1m": -8.16,
+        "target_gap": 30.3,
+        "band_pct": 5.0,
+        "dividend_yield": 0.0,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 1.4,
+        "return_on_equity": 4.7,
+        "free_cash_flow_margin": 4.7,
+        "debt_to_equity": 18.4
+      },
+      "fundamental_gate": {
+        "status": "fail",
+        "selection_hits": 2,
+        "required_hits": 2,
+        "eps_revision_gate": "fail",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 4.45,
+        "limit": 1.5
+      },
+      "ratings": {
+        "fundamental": 61,
+        "price_reflection": 98,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 77
+            },
+            {
+              "id": "profitability",
+              "score": 58
+            },
+            {
+              "id": "cash_generation",
+              "score": 65
+            },
+            {
+              "id": "balance_sheet",
+              "score": 77
+            },
+            {
+              "id": "outlook",
+              "score": 11
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 50,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 97
+            },
+            {
+              "id": "forward_per",
+              "score": 100
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 94
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 100,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "AMD",
+      "name": "AMD",
+      "market": "us",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 1.25,
+        "per_fwd": 34.929253,
+        "pbr": 12.121273,
+        "ps": null,
+        "forward_eps_growth": 83.3,
+        "revenue_growth": 37.8,
+        "earnings_surprise": 5.82,
+        "eps_revision_1m": 3.23,
+        "target_gap": 19.6,
+        "band_pct": 75.8,
+        "dividend_yield": 0.0,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 14.4,
+        "return_on_equity": 8.1,
+        "free_cash_flow_margin": 19.2,
+        "debt_to_equity": 6.0
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.25,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 84,
+        "price_reflection": 75,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 93
+            },
+            {
+              "id": "profitability",
+              "score": 78
+            },
+            {
+              "id": "cash_generation",
+              "score": 93
+            },
+            {
+              "id": "balance_sheet",
+              "score": 81
+            },
+            {
+              "id": "outlook",
+              "score": 68
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 43,
+          "peer_group_size": 8
+        },
+        "price_reflection": {
+          "available": 3,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 73
+            },
+            {
+              "id": "forward_per",
+              "score": 82
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 50,
+          "peer_group_size": 8
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "TSM",
+      "name": "TSMC",
+      "market": "us",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 1.03,
+        "per_fwd": 18.088377,
+        "pbr": null,
+        "ps": null,
+        "forward_eps_growth": 27.5,
+        "revenue_growth": 36.0,
+        "earnings_surprise": 10.89,
+        "eps_revision_1m": null,
+        "target_gap": 37.7,
+        "band_pct": 65.2,
+        "dividend_yield": 0.94,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 60.3,
+        "return_on_equity": 40.0,
+        "free_cash_flow_margin": 16.6,
+        "debt_to_equity": 15.2
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.03,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 88,
+        "price_reflection": 43,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 83
+            },
+            {
+              "id": "profitability",
+              "score": 100
+            },
+            {
+              "id": "cash_generation",
+              "score": 90
+            },
+            {
+              "id": "balance_sheet",
+              "score": 79
+            },
+            {
+              "id": "outlook",
+              "score": 86
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 72,
+          "peer_group_size": 8
+        },
+        "price_reflection": {
+          "available": 2,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 63
+            },
+            {
+              "id": "forward_per",
+              "score": 45
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 15,
+          "peer_group_size": 8
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "INTC",
+      "name": "인텔",
+      "market": "us",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 1.36,
+        "per_fwd": 44.333046,
+        "pbr": 4.005727,
+        "ps": 7.8562646,
+        "forward_eps_growth": 30.0,
+        "revenue_growth": 25.4,
+        "earnings_surprise": 92.49,
+        "eps_revision_1m": null,
+        "target_gap": 30.2,
+        "band_pct": 56.6,
+        "dividend_yield": 0.0,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 12.2,
+        "return_on_equity": -10.7,
+        "free_cash_flow_margin": 8.5,
+        "debt_to_equity": 49.0
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.36,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 74,
+        "price_reflection": 68,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 80
+            },
+            {
+              "id": "profitability",
+              "score": 54
+            },
+            {
+              "id": "cash_generation",
+              "score": 76
+            },
+            {
+              "id": "balance_sheet",
+              "score": 65
+            },
+            {
+              "id": "outlook",
+              "score": 100
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 1,
+          "peer_group_size": 8
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 78
+            },
+            {
+              "id": "forward_per",
+              "score": 92
+            },
+            {
+              "id": "pbr",
+              "score": 66
+            },
+            {
+              "id": "ps",
+              "score": 76
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 29,
+          "peer_group_size": 8
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "AMAT",
+      "name": "어플라이드 머티어리얼즈",
+      "market": "us",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 1.35,
+        "per_fwd": 29.32365,
+        "pbr": 16.46078,
+        "ps": 13.54086,
+        "forward_eps_growth": 37.7,
+        "revenue_growth": 11.4,
+        "earnings_surprise": 6.5,
+        "eps_revision_1m": null,
+        "target_gap": 26.8,
+        "band_pct": 58.2,
+        "dividend_yield": 0.4,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 31.9,
+        "return_on_equity": 39.7,
+        "free_cash_flow_margin": 10.5,
+        "debt_to_equity": 30.4
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.35,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 82,
+        "price_reflection": 75,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 77
+            },
+            {
+              "id": "profitability",
+              "score": 98
+            },
+            {
+              "id": "cash_generation",
+              "score": 80
+            },
+            {
+              "id": "balance_sheet",
+              "score": 73
+            },
+            {
+              "id": "outlook",
+              "score": 75
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 29,
+          "peer_group_size": 8
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 78
+            },
+            {
+              "id": "forward_per",
+              "score": 72
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 97
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 50,
+          "peer_group_size": 8
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "LRCX",
+      "name": "램리서치",
+      "market": "us",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 1.76,
+        "per_fwd": 34.122944,
+        "pbr": 32.979683,
+        "ps": 16.10031,
+        "forward_eps_growth": 43.6,
+        "revenue_growth": 23.8,
+        "earnings_surprise": 7.87,
+        "eps_revision_1m": null,
+        "target_gap": 33.4,
+        "band_pct": 54.1,
+        "dividend_yield": 0.34,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 35.0,
+        "return_on_equity": 66.8,
+        "free_cash_flow_margin": 20.1,
+        "debt_to_equity": 35.3
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.76,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 87,
+        "price_reflection": 88,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 84
+            },
+            {
+              "id": "profitability",
+              "score": 99
+            },
+            {
+              "id": "cash_generation",
+              "score": 94
+            },
+            {
+              "id": "balance_sheet",
+              "score": 71
+            },
+            {
+              "id": "outlook",
+              "score": 79
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 58,
+          "peer_group_size": 8
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 90
+            },
+            {
+              "id": "forward_per",
+              "score": 80
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 99
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 86,
+          "peer_group_size": 8
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "ASML",
+      "name": "ASML",
+      "market": "us",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 2.21,
+        "per_fwd": 27.973232,
+        "pbr": 25.16279,
+        "ps": 15.545572,
+        "forward_eps_growth": 34.4,
+        "revenue_growth": 21.3,
+        "earnings_surprise": 9.93,
+        "eps_revision_1m": 21.44,
+        "target_gap": 30.3,
+        "band_pct": 71.1,
+        "dividend_yield": 0.52,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 37.1,
+        "return_on_equity": 53.9,
+        "free_cash_flow_margin": 23.9,
+        "debt_to_equity": 9.1
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 2.21,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 89,
+        "price_reflection": 83,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 80
+            },
+            {
+              "id": "profitability",
+              "score": 99
+            },
+            {
+              "id": "cash_generation",
+              "score": 96
+            },
+            {
+              "id": "balance_sheet",
+              "score": 81
+            },
+            {
+              "id": "outlook",
+              "score": 91
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 86,
+          "peer_group_size": 8
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 96
+            },
+            {
+              "id": "forward_per",
+              "score": 69
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 99
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 72,
+          "peer_group_size": 8
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "8035",
+      "name": "도쿄일렉트론",
+      "market": "us",
+      "sector": "semiconductor",
+      "metrics": {
+        "peg_fwd": 2.05,
+        "per_fwd": 49.054836,
+        "pbr": 13.799344,
+        "ps": 11.684759,
+        "forward_eps_growth": 2.2,
+        "revenue_growth": 8.6,
+        "earnings_surprise": 14.56,
+        "eps_revision_1m": null,
+        "target_gap": 17.4,
+        "band_pct": 69.9,
+        "dividend_yield": 1.15,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_forward_vs_trailing_eps",
+        "operating_margin": 28.9,
+        "return_on_equity": 29.3,
+        "free_cash_flow_margin": 9.4,
+        "debt_to_equity": null
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 2.05,
+        "limit": 0.8
+      },
+      "ratings": {
+        "fundamental": 78,
+        "price_reflection": 96,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 4,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 57
+            },
+            {
+              "id": "profitability",
+              "score": 96
+            },
+            {
+              "id": "cash_generation",
+              "score": 78
+            },
+            {
+              "id": "outlook",
+              "score": 92
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 15,
+          "peer_group_size": 8
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 94
+            },
+            {
+              "id": "forward_per",
+              "score": 95
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 94
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 100,
+          "peer_group_size": 8
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "AMZN",
+      "name": "아마존",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 1.25,
+        "per_fwd": 23.42687,
+        "pbr": 5.6532745,
+        "ps": 3.3643847,
+        "forward_eps_growth": 13.8,
+        "revenue_growth": 16.6,
+        "earnings_surprise": 68.18,
+        "eps_revision_1m": 0.33,
+        "target_gap": 34.7,
+        "band_pct": 44.0,
+        "dividend_yield": 0.0,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 13.1,
+        "return_on_equity": 24.3,
+        "free_cash_flow_margin": 1.3,
+        "debt_to_equity": 53.3
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.25,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 71,
+        "price_reflection": 55,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 68
+            },
+            {
+              "id": "profitability",
+              "score": 87
+            },
+            {
+              "id": "cash_generation",
+              "score": 54
+            },
+            {
+              "id": "balance_sheet",
+              "score": 63
+            },
+            {
+              "id": "outlook",
+              "score": 73
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 26,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 52
+            },
+            {
+              "id": "forward_per",
+              "score": 58
+            },
+            {
+              "id": "pbr",
+              "score": 85
+            },
+            {
+              "id": "ps",
+              "score": 34
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 50,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "ANET",
+      "name": "아리스타 네트웍스",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 2.22,
+        "per_fwd": 37.26477,
+        "pbr": 15.542899,
+        "ps": 21.588947,
+        "forward_eps_growth": 22.9,
+        "revenue_growth": 35.1,
+        "earnings_surprise": 7.73,
+        "eps_revision_1m": 0.3,
+        "target_gap": 15.5,
+        "band_pct": 69.0,
+        "dividend_yield": 0.0,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 42.7,
+        "return_on_equity": 31.5,
+        "free_cash_flow_margin": 44.9,
+        "debt_to_equity": null
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 2.22,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 86,
+        "price_reflection": 92,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 4,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 80
+            },
+            {
+              "id": "profitability",
+              "score": 98
+            },
+            {
+              "id": "cash_generation",
+              "score": 100
+            },
+            {
+              "id": "outlook",
+              "score": 63
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 88,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 82
+            },
+            {
+              "id": "forward_per",
+              "score": 85
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 100
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 100,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "VRT",
+      "name": "버티브",
+      "market": "us",
+      "sector": "industrial",
+      "metrics": {
+        "peg_fwd": 1.46,
+        "per_fwd": 31.1575,
+        "pbr": 24.878347,
+        "ps": 9.74335,
+        "forward_eps_growth": 36.2,
+        "revenue_growth": 30.1,
+        "earnings_surprise": 15.67,
+        "eps_revision_1m": null,
+        "target_gap": 36.8,
+        "band_pct": 59.9,
+        "dividend_yield": 0.09,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 16.4,
+        "return_on_equity": 45.1,
+        "free_cash_flow_margin": 18.1,
+        "debt_to_equity": 76.9
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg_or_per",
+        "value": 1.46,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 84,
+        "price_reflection": 77,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 84
+            },
+            {
+              "id": "profitability",
+              "score": 92
+            },
+            {
+              "id": "cash_generation",
+              "score": 92
+            },
+            {
+              "id": "balance_sheet",
+              "score": 52
+            },
+            {
+              "id": "outlook",
+              "score": 93
+            }
+          ],
+          "level": "high",
+          "peer_group_size": 2,
+          "note": "peer_group_too_small"
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 60
+            },
+            {
+              "id": "forward_per",
+              "score": 75
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 87
+            }
+          ],
+          "level": "medium",
+          "note": "peer_group_too_small",
+          "peer_group_size": 2
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "SMCI",
+      "name": "슈퍼마이크로",
+      "market": "us",
+      "sector": "ai_bigtech",
+      "metrics": {
+        "peg_fwd": 0.91,
+        "per_fwd": 8.68767,
+        "pbr": 2.2838771,
+        "ps": 0.55223805,
+        "forward_eps_growth": 16.7,
+        "revenue_growth": 122.7,
+        "earnings_surprise": 34.51,
+        "eps_revision_1m": null,
+        "target_gap": 31.4,
+        "band_pct": 21.7,
+        "dividend_yield": 0.0,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 6.1,
+        "return_on_equity": 17.9,
+        "free_cash_flow_margin": -22.1,
+        "debt_to_equity": 120.8
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg",
+        "value": 0.91,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 65,
+        "price_reflection": 22,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 84
+            },
+            {
+              "id": "profitability",
+              "score": 76
+            },
+            {
+              "id": "cash_generation",
+              "score": 5
+            },
+            {
+              "id": "balance_sheet",
+              "score": 31
+            },
+            {
+              "id": "outlook",
+              "score": 100
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 13,
+          "peer_group_size": 9
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 39
+            },
+            {
+              "id": "forward_per",
+              "score": 24
+            },
+            {
+              "id": "pbr",
+              "score": 38
+            },
+            {
+              "id": "ps",
+              "score": 14
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 1,
+          "peer_group_size": 9
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "VST",
+      "name": "비스트라",
+      "market": "us",
+      "sector": "industrial",
+      "metrics": {
+        "peg_fwd": 0.48,
+        "per_fwd": 14.488427,
+        "pbr": 16.977903,
+        "ps": 2.7179213,
+        "forward_eps_growth": 25.4,
+        "revenue_growth": 43.4,
+        "earnings_surprise": 53.35,
+        "eps_revision_1m": null,
+        "target_gap": 42.5,
+        "band_pct": 27.6,
+        "dividend_yield": 0.56,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 26.6,
+        "return_on_equity": 42.9,
+        "free_cash_flow_margin": -0.8,
+        "debt_to_equity": 366.6
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": 0.0
+      },
+      "valuation_gate": {
+        "status": "pass",
+        "basis": "peg_or_per",
+        "value": 0.48,
+        "limit": 1.2
+      },
+      "ratings": {
+        "fundamental": 71,
+        "price_reflection": 43,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 83
+            },
+            {
+              "id": "profitability",
+              "score": 97
+            },
+            {
+              "id": "cash_generation",
+              "score": 47
+            },
+            {
+              "id": "balance_sheet",
+              "score": 1
+            },
+            {
+              "id": "outlook",
+              "score": 100
+            }
+          ],
+          "level": "high",
+          "peer_group_size": 2,
+          "note": "peer_group_too_small"
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 25
+            },
+            {
+              "id": "forward_per",
+              "score": 37
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 29
+            }
+          ],
+          "level": "medium",
+          "note": "peer_group_too_small",
+          "peer_group_size": 2
+        }
+      },
+      "quant_gate_pass": true,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    },
+    {
+      "ticker": "PLTR",
+      "name": "팔란티어",
+      "market": "us",
+      "sector": "growth",
+      "metrics": {
+        "peg_fwd": 1.76,
+        "per_fwd": 61.709827,
+        "pbr": 36.666664,
+        "ps": 59.311302,
+        "forward_eps_growth": 41.9,
+        "revenue_growth": 84.7,
+        "earnings_surprise": 18.08,
+        "eps_revision_1m": null,
+        "target_gap": 41.0,
+        "band_pct": 22.6,
+        "dividend_yield": 0.0,
+        "peg_source": "yahoo_peg_ratio",
+        "peg_quality": "provider_reported",
+        "eps_growth_source": "yahoo_growth_estimates_1y",
+        "operating_margin": 46.2,
+        "return_on_equity": 32.6,
+        "free_cash_flow_margin": 33.6,
+        "debt_to_equity": 2.5
+      },
+      "fundamental_gate": {
+        "status": "pass",
+        "selection_hits": 3,
+        "required_hits": 2,
+        "eps_revision_gate": "pass",
+        "eps_revision_limit": -1.0
+      },
+      "valuation_gate": {
+        "status": "fail",
+        "basis": "peg",
+        "value": 1.76,
+        "limit": 1.5
+      },
+      "ratings": {
+        "fundamental": 94,
+        "price_reflection": 78,
+        "reference_line": 50,
+        "orientation": {
+          "fundamental": "higher_is_stronger",
+          "price_reflection": "higher_is_more_priced_in"
+        }
+      },
+      "rating_quality": {
+        "fundamental": {
+          "available": 5,
+          "total": 5,
+          "components": [
+            {
+              "id": "growth",
+              "score": 94
+            },
+            {
+              "id": "profitability",
+              "score": 98
+            },
+            {
+              "id": "cash_generation",
+              "score": 99
+            },
+            {
+              "id": "balance_sheet",
+              "score": 82
+            },
+            {
+              "id": "outlook",
+              "score": 95
+            }
+          ],
+          "level": "high",
+          "peer_percentile": 100,
+          "peer_group_size": 3
+        },
+        "price_reflection": {
+          "available": 4,
+          "total": 4,
+          "components": [
+            {
+              "id": "peg",
+              "score": 58
+            },
+            {
+              "id": "forward_per",
+              "score": 98
+            },
+            {
+              "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
+              "score": 100
+            }
+          ],
+          "level": "medium",
+          "note": "provider_peg_horizon_unavailable",
+          "peer_percentile": 50,
+          "peer_group_size": 3
+        }
+      },
+      "quant_gate_pass": false,
+      "sayo_alignment": "aligned",
+      "metric_quality": "ok",
+      "data_as_of": "20260728"
+    }
+  ]
+}

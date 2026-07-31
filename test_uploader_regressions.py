@@ -28,7 +28,9 @@ class UploaderRegressionTests(unittest.TestCase):
     def test_kr_forward_peg_uses_multi_year_forward_consensus(self, naver, fnguide):
         naver.return_value = {
             "per_fwd": 12.0,
+            "per_source": "naver_consensus",
             "eps_fwd": 1200.0,
+            "eps_source": "naver_consensus",
             "eps_ttm": 1000.0,
             "eps_growth": 20.0,
             "annual_eps_growth": 20.0,
@@ -44,10 +46,48 @@ class UploaderRegressionTests(unittest.TestCase):
 
         result = uploader.get_kr_valuation("005930")
 
-        self.assertEqual(result["peg_raw"], 0.29)
-        self.assertEqual(result["peg_fwd"], 0.29)
+        self.assertEqual(result["per_fwd"], 12.0)
+        self.assertEqual(result["per_source"], "naver_consensus")
+        self.assertEqual(result["fnguide_per_fwd"], 5.46)
+        self.assertEqual(result["peg_raw"], 0.64)
+        self.assertEqual(result["peg_fwd"], 0.64)
         self.assertEqual(result["peg_quality"], "multi_year_forward_consensus")
         self.assertEqual(result["peg_growth_horizon"], "2y_forward_consensus")
+
+    @patch("uploader.requests.get")
+    def test_kospi_uses_naver_current_quote_and_same_source_history(self, get):
+        basic = FakeResponse({
+            "closePrice": "5,593.56",
+            "localTradedAt": "2026-07-30T18:59:00+09:00",
+        })
+        history = FakeResponse([
+            {
+                "localTradedAt": f"2026-07-{day:02d}",
+                "closePrice": f"{5000 + day * 10:,}",
+            }
+            for day in range(1, 31)
+        ])
+        get.side_effect = [basic, history]
+
+        result = uploader._get_kospi_from_naver_api()
+
+        self.assertEqual(result["price"], 5593.56)
+        self.assertEqual(result["source"], "naver_mobile")
+        self.assertEqual(result["data_as_of"], "2026-07-30T18:59:00+09:00")
+        self.assertEqual(get.call_args_list[1].kwargs["params"]["pageSize"], 30)
+
+    @patch("uploader.requests.get")
+    def test_kospi_rejects_empty_history_instead_of_publishing_partial_value(self, get):
+        get.side_effect = [
+            FakeResponse({
+                "closePrice": "5,593.56",
+                "localTradedAt": "2026-07-30T18:59:00+09:00",
+            }),
+            FakeResponse([]),
+        ]
+
+        with self.assertRaisesRegex(ValueError, "insufficient KOSPI history"):
+            uploader._get_kospi_from_naver_api()
 
     def test_fnguide_forward_consensus_parser_uses_estimate_columns_only(self):
         trend = {

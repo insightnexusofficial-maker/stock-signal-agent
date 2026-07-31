@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stock-sayo-study.web.app/schemas/cycle-report.schema.json",
+  "type": "object",
+  "required": ["schema_version", "logic_version", "methodology_version", "evidence_sha256", "report_id", "generated_at", "expires_at", "fallback_status", "quality_gate", "segments", "company_map_version", "company_cycle", "evidence"],
+  "properties": {
+    "schema_version": {"const": "1.2"},
+    "logic_version": {"type": "string", "minLength": 1},
+    "methodology_version": {"type": "string", "minLength": 1},
+    "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "report_id": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "fallback_status": {"const": "pending-neutral"},
+    "quality_gate": {
+      "type": "object",
+      "required": ["status", "mode", "evidence_count", "message"],
+      "properties": {
+        "status": {"enum": ["passed", "insufficient"]},
+        "mode": {"const": "verified-only"},
+        "evidence_count": {"type": "integer", "minimum": 0},
+        "message": {"type": "string", "minLength": 1}
+      }
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["order", "id", "label", "status", "confidence", "horizon_months", "reason", "supporting_evidence_ids", "contrary_evidence_ids"],
+        "properties": {
+          "order": {"type": "string", "pattern": "^[0-9]{2}$"},
+          "id": {"enum": ["cloud_capex", "ai_compute_design", "memory_hbm_dram", "memory_nand", "foundry_logic", "equipment_materials", "analog_auto_industrial", "power_infrastructure", "ai_services"]},
+          "label": {"type": "string", "minLength": 1},
+          "status": {"enum": ["favorable", "neutral", "caution"]},
+          "confidence": {"type": "integer", "minimum": 0, "maximum": 85},
+          "horizon_months": {"const": "3-6"},
+          "reason": {"type": "string", "minLength": 1},
+          "supporting_evidence_ids": {"type": "array", "items": {"type": "string"}},
+          "contrary_evidence_ids": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "company_map_version": {"type": "string", "minLength": 1},
+    "company_cycle": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "name", "status", "label", "confidence", "primary_segment", "reason", "exposures"],
+        "properties": {
+          "ticker": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "status": {"enum": ["favorable", "neutral", "caution"]},
+          "label": {"enum": ["사이클 우호", "사이클 중립", "사이클 주의"]},
+          "confidence": {"type": "integer", "minimum": 0, "maximum": 85},
+          "primary_segment": {"enum": ["cloud_capex", "ai_compute_design", "memory_hbm_dram", "memory_nand", "foundry_logic", "equipment_materials", "analog_auto_industrial", "power_infrastructure", "ai_services"]},
+          "reason": {"type": "string", "minLength": 1},
+          "exposures": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["segment", "weight"],
+              "properties": {
+                "segment": {"enum": ["cloud_capex", "ai_compute_design", "memory_hbm_dram", "memory_nand", "foundry_logic", "equipment_materials", "analog_auto_industrial", "power_infrastructure", "ai_services"]},
+                "weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+              }
+            }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "source_id", "segment", "pillar", "direction", "fact", "source_url", "published_at", "max_age_days", "source_family", "confidence", "review_status", "audit_passed"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "source_id": {"type": "string", "minLength": 1},
+          "segment": {"enum": ["cloud_capex", "ai_compute_design", "memory_hbm_dram", "memory_nand", "foundry_logic", "equipment_materials", "analog_auto_industrial", "power_infrastructure", "ai_services"]},
+          "pillar": {"enum": ["demand", "inventory", "pricing", "supply", "earnings"]},
+          "direction": {"enum": ["positive", "negative", "neutral"]},
+          "fact": {"type": "string", "minLength": 1},
+          "source_url": {"type": "string", "format": "uri"},
+          "published_at": {"type": "string", "format": "date"},
+          "max_age_days": {"type": "integer", "minimum": 1, "maximum": 120},
+          "source_family": {"type": "string", "minLength": 1},
+          "confidence": {"const": "direct"},
+          "review_status": {"const": "verified"},
+          "audit_passed": {"const": true}
+        }
+      }
+    }
+  }
+}

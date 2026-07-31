@@ -1,0 +1,16 @@
+{
+  "reviews": [
+    {
+      "candidate_id": "candidate-sha256-id",
+      "segment": "memory_hbm_dram",
+      "pillar": "pricing",
+      "direction": "positive",
+      "fact": "공식 원문에서 확인된 관찰 가능한 사실",
+      "published_at": "YYYY-MM-DD",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": false,
+      "contrary": false
+    }
+  ]
+}

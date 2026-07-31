@@ -1,0 +1,75 @@
+name: Weekly semiconductor AI report
+
+on:
+  schedule:
+    - cron: "0 22 * * 5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stock-sayo-study-publish
+  cancel-in-progress: false
+
+jobs:
+  update-verify-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: study
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Collect official source candidates
+        run: python scripts/collect_sources.py
+
+      - name: Sync Stock SAYO quantitative snapshot
+        run: python scripts/sync_sayo_quant.py
+
+      - name: Sync verified official event results
+        run: |
+          python scripts/collect_event_results.py
+          python scripts/build_event_feed.py
+
+      - name: Extract and audit new evidence
+        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_TERRA_MODEL: gpt-5.6-terra
+          OPENAI_SOL_MODEL: gpt-5.6-sol
+        run: |
+          python scripts/review_candidates.py
+          python scripts/apply_review.py data/ai-reviewed.json
+
+      - name: Build verified cycle report
+        run: python scripts/build_cycle_report.py
+
+      - name: Run tests and static validation
+        run: |
+          python -m unittest discover -s tests -v
+          python scripts/validate_build.py
+
+      - name: Save generated snapshots
+        run: |
+          git config user.name "stock-sayo-study-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/inbox.json data/evidence.json data/ai-review-log.json data/company-cycle-map.json data/event-calendar.json data/event-results.json public/data/quant-latest.json public/data/cycle-latest.json public/data/event-latest.json
+          git diff --cached --quiet || git commit -m "chore: weekly verified report refresh"
+          git push
+
+      - name: Install Firebase CLI
+        if: ${{ secrets.FIREBASE_TOKEN != '' }}
+        run: npm install --global firebase-tools
+
+      - name: Deploy validated report
+        if: ${{ secrets.FIREBASE_TOKEN != '' }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"

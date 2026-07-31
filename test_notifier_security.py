@@ -24,14 +24,16 @@ class NotifierSecurityTests(unittest.TestCase):
         self.assertIn('data=alert["data"]', self.source)
 
     def test_event_alert_requires_delivery_before_marking_sent(self):
+        claim = self.source.index("claimed = _claim_event_shock(")
         delivered = self.source.index("delivered = send_push(")
         delivery_gate = self.source.index("if delivered <= 0:", delivered)
-        state_write = self.source.index('db.collection("state").document(state_id).set', delivery_gate)
+        state_write = self.source.index('"status": "delivered"', delivery_gate)
+        self.assertLess(claim, delivered)
         self.assertLess(delivered, delivery_gate)
         self.assertLess(delivery_gate, state_write)
 
     def test_dedup_state_read_failure_is_fail_closed(self):
-        dedup_error = self.source.index("이벤트 알림 중복 방지 상태 확인 실패")
+        dedup_error = self.source.index("이벤트 쇼크 알림 claim 실패")
         continue_after_error = self.source.index("continue", dedup_error)
         delivered = self.source.index("delivered = send_push(", continue_after_error)
         self.assertLess(continue_after_error, delivered)
@@ -48,7 +50,7 @@ class NotifierSecurityTests(unittest.TestCase):
     def test_candidate_is_not_a_buy_push_type(self):
         buy_section = self.source[
             self.source.index("# 1~2. 강력 매수 신규 진입"):
-            self.source.index("# 3. 🚨 기업 위기")
+            self.source.index("# === RSI 상태 저장")
         ]
         self.assertNotIn("buy_zone_entry", buy_section)
         self.assertNotIn("🟢 매수 후보:", buy_section)
@@ -64,7 +66,7 @@ class NotifierSecurityTests(unittest.TestCase):
         self.assertIn("@firestore.transactional", self.source)
         buy_section = self.source[
             self.source.index("# 1~2. 강력 매수 신규 진입"):
-            self.source.index("# 3. 🚨 기업 위기")
+            self.source.index("# === RSI 상태 저장")
         ]
         self.assertLess(
             buy_section.index("alert = _claim_buy_alert("),
@@ -74,6 +76,24 @@ class NotifierSecurityTests(unittest.TestCase):
     def test_buy_delivery_result_is_auditable(self):
         self.assertIn('"last_delivery_status": "delivered" if delivered > 0 else "failed"', self.source)
         self.assertIn('"last_delivery_sample_id": sample_id', self.source)
+
+    def test_only_transition_and_verified_shock_push_paths_remain(self):
+        self.assertNotIn('"type": "crisis"', self.source)
+        self.assertNotIn('"type": "info"', self.source)
+        self.assertNotIn('"type": "vix_reversal"', self.source)
+        result_section = self.source[
+            self.source.index("def send_due_event_result_alerts"):
+            self.source.index("# ============================================================", self.source.index("def send_due_event_result_alerts"))
+        ]
+        self.assertNotIn("send_push(", result_section)
+        self.assertIn("return 0", result_section)
+
+    def test_event_shock_claim_is_transactional_and_failures_are_retryable(self):
+        claim = self.source[self.source.index("def _claim_event_shock"):]
+        self.assertIn('previous_state.get("status") in {"claimed", "delivered"}', claim)
+        self.assertIn('"status": "claimed"', claim)
+        self.assertIn("def _release_event_shock_claim", claim)
+        self.assertIn('"status": "retryable"', claim)
 
 
 if __name__ == "__main__":

@@ -66,7 +66,7 @@ class FrontendEntryFlowTests(unittest.TestCase):
         self.assertIn("fallbackLoadPromise", self.source)
 
     def test_app_version_changes_for_the_entry_flow_release(self):
-        self.assertIn('const APP_VERSION = "20260729-buy-alerts-1";', self.source)
+        self.assertIn('const APP_VERSION = "20260731-market-alerts-1";', self.source)
 
     def test_buy_alert_guide_separates_watchlist_from_pushes(self):
         self.assertIn("매수 후보만으로는 푸시 알림을 보내지 않아요.", self.source)
@@ -87,10 +87,19 @@ class FrontendEntryFlowTests(unittest.TestCase):
         self.assertIn("renderEventCalendar(data);", self.source)
         self.assertIn("nextEventForTicker(stock.code)", self.source)
         self.assertIn("다음 공식 실적:", self.source)
+        self.assertIn("resultByEvent.get(item.id)", self.source)
+        self.assertIn("result.summary", self.source)
         signal_function = self.source[
             self.source.index("function check"):self.source.index("function renderMacro")
         ] if "function check" in self.source else ""
         self.assertNotIn("event_calendar", signal_function)
+
+    def test_official_event_feed_is_collapsible_below_signal_stocks(self):
+        self.assertIn('<details class="event-panel"', self.source)
+        self.assertIn('<summary class="event-panel-head">', self.source)
+        signal_list = self.source.index('id="all-signal-list"')
+        event_panel = self.source.index('<details class="event-panel"')
+        self.assertLess(signal_list, event_panel)
 
     def test_sensitive_values_are_not_used_in_performance_entries(self):
         self.assertIn('perfMark("market-subscribe-start")', self.source)

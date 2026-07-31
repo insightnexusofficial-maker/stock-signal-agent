@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stock-sayo-study.web.app/schemas/quant-snapshot.schema.json",
+  "type": "object",
+  "required": ["schema_version", "logic_version", "rating_logic_version", "criteria_sha256", "generated_at", "expires_at", "alignment", "stocks"],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "1.1", "1.2"]},
+    "logic_version": {"type": "string", "minLength": 1},
+    "rating_logic_version": {"type": "string", "minLength": 1},
+    "criteria_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "alignment": {
+      "type": "object",
+      "required": ["mode", "aligned", "drift", "pending"],
+      "properties": {
+        "mode": {"const": "reproduce-and-verify-step1"},
+        "aligned": {"type": "integer", "minimum": 0},
+        "drift": {"type": "integer", "minimum": 0},
+        "pending": {"type": "integer", "minimum": 0}
+      }
+    },
+    "stocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "name", "market", "sector", "metrics", "fundamental_gate", "valuation_gate", "ratings", "sayo_alignment", "data_as_of"],
+        "properties": {
+          "ticker": {"type": "string"},
+          "name": {"type": "string"},
+          "market": {"enum": ["kr", "us"]},
+          "sector": {"type": "string"},
+          "metrics": {"type": "object"},
+          "fundamental_gate": {"$ref": "#/$defs/gate"},
+          "valuation_gate": {"$ref": "#/$defs/gate"}
+          ,"ratings": {
+            "type": "object",
+            "required": ["fundamental", "price_reflection", "reference_line", "orientation"],
+            "properties": {
+              "fundamental": {"type": ["integer", "null"], "minimum": 1, "maximum": 100},
+              "price_reflection": {"type": ["integer", "null"], "minimum": 1, "maximum": 100},
+              "reference_line": {"const": 50},
+              "orientation": {
+                "type": "object",
+                "properties": {
+                  "fundamental": {"const": "higher_is_stronger"},
+                  "price_reflection": {"const": "higher_is_more_priced_in"}
+                }
+              }
+            }
+          }
+          ,"sayo_alignment": {"enum": ["aligned", "drift", "pending"]}
+          ,"data_as_of": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "gate": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {"status": {"enum": ["pass", "fail", "pending"]}}
+    }
+  }
+}

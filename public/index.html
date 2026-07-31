@@ -295,8 +295,25 @@ button {
   justify-content: space-between;
   gap: 12px;
   align-items: baseline;
-  margin-bottom: 12px;
+  cursor: pointer;
+  list-style: none;
 }
+
+.event-panel-head::-webkit-details-marker { display: none; }
+.event-panel[open] .event-panel-head { margin-bottom: 12px; }
+.event-panel-head-copy {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  flex: 1;
+}
+.event-panel-toggle {
+  color: var(--fg-4);
+  font-size: 14px;
+  transition: transform .15s ease;
+}
+.event-panel[open] .event-panel-toggle { transform: rotate(180deg); }
 
 .event-panel-title { color: var(--fg-1); font-size: 14px; font-weight: 800; }
 .event-panel-meta { color: var(--fg-4); font-size: 11px; }
@@ -313,6 +330,7 @@ button {
 .event-card-top { display: flex; justify-content: space-between; gap: 8px; color: var(--fg-4); font-size: 10px; }
 .event-card-name { margin-top: 6px; color: var(--fg-1); font-size: 12px; font-weight: 750; line-height: 1.35; }
 .event-card-time { margin-top: 5px; color: var(--fg-3); font-size: 11px; }
+.event-card-result { margin-top: 7px; color: var(--fg-2); font-size: 11px; line-height: 1.45; }
 .event-card-status { color: var(--signal-info); white-space: nowrap; }
 .event-card-status.synced { color: var(--macro-good); }
 .event-card-status.due, .event-card-status.overdue { color: var(--macro-warn); }
@@ -320,6 +338,7 @@ button {
 
 @media (max-width: 720px) {
   .event-list { grid-template-columns: 1fr; }
+  .event-panel-head-copy { flex-direction: column; align-items: flex-start; gap: 3px; }
 }
 
 /* VIX 게이지 미니 */
@@ -2060,15 +2079,6 @@ button {
       
         </section>
 
-        <section class="event-panel" aria-labelledby="event-panel-title">
-          <div class="event-panel-head">
-            <div class="event-panel-title" id="event-panel-title">주요 실적·거시 일정</div>
-            <div class="event-panel-meta" id="event-panel-meta">공식 일정 확인 중</div>
-          </div>
-          <div class="event-list" id="event-calendar-list" aria-live="polite">
-            <div class="event-empty">공식 발표 일정을 불러오는 중입니다.</div>
-          </div>
-        </section>
         <!-- ============================================================
             탭 바
             ============================================================ -->
@@ -2248,6 +2258,20 @@ button {
             </div>
           </div>
         </section>
+
+        <details class="event-panel" aria-labelledby="event-panel-title">
+          <summary class="event-panel-head">
+            <span class="event-panel-head-copy">
+              <span class="event-panel-title" id="event-panel-title">주요 실적·거시 발표</span>
+              <span class="event-panel-meta" id="event-panel-meta">공식 일정 확인 중</span>
+            </span>
+            <span class="event-panel-toggle" aria-hidden="true">▾</span>
+          </summary>
+          <div class="event-list" id="event-calendar-list" aria-live="polite">
+            <div class="event-empty">공식 발표 일정을 불러오는 중입니다.</div>
+          </div>
+        </details>
+
         <!-- 가이드 패널 -->
         <section class="tab-pane" id="pane-guide">
             <div class="guide-content">
@@ -2296,7 +2320,7 @@ button {
                     ETF는 RSI 과매도와 NAV 할인 또는 52주 낮은 위치가 함께 확인된 경우예요.
                 </p>
                 <p class="guide-quiet">
-                    강력 매수 구간에 새로 진입하면 푸시 알림이 와요.
+                    강력 매수 구간에 새로 진입할 때 종목당 한 번만 푸시 알림이 와요.
                 </p>
                 </div>
         
@@ -2304,7 +2328,7 @@ button {
                 <div class="guide-card-title"><span class="dot now"></span> 지금 매수!</div>
                 <p>
                     매수 조건을 통과한 종목이 <strong>RSI 과매도 기준선을 위로 돌파한 순간</strong>이에요.
-                    이 알림은 하루에도 여러 번 올 수 있어요. 시장 상황 따라 바닥을 여러 번 다지기 때문이에요.
+                    같은 수집 회차나 같은 상태에서는 반복하지 않고, 종목별 실제 전환 때 한 번만 와요.
                 </p>
                 <p class="guide-quiet">
                     꼭 첫 알림에 사야 하는 건 아니에요. 분할로 사는 분이라면 이 알림이 도움돼요.
@@ -2312,21 +2336,20 @@ button {
                 </div>
         
                 <div class="guide-card">
-                <div class="guide-card-title"><span class="dot crisis"></span> 위기 알림</div>
+                <div class="guide-card-title"><span class="dot crisis"></span> 공식 쇼크 알림</div>
                 <p>
-                    <strong>회사가 진짜 어려워지고 있다는 신호</strong>예요. 
-                    이익 전망이 꺾이고 있고, 매출도 줄거나 실적이 크게 빗나갔을 때만 알림이 와요.
+                    공식 발표가 객관적인 쇼크 기준을 넘고 별도 검증까지 통과한 경우에만 와요.
+                    일반 실적·거시 발표, 위기 화면 신호, VIX 변화는 푸시하지 않아요.
                 </p>
                 <p class="guide-quiet">
-                    "팔라"는 명령은 아니에요. <strong>한 번 더 들여다보라는 알람</strong>이에요. 
-                    진짜 문제인지 확인하고, 본인 판단으로 결정하세요.
+                    같은 공식 이벤트는 한 번만 보내며, 발표 내용은 화면 아래의 접이식 영역에서 확인할 수 있어요.
                 </p>
                 </div>
             </div>
         
             <!-- SAYO의 매도 철학 -->
             <div class="guide-section">
-                <h3 class="guide-h3">💭 매도 알림이 적은 이유</h3>
+                <h3 class="guide-h3">💭 매도 판단은 직접 하는 이유</h3>
                 <p class="guide-text">
                 SAYO는 <strong>"꼭 필요할 때만 매도"</strong>라는 철학이에요. 
                 </p>
@@ -2336,8 +2359,8 @@ button {
                 </p>
                 <ul class="guide-list">
                 <li><strong>돈이 필요한 시점</strong>에 본인이 직접 결정</li>
-                <li><strong>회사가 진짜 무너지고 있을 때</strong> SAYO가 위기 알림</li>
-                <li><strong>시장 전체가 패닉</strong>일 때 (VIX 40+) SAYO가 시장 위기 알림</li>
+                <li><strong>회사 지표와 위기 신호</strong>는 화면에서 직접 확인</li>
+                <li><strong>시장 전체의 공포 수준</strong>은 VIX 카드에서 확인</li>
                 </ul>
                 <p class="guide-text">
                 그 외엔 <strong>버티는 게 보통은 더 낫다</strong>고 봐요. 
@@ -2502,7 +2525,7 @@ button {
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const APP_VERSION = "20260729-buy-alerts-1";
+    const APP_VERSION = "20260731-market-alerts-1";
 
     function perfMark(name) {
       try { performance.mark(`sayo:${name}`); } catch (e) {}
@@ -2862,6 +2885,8 @@ button {
       if (!list || !meta) return;
       const feed = data?.event_calendar;
       const events = Array.isArray(feed?.events) ? feed.events.slice(0, 6) : [];
+      const recentResults = Array.isArray(feed?.recent_results) ? feed.recent_results : [];
+      const resultByEvent = new Map(recentResults.map((item) => [item.event_id, item]));
       meta.textContent = feed?.generated_at
         ? `공식 일정 갱신 ${String(feed.generated_at).slice(0, 10)}`
         : "직전 공식 일정 확인 중";
@@ -2875,14 +2900,21 @@ button {
         synced: "동기화 완료",
         overdue: "검증 대기",
       };
-      list.innerHTML = events.map((item) => `<article class="event-card">
+      list.innerHTML = events.map((item) => {
+        const result = resultByEvent.get(item.id);
+        const resultHtml = result?.summary
+          ? `<div class="event-card-result">${escapeHtml(result.summary)}</div>`
+          : "";
+        return `<article class="event-card">
         <div class="event-card-top">
           <span>${item.kind === "macro" ? "거시" : "기업"}${item.ticker ? ` · ${escapeHtml(item.ticker)}` : ""}</span>
           <span class="event-card-status ${escapeHtml(item.sync_status || "")}">${escapeHtml(statusLabel[item.sync_status] || "일정 확인")}</span>
         </div>
         <div class="event-card-name">${escapeHtml(item.name || item.id || "공식 발표")}</div>
         <div class="event-card-time">${escapeHtml(formatEventKst(item))} KST</div>
-      </article>`).join("");
+        ${resultHtml}
+      </article>`;
+      }).join("");
     }
 
     function nextEventForTicker(code) {

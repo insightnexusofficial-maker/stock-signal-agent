@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+  "max_items_per_source": 12,
+  "sources": [
+    {
+      "id": "nvidia_news_rss",
+      "label": "NVIDIA Official News RSS",
+      "url": "https://nvidianews.nvidia.com/cats/press_release.xml",
+      "type": "rss",
+      "allowed_domain": "nvidianews.nvidia.com",
+      "source_family": "fabless_nvidia_ir",
+      "max_age_days": 120,
+      "segments": ["ai_compute_design"],
+      "default_pillar": "demand"
+    },
+    {
+      "id": "amd_ir",
+      "label": "AMD Investor Relations",
+      "url": "https://ir.amd.com/news-events/press-releases/rss",
+      "type": "rss",
+      "allowed_domain": "ir.amd.com",
+      "source_family": "fabless_amd_ir",
+      "max_age_days": 120,
+      "segments": ["ai_compute_design"],
+      "default_pillar": "demand"
+    },
+    {
+      "id": "nvidia_ir_results",
+      "label": "NVIDIA Investor Relations",
+      "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-First-Quarter-Fiscal-2027/default.aspx",
+      "type": "dated_html_watch",
+      "allowed_domain": "investor.nvidia.com",
+      "source_family": "fabless_nvidia_ir",
+      "max_age_days": 120,
+      "segments": [
+        "ai_compute_design"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "tsmc_monthly",
+      "label": "TSMC Monthly Revenue",
+      "url": "https://investor.tsmc.com/english/monthly-revenue/{year}",
+      "type": "tsmc_monthly_revenue",
+      "allowed_domain": "investor.tsmc.com",
+      "source_family": "foundry_tsmc_ir",
+      "max_age_days": 45,
+      "segments": ["foundry_logic"],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "micron_ir",
+      "label": "Micron Investor Relations",
+      "url": "https://investors.micron.com/news-releases",
+      "type": "dated_html_watch",
+      "allowed_domain": "investors.micron.com",
+      "source_family": "memory_micron_ir",
+      "max_age_days": 120,
+      "segments": ["memory_hbm_dram", "memory_nand"],
+      "default_pillar": "pricing"
+    },
+    {
+      "id": "asml_results",
+      "label": "ASML Financial Results",
+      "url": "https://www.asml.com/en/investors/financial-results",
+      "type": "dated_html_watch",
+      "allowed_domain": "www.asml.com",
+      "source_family": "equipment_asml_ir",
+      "max_age_days": 120,
+      "segments": ["equipment_materials"],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "semi_news",
+      "label": "SEMI Press Releases",
+      "url": "https://www.semi.org/en/news-resources/press-releases",
+      "type": "dated_html_watch",
+      "allowed_domain": "www.semi.org",
+      "source_family": "industry_association_semi",
+      "max_age_days": 120,
+      "segments": ["equipment_materials", "foundry_logic"],
+      "default_pillar": "supply"
+    },
+    {
+      "id": "wsts_news",
+      "label": "WSTS News",
+      "url": "https://www.wsts.org/76/Recent-News-Release",
+      "type": "dated_html_watch",
+      "allowed_domain": "www.wsts.org",
+      "source_family": "industry_association_wsts",
+      "max_age_days": 120,
+      "segments": ["memory_hbm_dram", "memory_nand", "foundry_logic", "analog_auto_industrial"],
+      "default_pillar": "demand"
+    },
+    {
+      "id": "vertiv_ir",
+      "label": "Vertiv Investor Relations",
+      "url": "https://investors.vertiv.com/news-and-events/news-releases/default.aspx",
+      "type": "dated_html_watch",
+      "allowed_domain": "investors.vertiv.com",
+      "source_family": "infrastructure_vertiv_ir",
+      "max_age_days": 120,
+      "segments": ["power_infrastructure"],
+      "default_pillar": "demand"
+    },
+    {
+      "id": "microsoft_ir",
+      "label": "Microsoft Investor Relations",
+      "url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3",
+      "type": "dated_html_watch",
+      "allowed_domain": "www.microsoft.com",
+      "source_family": "hyperscaler_microsoft_ir",
+      "max_age_days": 120,
+      "segments": ["cloud_capex", "ai_services"],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "meta_ir",
+      "label": "Meta Investor Relations",
+      "url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-First-Quarter-2026-Results/default.aspx",
+      "type": "dated_html_watch",
+      "allowed_domain": "investor.atmeta.com",
+      "source_family": "hyperscaler_meta_ir",
+      "max_age_days": 120,
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "default_pillar": "earnings"
+    }
+  ]
+}

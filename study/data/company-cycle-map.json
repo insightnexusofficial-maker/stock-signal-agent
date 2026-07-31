@@ -1,0 +1,31 @@
+{
+  "version": "company-cycle-map-v1-2026-07-19",
+  "companies": [
+    {"ticker": "005930", "name": "삼성전자", "exposures": [{"segment": "memory_hbm_dram", "weight": 0.45}, {"segment": "foundry_logic", "weight": 0.35}, {"segment": "memory_nand", "weight": 0.20}]},
+    {"ticker": "000660", "name": "SK하이닉스", "exposures": [{"segment": "memory_hbm_dram", "weight": 0.75}, {"segment": "memory_nand", "weight": 0.25}]},
+    {"ticker": "042700", "name": "한미반도체", "exposures": [{"segment": "equipment_materials", "weight": 1.0}]},
+    {"ticker": "NVDA", "name": "엔비디아", "exposures": [{"segment": "ai_compute_design", "weight": 1.0}]},
+    {"ticker": "AVGO", "name": "브로드컴", "exposures": [{"segment": "ai_compute_design", "weight": 0.75}, {"segment": "cloud_capex", "weight": 0.25}]},
+    {"ticker": "MU", "name": "마이크론", "exposures": [{"segment": "memory_hbm_dram", "weight": 0.65}, {"segment": "memory_nand", "weight": 0.35}]},
+    {"ticker": "AMD", "name": "AMD", "exposures": [{"segment": "ai_compute_design", "weight": 0.80}, {"segment": "foundry_logic", "weight": 0.20}]},
+    {"ticker": "TSM", "name": "TSMC", "exposures": [{"segment": "foundry_logic", "weight": 1.0}]},
+    {"ticker": "INTC", "name": "인텔", "exposures": [{"segment": "foundry_logic", "weight": 0.70}, {"segment": "ai_compute_design", "weight": 0.30}]},
+    {"ticker": "AMAT", "name": "어플라이드 머티어리얼즈", "exposures": [{"segment": "equipment_materials", "weight": 1.0}]},
+    {"ticker": "LRCX", "name": "램리서치", "exposures": [{"segment": "equipment_materials", "weight": 1.0}]},
+    {"ticker": "ASML", "name": "ASML", "exposures": [{"segment": "equipment_materials", "weight": 1.0}]},
+    {"ticker": "8035", "name": "도쿄일렉트론", "exposures": [{"segment": "equipment_materials", "weight": 1.0}]},
+    {"ticker": "MSFT", "name": "마이크로소프트", "exposures": [{"segment": "cloud_capex", "weight": 0.60}, {"segment": "ai_services", "weight": 0.40}]},
+    {"ticker": "GOOGL", "name": "구글", "exposures": [{"segment": "cloud_capex", "weight": 0.55}, {"segment": "ai_services", "weight": 0.45}]},
+    {"ticker": "META", "name": "메타", "exposures": [{"segment": "cloud_capex", "weight": 0.70}, {"segment": "ai_services", "weight": 0.30}]},
+    {"ticker": "ORCL", "name": "오라클", "exposures": [{"segment": "cloud_capex", "weight": 0.75}, {"segment": "ai_services", "weight": 0.25}]},
+    {"ticker": "AMZN", "name": "아마존", "exposures": [{"segment": "cloud_capex", "weight": 0.60}, {"segment": "ai_services", "weight": 0.40}]},
+    {"ticker": "ANET", "name": "아리스타 네트웍스", "exposures": [{"segment": "cloud_capex", "weight": 0.70}, {"segment": "power_infrastructure", "weight": 0.30}]},
+    {"ticker": "VRT", "name": "버티브", "exposures": [{"segment": "power_infrastructure", "weight": 1.0}]},
+    {"ticker": "SMCI", "name": "슈퍼마이크로", "exposures": [{"segment": "power_infrastructure", "weight": 0.65}, {"segment": "ai_compute_design", "weight": 0.35}]},
+    {"ticker": "VST", "name": "비스트라", "exposures": [{"segment": "power_infrastructure", "weight": 1.0}]},
+    {"ticker": "PLTR", "name": "팔란티어", "exposures": [{"segment": "ai_services", "weight": 1.0}]},
+    {"ticker": "TSLA", "name": "테슬라", "exposures": [{"segment": "analog_auto_industrial", "weight": 1.0}]},
+    {"ticker": "010120", "name": "LS ELECTRIC", "exposures": [{"segment": "power_infrastructure", "weight": 1.0}]},
+    {"ticker": "034020", "name": "두산에너빌리티", "exposures": [{"segment": "power_infrastructure", "weight": 1.0}]}
+  ]
+}
