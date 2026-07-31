@@ -2,15 +2,15 @@
   "schema_version": "1.2",
   "logic_version": "cycle-engine-v4-2026-07-19",
   "methodology_version": "semiconductor-cycle-ai-roles-2026-07-18",
-  "evidence_sha256": "291ec94ed130f2fe61ccfdfe94fc043b0cb9f67320cdf9f1c1a84147214561db",
-  "report_id": "semiconductor-cycle-2026-07-28",
-  "generated_at": "2026-07-28T01:11:00+09:00",
-  "expires_at": "2026-08-05T01:11:00+09:00",
+  "evidence_sha256": "d6718a7093ab066345be2fd6467220ca6c97c5c231cf3895ae35bd13a59851eb",
+  "report_id": "semiconductor-cycle-2026-08-01",
+  "generated_at": "2026-08-01T07:51:05+09:00",
+  "expires_at": "2026-08-09T07:51:05+09:00",
   "fallback_status": "pending-neutral",
   "quality_gate": {
     "status": "passed",
     "mode": "verified-only",
-    "evidence_count": 6,
+    "evidence_count": 3,
     "message": "검증된 공식 근거만 사이클 상태에 반영합니다."
   },
   "segments": [
@@ -41,12 +41,10 @@
       "id": "memory_hbm_dram",
       "label": "HBM·DRAM",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 25,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [
-        "semi-memory-investment-20260629"
-      ],
+      "supporting_evidence_ids": [],
       "contrary_evidence_ids": []
     },
     {
@@ -54,12 +52,10 @@
       "id": "memory_nand",
       "label": "NAND",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 25,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [
-        "semi-nand-investment-20260629"
-      ],
+      "supporting_evidence_ids": [],
       "contrary_evidence_ids": []
     },
     {
@@ -105,12 +101,10 @@
       "id": "power_infrastructure",
       "label": "전력·데이터센터 인프라",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 25,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [
-        "vertiv-malaysia-capacity-20260701"
-      ],
+      "supporting_evidence_ids": [],
       "contrary_evidence_ids": []
     },
     {
@@ -132,7 +126,7 @@
       "name": "삼성전자",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 54,
+      "confidence": 45,
       "primary_segment": "memory_hbm_dram",
       "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -155,7 +149,7 @@
       "name": "SK하이닉스",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "memory_hbm_dram",
       "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -223,7 +217,7 @@
       "name": "마이크론",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "memory_hbm_dram",
       "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -450,7 +444,7 @@
       "name": "아리스타 네트웍스",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 29,
+      "confidence": 25,
       "primary_segment": "cloud_capex",
       "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -469,7 +463,7 @@
       "name": "버티브",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "power_infrastructure",
       "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -484,7 +478,7 @@
       "name": "슈퍼마이크로",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 34,
+      "confidence": 25,
       "primary_segment": "power_infrastructure",
       "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -503,7 +497,7 @@
       "name": "비스트라",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "power_infrastructure",
       "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -548,7 +542,7 @@
       "name": "LS ELECTRIC",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "power_infrastructure",
       "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -563,7 +557,7 @@
       "name": "두산에너빌리티",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "power_infrastructure",
       "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -575,42 +569,6 @@
     }
   ],
   "evidence": [
-    {
-      "id": "semi-memory-investment-20260629",
-      "source_id": "semi_news",
-      "segment": "memory_hbm_dram",
-      "pillar": "supply",
-      "direction": "positive",
-      "fact": "SEMI는 2026년 300mm 메모리 장비 투자가 29% 증가해 520억 달러에 이를 것으로 전망했다.",
-      "source_url": "https://www.semi.org/en/semi-press-release/semi-projects-300mm-memory-equipment-investment-to-surpass-50-billion-dollars-in-2026",
-      "published_at": "2026-06-29",
-      "max_age_days": 120,
-      "source_family": "industry_association_semi",
-      "confidence": "direct",
-      "review_status": "verified",
-      "audit_passed": true,
-      "contrary": false,
-      "reviewed_by": "codex-primary-source-review",
-      "audited_by": "codex-contrary-review"
-    },
-    {
-      "id": "semi-nand-investment-20260629",
-      "source_id": "semi_news",
-      "segment": "memory_nand",
-      "pillar": "demand",
-      "direction": "positive",
-      "fact": "SEMI는 AI 배치에 따른 저장 수요를 배경으로 2026년 3D NAND 장비 투자가 28% 증가할 것으로 전망했다.",
-      "source_url": "https://www.semi.org/en/semi-press-release/semi-projects-300mm-memory-equipment-investment-to-surpass-50-billion-dollars-in-2026",
-      "published_at": "2026-06-29",
-      "max_age_days": 120,
-      "source_family": "industry_association_semi",
-      "confidence": "direct",
-      "review_status": "verified",
-      "audit_passed": true,
-      "contrary": false,
-      "reviewed_by": "codex-primary-source-review",
-      "audited_by": "codex-contrary-review"
-    },
     {
       "id": "tsmc-q2-results-20260716",
       "source_id": "tsmc_monthly",
@@ -658,24 +616,6 @@
       "published_at": "2026-07-14",
       "max_age_days": 120,
       "source_family": "industry_association_semi",
-      "confidence": "direct",
-      "review_status": "verified",
-      "audit_passed": true,
-      "contrary": false,
-      "reviewed_by": "codex-primary-source-review",
-      "audited_by": "codex-contrary-review"
-    },
-    {
-      "id": "vertiv-malaysia-capacity-20260701",
-      "source_id": "vertiv_ir",
-      "segment": "power_infrastructure",
-      "pillar": "supply",
-      "direction": "positive",
-      "fact": "Vertiv는 아시아의 AI·고밀도 컴퓨팅 인프라 수요에 대응하기 위해 말레이시아 생산시설을 새로 가동했다.",
-      "source_url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Increases-Manufacturing-Capacity-with-New-Facility-in-Malaysia-to-Support-Growing-Demand-for-AI-and-Digital-Infrastructure-Across-Asia/default.aspx",
-      "published_at": "2026-07-01",
-      "max_age_days": 120,
-      "source_family": "infrastructure_vertiv_ir",
       "confidence": "direct",
       "review_status": "verified",
       "audit_passed": true,

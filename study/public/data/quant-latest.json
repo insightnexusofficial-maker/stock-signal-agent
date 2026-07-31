@@ -3,10 +3,10 @@
   "logic_version": "stock-sayo-v4-2026-07-18",
   "rating_logic_version": "study-rating-v2-2026-07-19",
   "criteria_sha256": "3577fcdc76fc80ee49afd5845f8f94ad7c9166fb210a1a334d2b6ddf815f4c53",
-  "generated_at": "2026-07-28T01:07:20+09:00",
-  "expires_at": "2026-08-05T01:07:20+09:00",
+  "generated_at": "2026-08-01T07:51:05+09:00",
+  "expires_at": "2026-08-09T07:51:05+09:00",
   "source": "Stock SAYO public Firestore snapshot",
-  "source_updated_at": "07월 28일 01:01",
+  "source_updated_at": "08월 01일 06:36",
   "alignment": {
     "mode": "reproduce-and-verify-step1",
     "aligned": 29,
@@ -20,15 +20,15 @@
       "market": "kr",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 0.28,
-        "per_fwd": 5.35,
-        "pbr": 3.53,
+        "peg_fwd": 0.32,
+        "per_fwd": 6.0,
+        "pbr": 3.65,
         "ps": null,
-        "forward_eps_growth": 18.8,
+        "forward_eps_growth": 19.0,
         "revenue_growth": null,
         "earnings_surprise": null,
         "eps_revision_1m": null,
-        "target_gap": 102.3,
+        "target_gap": 90.9,
         "band_pct": null,
         "dividend_yield": 1.39,
         "peg_source": "fnguide_forward_eps_cagr_calculated",
@@ -49,12 +49,12 @@
       "valuation_gate": {
         "status": "pass",
         "basis": "peg",
-        "value": 0.28,
+        "value": 0.32,
         "limit": 0.8
       },
       "ratings": {
         "fundamental": 75,
-        "price_reflection": 21,
+        "price_reflection": 22,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -89,15 +89,15 @@
           "components": [
             {
               "id": "peg",
-              "score": 24
+              "score": 25
             },
             {
               "id": "forward_per",
-              "score": 19
+              "score": 20
             },
             {
               "id": "pbr",
-              "score": 59
+              "score": 61
             }
           ],
           "level": "high",
@@ -108,7 +108,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260731"
     },
     {
       "ticker": "000660",
@@ -116,15 +116,15 @@
       "market": "kr",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 0.31,
-        "per_fwd": 5.6,
-        "pbr": 7.83,
+        "peg_fwd": 0.33,
+        "per_fwd": 5.0,
+        "pbr": 7.41,
         "ps": null,
-        "forward_eps_growth": 17.8,
+        "forward_eps_growth": 15.0,
         "revenue_growth": null,
         "earnings_surprise": null,
         "eps_revision_1m": null,
-        "target_gap": 99.7,
+        "target_gap": 93.4,
         "band_pct": null,
         "dividend_yield": 0.46,
         "peg_source": "fnguide_forward_eps_cagr_calculated",
@@ -145,11 +145,11 @@
       "valuation_gate": {
         "status": "pass",
         "basis": "peg",
-        "value": 0.31,
+        "value": 0.33,
         "limit": 0.8
       },
       "ratings": {
-        "fundamental": 80,
+        "fundamental": 79,
         "price_reflection": 39,
         "reference_line": 50,
         "orientation": {
@@ -164,7 +164,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 71
+              "score": 68
             },
             {
               "id": "profitability",
@@ -185,15 +185,15 @@
           "components": [
             {
               "id": "peg",
-              "score": 25
+              "score": 26
             },
             {
               "id": "forward_per",
-              "score": 19
+              "score": 18
             },
             {
               "id": "pbr",
-              "score": 96
+              "score": 95
             }
           ],
           "level": "high",
@@ -204,7 +204,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260731"
     },
     {
       "ticker": "042700",
@@ -212,15 +212,15 @@
       "market": "kr",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 1.52,
-        "per_fwd": 55.14,
-        "pbr": 30.5,
+        "peg_fwd": 1.63,
+        "per_fwd": 59.14,
+        "pbr": 32.0,
         "ps": null,
         "forward_eps_growth": 36.3,
         "revenue_growth": null,
         "earnings_surprise": null,
         "eps_revision_1m": null,
-        "target_gap": 85.8,
+        "target_gap": 77.2,
         "band_pct": null,
         "dividend_yield": 0.63,
         "peg_source": "fnguide_forward_eps_cagr_calculated",
@@ -241,12 +241,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 1.52,
+        "value": 1.63,
         "limit": 0.8
       },
       "ratings": {
         "fundamental": 89,
-        "price_reflection": 94,
+        "price_reflection": 96,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -281,11 +281,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 83
+              "score": 87
             },
             {
               "id": "forward_per",
-              "score": 97
+              "score": 98
             },
             {
               "id": "pbr",
@@ -300,7 +300,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260731"
     },
     {
       "ticker": "267270",
@@ -308,15 +308,15 @@
       "market": "kr",
       "sector": "industrial",
       "metrics": {
-        "peg_fwd": 0.61,
-        "per_fwd": 12.0,
-        "pbr": 1.37,
+        "peg_fwd": 0.62,
+        "per_fwd": 10.0,
+        "pbr": 1.27,
         "ps": null,
-        "forward_eps_growth": 19.6,
+        "forward_eps_growth": 16.2,
         "revenue_growth": null,
         "earnings_surprise": null,
         "eps_revision_1m": null,
-        "target_gap": 60.6,
+        "target_gap": 63.9,
         "band_pct": null,
         "dividend_yield": 0.56,
         "peg_source": "fnguide_forward_eps_cagr_calculated",
@@ -329,7 +329,7 @@
       },
       "fundamental_gate": {
         "status": "pass",
-        "selection_hits": 3,
+        "selection_hits": 4,
         "required_hits": 2,
         "eps_revision_gate": "pass",
         "eps_revision_limit": 0.0
@@ -337,12 +337,12 @@
       "valuation_gate": {
         "status": "pass",
         "basis": "peg_or_per",
-        "value": 0.61,
+        "value": 0.62,
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 64,
-        "price_reflection": 22,
+        "fundamental": 62,
+        "price_reflection": 21,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -356,7 +356,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 73
+              "score": 69
             },
             {
               "id": "profitability",
@@ -377,15 +377,15 @@
           "components": [
             {
               "id": "peg",
-              "score": 29
+              "score": 30
             },
             {
               "id": "forward_per",
-              "score": 31
+              "score": 27
             },
             {
               "id": "pbr",
-              "score": 25
+              "score": 24
             }
           ],
           "level": "high",
@@ -396,7 +396,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260731"
     },
     {
       "ticker": "034020",
@@ -404,15 +404,15 @@
       "market": "kr",
       "sector": "industrial",
       "metrics": {
-        "peg_fwd": 2.51,
-        "per_fwd": 155.41,
-        "pbr": 5.65,
+        "peg_fwd": 2.32,
+        "per_fwd": 136.0,
+        "pbr": 5.35,
         "ps": null,
-        "forward_eps_growth": 61.8,
+        "forward_eps_growth": 58.7,
         "revenue_growth": null,
         "earnings_surprise": null,
         "eps_revision_1m": null,
-        "target_gap": 110.3,
+        "target_gap": 92.8,
         "band_pct": null,
         "dividend_yield": 0.0,
         "peg_source": "fnguide_forward_eps_cagr_calculated",
@@ -433,12 +433,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg_or_per",
-        "value": 2.51,
+        "value": 2.32,
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 68,
-        "price_reflection": 94,
+        "fundamental": 67,
+        "price_reflection": 92,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -452,7 +452,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 96
+              "score": 95
             },
             {
               "id": "profitability",
@@ -473,7 +473,7 @@
           "components": [
             {
               "id": "peg",
-              "score": 88
+              "score": 84
             },
             {
               "id": "forward_per",
@@ -481,7 +481,7 @@
             },
             {
               "id": "pbr",
-              "score": 85
+              "score": 83
             }
           ],
           "level": "high",
@@ -492,7 +492,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260724"
+      "data_as_of": "20260731"
     },
     {
       "ticker": "010120",
@@ -500,15 +500,15 @@
       "market": "kr",
       "sector": "industrial",
       "metrics": {
-        "peg_fwd": 1.54,
-        "per_fwd": 55.98,
-        "pbr": 14.38,
+        "peg_fwd": 1.4,
+        "per_fwd": 51.0,
+        "pbr": 13.29,
         "ps": null,
         "forward_eps_growth": 36.4,
         "revenue_growth": null,
         "earnings_surprise": null,
         "eps_revision_1m": null,
-        "target_gap": 50.0,
+        "target_gap": 62.3,
         "band_pct": null,
         "dividend_yield": 0.65,
         "peg_source": "fnguide_forward_eps_cagr_calculated",
@@ -529,12 +529,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg_or_per",
-        "value": 1.54,
+        "value": 1.4,
         "limit": 1.2
       },
       "ratings": {
         "fundamental": 70,
-        "price_reflection": 75,
+        "price_reflection": 73,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -569,11 +569,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 62
+              "score": 57
             },
             {
               "id": "forward_per",
-              "score": 97
+              "score": 96
             },
             {
               "id": "pbr",
@@ -588,7 +588,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260731"
     },
     {
       "ticker": "251270",
@@ -597,14 +597,14 @@
       "sector": "growth",
       "metrics": {
         "peg_fwd": null,
-        "per_fwd": 7.5,
-        "pbr": 0.53,
+        "per_fwd": 8.0,
+        "pbr": 0.54,
         "ps": null,
-        "forward_eps_growth": -8.3,
+        "forward_eps_growth": -9.7,
         "revenue_growth": null,
         "earnings_surprise": null,
         "eps_revision_1m": null,
-        "target_gap": 67.0,
+        "target_gap": 60.7,
         "band_pct": null,
         "dividend_yield": 1.82,
         "peg_source": "fnguide_forward_eps_cagr_calculated",
@@ -633,8 +633,8 @@
         }
       },
       "ratings": {
-        "fundamental": 57,
-        "price_reflection": 20,
+        "fundamental": 56,
+        "price_reflection": 21,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -648,7 +648,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 40
+              "score": 38
             },
             {
               "id": "profitability",
@@ -669,7 +669,7 @@
           "components": [
             {
               "id": "forward_per",
-              "score": 22
+              "score": 23
             },
             {
               "id": "pbr",
@@ -684,7 +684,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260731"
     },
     {
       "ticker": "NVDA",
@@ -692,17 +692,17 @@
       "market": "us",
       "sector": "ai_bigtech",
       "metrics": {
-        "peg_fwd": 0.57,
-        "per_fwd": 15.253675,
-        "pbr": 24.324661,
-        "ps": 18.753548,
+        "peg_fwd": 0.52,
+        "per_fwd": 15.599466,
+        "pbr": 24.876085,
+        "ps": 19.181612,
         "forward_eps_growth": 43.2,
         "revenue_growth": 85.2,
         "earnings_surprise": 5.54,
-        "eps_revision_1m": 1.1,
-        "target_gap": 54.3,
-        "band_pct": 44.4,
-        "dividend_yield": 0.48,
+        "eps_revision_1m": 0.82,
+        "target_gap": 50.8,
+        "band_pct": 50.6,
+        "dividend_yield": 0.51,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
@@ -721,11 +721,11 @@
       "valuation_gate": {
         "status": "pass",
         "basis": "peg",
-        "value": 0.57,
+        "value": 0.52,
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 89,
+        "fundamental": 88,
         "price_reflection": 52,
         "reference_line": 50,
         "orientation": {
@@ -756,7 +756,7 @@
             },
             {
               "id": "outlook",
-              "score": 63
+              "score": 62
             }
           ],
           "level": "high",
@@ -769,11 +769,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 28
+              "score": 27
             },
             {
               "id": "forward_per",
-              "score": 38
+              "score": 39
             },
             {
               "id": "pbr",
@@ -793,7 +793,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "AVGO",
@@ -801,17 +801,17 @@
       "market": "us",
       "sector": "ai_bigtech",
       "metrics": {
-        "peg_fwd": 0.43,
-        "per_fwd": 19.341715,
-        "pbr": 20.479109,
-        "ps": 23.794521,
-        "forward_eps_growth": 67.4,
+        "peg_fwd": 0.42,
+        "per_fwd": 19.971312,
+        "pbr": 21.122084,
+        "ps": 24.541588,
+        "forward_eps_growth": 67.7,
         "revenue_growth": 47.9,
         "earnings_surprise": 1.74,
-        "eps_revision_1m": 0.46,
-        "target_gap": 39.2,
-        "band_pct": 44.9,
-        "dividend_yield": 0.68,
+        "eps_revision_1m": 0.57,
+        "target_gap": 35.6,
+        "band_pct": 50.5,
+        "dividend_yield": 0.67,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
@@ -830,12 +830,12 @@
       "valuation_gate": {
         "status": "pass",
         "basis": "peg",
-        "value": 0.43,
+        "value": 0.42,
         "limit": 1.2
       },
       "ratings": {
         "fundamental": 84,
-        "price_reflection": 60,
+        "price_reflection": 57,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -869,7 +869,7 @@
             }
           ],
           "level": "high",
-          "peer_percentile": 50,
+          "peer_percentile": 69,
           "peer_group_size": 9
         },
         "price_reflection": {
@@ -882,7 +882,7 @@
             },
             {
               "id": "forward_per",
-              "score": 48
+              "score": 50
             },
             {
               "id": "pbr",
@@ -895,14 +895,14 @@
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 63,
+          "peer_percentile": 50,
           "peer_group_size": 9
         }
       },
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "MU",
@@ -910,16 +910,16 @@
       "market": "us",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 0.14,
-        "per_fwd": 5.631863,
-        "pbr": 9.705095,
-        "ps": null,
+        "peg_fwd": 0.11,
+        "per_fwd": 5.3534055,
+        "pbr": 9.225244,
+        "ps": 10.296702,
         "forward_eps_growth": 109.3,
         "revenue_growth": 345.7,
         "earnings_surprise": 21.25,
-        "eps_revision_1m": 12.07,
-        "target_gap": 74.1,
-        "band_pct": 66.2,
+        "eps_revision_1m": 2.78,
+        "target_gap": 83.2,
+        "band_pct": 62.5,
         "dividend_yield": 0.06,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -939,12 +939,12 @@
       "valuation_gate": {
         "status": "pass",
         "basis": "peg",
-        "value": 0.14,
+        "value": 0.11,
         "limit": 0.8
       },
       "ratings": {
-        "fundamental": 92,
-        "price_reflection": 26,
+        "fundamental": 90,
+        "price_reflection": 32,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -974,7 +974,7 @@
             },
             {
               "id": "outlook",
-              "score": 92
+              "score": 77
             }
           ],
           "level": "high",
@@ -982,12 +982,12 @@
           "peer_group_size": 8
         },
         "price_reflection": {
-          "available": 3,
+          "available": 4,
           "total": 4,
           "components": [
             {
               "id": "peg",
-              "score": 18
+              "score": 17
             },
             {
               "id": "forward_per",
@@ -995,7 +995,11 @@
             },
             {
               "id": "pbr",
-              "score": 99
+              "score": 98
+            },
+            {
+              "id": "ps",
+              "score": 89
             }
           ],
           "level": "medium",
@@ -1007,7 +1011,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "MSFT",
@@ -1015,24 +1019,24 @@
       "market": "us",
       "sector": "ai_bigtech",
       "metrics": {
-        "peg_fwd": 1.18,
-        "per_fwd": 20.24753,
-        "pbr": 7.0325584,
-        "ps": 9.155162,
-        "forward_eps_growth": 15.5,
-        "revenue_growth": 18.3,
-        "earnings_surprise": 4.9,
-        "eps_revision_1m": 0.07,
-        "target_gap": 41.9,
-        "band_pct": 20.9,
-        "dividend_yield": 0.95,
+        "peg_fwd": 1.21,
+        "per_fwd": 19.995792,
+        "pbr": 7.8018975,
+        "ps": 10.399017,
+        "forward_eps_growth": 18.4,
+        "revenue_growth": 17.7,
+        "earnings_surprise": 11.81,
+        "eps_revision_1m": 11.31,
+        "target_gap": 20.8,
+        "band_pct": 56.5,
+        "dividend_yield": 0.81,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
-        "operating_margin": 46.3,
+        "operating_margin": 45.1,
         "return_on_equity": 34.0,
-        "free_cash_flow_margin": 11.6,
-        "debt_to_equity": 30.3
+        "free_cash_flow_margin": 4.9,
+        "debt_to_equity": 29.1
       },
       "fundamental_gate": {
         "status": "pass",
@@ -1042,14 +1046,14 @@
         "eps_revision_limit": -1.0
       },
       "valuation_gate": {
-        "status": "pass",
+        "status": "fail",
         "basis": "peg",
-        "value": 1.18,
+        "value": 1.21,
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 78,
-        "price_reflection": 66,
+        "fundamental": 80,
+        "price_reflection": 68,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -1063,7 +1067,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 69
+              "score": 72
             },
             {
               "id": "profitability",
@@ -1071,7 +1075,7 @@
             },
             {
               "id": "cash_generation",
-              "score": 82
+              "score": 66
             },
             {
               "id": "balance_sheet",
@@ -1079,11 +1083,11 @@
             },
             {
               "id": "outlook",
-              "score": 59
+              "score": 87
             }
           ],
           "level": "high",
-          "peer_percentile": 38,
+          "peer_percentile": 50,
           "peer_group_size": 9
         },
         "price_reflection": {
@@ -1092,31 +1096,31 @@
           "components": [
             {
               "id": "peg",
-              "score": 49
+              "score": 50
             },
             {
               "id": "forward_per",
-              "score": 51
+              "score": 50
             },
             {
               "id": "pbr",
-              "score": 94
+              "score": 96
             },
             {
               "id": "ps",
-              "score": 84
+              "score": 90
             }
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 75,
+          "peer_percentile": 81,
           "peer_group_size": 9
         }
       },
-      "quant_gate_pass": true,
+      "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "GOOGL",
@@ -1124,17 +1128,17 @@
       "market": "us",
       "sector": "ai_bigtech",
       "metrics": {
-        "peg_fwd": 1.26,
-        "per_fwd": 22.208467,
-        "pbr": 6.4295816,
-        "ps": 8.976069,
+        "peg_fwd": 0.91,
+        "per_fwd": 24.16992,
+        "pbr": 6.99721,
+        "ps": 9.768511,
         "forward_eps_growth": 294.0,
         "revenue_growth": 24.2,
         "earnings_surprise": 214.23,
-        "eps_revision_1m": 1.34,
-        "target_gap": 30.8,
-        "band_pct": 63.1,
-        "dividend_yield": 0.28,
+        "eps_revision_1m": 1.14,
+        "target_gap": 19.9,
+        "band_pct": 76.2,
+        "dividend_yield": 0.26,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_earnings_growth_fallback",
@@ -1151,14 +1155,14 @@
         "eps_revision_limit": -1.0
       },
       "valuation_gate": {
-        "status": "fail",
+        "status": "pass",
         "basis": "peg",
-        "value": 1.26,
+        "value": 0.91,
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 85,
-        "price_reflection": 71,
+        "fundamental": 84,
+        "price_reflection": 68,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -1188,7 +1192,7 @@
             },
             {
               "id": "outlook",
-              "score": 76
+              "score": 75
             }
           ],
           "level": "high",
@@ -1201,31 +1205,31 @@
           "components": [
             {
               "id": "peg",
-              "score": 52
+              "score": 39
             },
             {
               "id": "forward_per",
-              "score": 55
+              "score": 60
             },
             {
               "id": "pbr",
-              "score": 91
+              "score": 93
             },
             {
               "id": "ps",
-              "score": 83
+              "score": 87
             }
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 88,
+          "peer_percentile": 81,
           "peer_group_size": 9
         }
       },
-      "quant_gate_pass": false,
+      "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "META",
@@ -1234,27 +1238,27 @@
       "sector": "ai_bigtech",
       "metrics": {
         "peg_fwd": 0.87,
-        "per_fwd": 16.27419,
-        "pbr": 6.2735257,
-        "ps": 7.112824,
-        "forward_eps_growth": 16.7,
-        "revenue_growth": 33.1,
-        "earnings_surprise": 56.79,
+        "per_fwd": 15.656394,
+        "pbr": 5.7982774,
+        "ps": 6.213542,
+        "forward_eps_growth": 18.7,
+        "revenue_growth": 28.0,
+        "earnings_surprise": -14.42,
         "eps_revision_1m": null,
-        "target_gap": 37.1,
-        "band_pct": 29.7,
-        "dividend_yield": 0.35,
+        "target_gap": 48.1,
+        "band_pct": 13.2,
+        "dividend_yield": 0.39,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
-        "operating_margin": 40.6,
-        "return_on_equity": 32.9,
-        "free_cash_flow_margin": 11.9,
-        "debt_to_equity": 35.6
+        "operating_margin": 30.9,
+        "return_on_equity": 29.8,
+        "free_cash_flow_margin": 9.4,
+        "debt_to_equity": 43.0
       },
       "fundamental_gate": {
         "status": "pass",
-        "selection_hits": 3,
+        "selection_hits": 2,
         "required_hits": 2,
         "eps_revision_gate": "pass",
         "eps_revision_limit": -1.0
@@ -1266,8 +1270,8 @@
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 85,
-        "price_reflection": 46,
+        "fundamental": 70,
+        "price_reflection": 45,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -1285,23 +1289,23 @@
             },
             {
               "id": "profitability",
-              "score": 98
+              "score": 97
             },
             {
               "id": "cash_generation",
-              "score": 83
+              "score": 78
             },
             {
               "id": "balance_sheet",
-              "score": 71
+              "score": 68
             },
             {
               "id": "outlook",
-              "score": 100
+              "score": 8
             }
           ],
           "level": "high",
-          "peer_percentile": 69,
+          "peer_percentile": 26,
           "peer_group_size": 9
         },
         "price_reflection": {
@@ -1314,15 +1318,15 @@
             },
             {
               "id": "forward_per",
-              "score": 41
+              "score": 39
             },
             {
               "id": "pbr",
-              "score": 90
+              "score": 87
             },
             {
               "id": "ps",
-              "score": 70
+              "score": 62
             }
           ],
           "level": "medium",
@@ -1334,7 +1338,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "ORCL",
@@ -1342,17 +1346,17 @@
       "market": "us",
       "sector": "ai_bigtech",
       "metrics": {
-        "peg_fwd": 0.65,
-        "per_fwd": 11.028315,
-        "pbr": 9.210123,
-        "ps": 5.1359854,
+        "peg_fwd": 0.67,
+        "per_fwd": 11.925455,
+        "pbr": 9.959355,
+        "ps": 5.553792,
         "forward_eps_growth": 35.3,
         "revenue_growth": 20.6,
         "earnings_surprise": 7.52,
         "eps_revision_1m": null,
-        "target_gap": 106.6,
-        "band_pct": 2.3,
-        "dividend_yield": 1.74,
+        "target_gap": 91.1,
+        "band_pct": 6.6,
+        "dividend_yield": 1.57,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
@@ -1371,12 +1375,12 @@
       "valuation_gate": {
         "status": "pass",
         "basis": "peg",
-        "value": 0.65,
+        "value": 0.67,
         "limit": 1.2
       },
       "ratings": {
         "fundamental": 61,
-        "price_reflection": 36,
+        "price_reflection": 38,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -1419,19 +1423,19 @@
           "components": [
             {
               "id": "peg",
-              "score": 30
+              "score": 31
             },
             {
               "id": "forward_per",
-              "score": 29
+              "score": 31
             },
             {
               "id": "pbr",
-              "score": 98
+              "score": 99
             },
             {
               "id": "ps",
-              "score": 51
+              "score": 56
             }
           ],
           "level": "medium",
@@ -1443,7 +1447,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "CPNG",
@@ -1452,15 +1456,15 @@
       "sector": "growth",
       "metrics": {
         "peg_fwd": 0.45,
-        "per_fwd": 54.80517,
-        "pbr": 7.300966,
-        "ps": 0.8106659,
+        "per_fwd": 56.480587,
+        "pbr": 7.52416,
+        "ps": 0.8354484,
         "forward_eps_growth": 180.6,
         "revenue_growth": 7.5,
         "earnings_surprise": -70.45,
         "eps_revision_1m": 6.02,
-        "target_gap": 63.2,
-        "band_pct": 4.9,
+        "target_gap": 58.0,
+        "band_pct": 7.5,
         "dividend_yield": 0.0,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -1552,7 +1556,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "TSLA",
@@ -1560,16 +1564,16 @@
       "market": "us",
       "sector": "growth",
       "metrics": {
-        "peg_fwd": 4.45,
-        "per_fwd": 138.72908,
-        "pbr": 13.746262,
-        "ps": 11.736696,
-        "forward_eps_growth": 23.4,
+        "peg_fwd": 4.37,
+        "per_fwd": 139.86086,
+        "pbr": 14.212449,
+        "ps": 11.862098,
+        "forward_eps_growth": 24.6,
         "revenue_growth": 25.5,
         "earnings_surprise": -38.35,
-        "eps_revision_1m": -8.16,
-        "target_gap": 30.3,
-        "band_pct": 5.0,
+        "eps_revision_1m": -11.22,
+        "target_gap": 28.0,
+        "band_pct": 6.9,
         "dividend_yield": 0.0,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -1589,11 +1593,11 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 4.45,
+        "value": 4.37,
         "limit": 1.5
       },
       "ratings": {
-        "fundamental": 61,
+        "fundamental": 60,
         "price_reflection": 98,
         "reference_line": 50,
         "orientation": {
@@ -1624,7 +1628,7 @@
             },
             {
               "id": "outlook",
-              "score": 11
+              "score": 8
             }
           ],
           "level": "high",
@@ -1661,7 +1665,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "AMD",
@@ -1669,16 +1673,16 @@
       "market": "us",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 1.25,
-        "per_fwd": 34.929253,
-        "pbr": 12.121273,
-        "ps": null,
-        "forward_eps_growth": 83.3,
+        "peg_fwd": 1.01,
+        "per_fwd": 34.45045,
+        "pbr": 12.040104,
+        "ps": 20.729706,
+        "forward_eps_growth": 85.6,
         "revenue_growth": 37.8,
         "earnings_surprise": 5.82,
-        "eps_revision_1m": 3.23,
-        "target_gap": 19.6,
-        "band_pct": 75.8,
+        "eps_revision_1m": 4.73,
+        "target_gap": 21.1,
+        "band_pct": 75.1,
         "dividend_yield": 0.0,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -1698,12 +1702,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 1.25,
+        "value": 1.01,
         "limit": 0.8
       },
       "ratings": {
         "fundamental": 84,
-        "price_reflection": 75,
+        "price_reflection": 76,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -1717,7 +1721,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 93
+              "score": 94
             },
             {
               "id": "profitability",
@@ -1733,40 +1737,44 @@
             },
             {
               "id": "outlook",
-              "score": 68
+              "score": 71
             }
           ],
           "level": "high",
-          "peer_percentile": 43,
+          "peer_percentile": 50,
           "peer_group_size": 8
         },
         "price_reflection": {
-          "available": 3,
+          "available": 4,
           "total": 4,
           "components": [
             {
               "id": "peg",
-              "score": 73
+              "score": 62
             },
             {
               "id": "forward_per",
-              "score": 82
+              "score": 81
             },
             {
               "id": "pbr",
+              "score": 100
+            },
+            {
+              "id": "ps",
               "score": 100
             }
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 50,
+          "peer_percentile": 58,
           "peer_group_size": 8
         }
       },
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "TSM",
@@ -1774,16 +1782,16 @@
       "market": "us",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 1.03,
-        "per_fwd": 18.088377,
+        "peg_fwd": 0.91,
+        "per_fwd": 18.708271,
         "pbr": null,
         "ps": null,
-        "forward_eps_growth": 27.5,
+        "forward_eps_growth": 28.5,
         "revenue_growth": 36.0,
         "earnings_surprise": 10.89,
         "eps_revision_1m": null,
-        "target_gap": 37.7,
-        "band_pct": 65.2,
+        "target_gap": 33.6,
+        "band_pct": 70.7,
         "dividend_yield": 0.94,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -1803,12 +1811,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 1.03,
+        "value": 0.91,
         "limit": 0.8
       },
       "ratings": {
         "fundamental": 88,
-        "price_reflection": 43,
+        "price_reflection": 42,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -1851,11 +1859,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 63
+              "score": 56
             },
             {
               "id": "forward_per",
-              "score": 45
+              "score": 47
             }
           ],
           "level": "medium",
@@ -1867,7 +1875,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "INTC",
@@ -1876,15 +1884,15 @@
       "sector": "semiconductor",
       "metrics": {
         "peg_fwd": 1.36,
-        "per_fwd": 44.333046,
-        "pbr": 4.005727,
-        "ps": 7.8562646,
-        "forward_eps_growth": 30.0,
+        "per_fwd": 44.27298,
+        "pbr": 5.1961517,
+        "ps": 7.97743,
+        "forward_eps_growth": 34.3,
         "revenue_growth": 25.4,
         "earnings_surprise": 92.49,
         "eps_revision_1m": null,
-        "target_gap": 30.2,
-        "band_pct": 56.6,
+        "target_gap": 27.8,
+        "band_pct": 57.7,
         "dividend_yield": 0.0,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -1909,7 +1917,7 @@
       },
       "ratings": {
         "fundamental": 74,
-        "price_reflection": 68,
+        "price_reflection": 81,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -1923,7 +1931,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 80
+              "score": 82
             },
             {
               "id": "profitability",
@@ -1960,23 +1968,23 @@
             },
             {
               "id": "pbr",
-              "score": 66
+              "score": 81
             },
             {
               "id": "ps",
-              "score": 76
+              "score": 77
             }
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 29,
+          "peer_percentile": 72,
           "peer_group_size": 8
         }
       },
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "AMAT",
@@ -1984,17 +1992,17 @@
       "market": "us",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 1.35,
-        "per_fwd": 29.32365,
-        "pbr": 16.46078,
-        "ps": 13.54086,
+        "peg_fwd": 1.1,
+        "per_fwd": 30.031755,
+        "pbr": 16.858273,
+        "ps": 13.887452,
         "forward_eps_growth": 37.7,
         "revenue_growth": 11.4,
         "earnings_surprise": 6.5,
         "eps_revision_1m": null,
-        "target_gap": 26.8,
-        "band_pct": 58.2,
-        "dividend_yield": 0.4,
+        "target_gap": 23.6,
+        "band_pct": 60.4,
+        "dividend_yield": 0.42,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
@@ -2013,12 +2021,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 1.35,
+        "value": 1.1,
         "limit": 0.8
       },
       "ratings": {
         "fundamental": 82,
-        "price_reflection": 75,
+        "price_reflection": 67,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -2061,11 +2069,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 78
+              "score": 66
             },
             {
               "id": "forward_per",
-              "score": 72
+              "score": 73
             },
             {
               "id": "pbr",
@@ -2078,14 +2086,14 @@
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 50,
+          "peer_percentile": 29,
           "peer_group_size": 8
         }
       },
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "LRCX",
@@ -2093,24 +2101,24 @@
       "market": "us",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 1.76,
-        "per_fwd": 34.122944,
-        "pbr": 32.979683,
-        "ps": 16.10031,
-        "forward_eps_growth": 43.6,
-        "revenue_growth": 23.8,
-        "earnings_surprise": 7.87,
+        "peg_fwd": 1.46,
+        "per_fwd": 25.792606,
+        "pbr": 34.619564,
+        "ps": 15.781618,
+        "forward_eps_growth": 21.1,
+        "revenue_growth": 30.0,
+        "earnings_surprise": 8.1,
         "eps_revision_1m": null,
-        "target_gap": 33.4,
-        "band_pct": 54.1,
-        "dividend_yield": 0.34,
+        "target_gap": 25.7,
+        "band_pct": 58.0,
+        "dividend_yield": 0.35,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
-        "operating_margin": 35.0,
-        "return_on_equity": 66.8,
-        "free_cash_flow_margin": 20.1,
-        "debt_to_equity": 35.3
+        "operating_margin": 37.4,
+        "return_on_equity": 65.1,
+        "free_cash_flow_margin": 14.1,
+        "debt_to_equity": 29.9
       },
       "fundamental_gate": {
         "status": "pass",
@@ -2122,12 +2130,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 1.76,
+        "value": 1.46,
         "limit": 0.8
       },
       "ratings": {
-        "fundamental": 87,
-        "price_reflection": 88,
+        "fundamental": 84,
+        "price_reflection": 72,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -2141,7 +2149,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 84
+              "score": 78
             },
             {
               "id": "profitability",
@@ -2149,11 +2157,11 @@
             },
             {
               "id": "cash_generation",
-              "score": 94
+              "score": 87
             },
             {
               "id": "balance_sheet",
-              "score": 71
+              "score": 73
             },
             {
               "id": "outlook",
@@ -2161,7 +2169,7 @@
             }
           ],
           "level": "high",
-          "peer_percentile": 58,
+          "peer_percentile": 50,
           "peer_group_size": 8
         },
         "price_reflection": {
@@ -2170,11 +2178,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 90
+              "score": 82
             },
             {
               "id": "forward_per",
-              "score": 80
+              "score": 64
             },
             {
               "id": "pbr",
@@ -2187,14 +2195,14 @@
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 86,
+          "peer_percentile": 43,
           "peer_group_size": 8
         }
       },
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "ASML",
@@ -2202,17 +2210,17 @@
       "market": "us",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 2.21,
-        "per_fwd": 27.973232,
-        "pbr": 25.16279,
-        "ps": 15.545572,
-        "forward_eps_growth": 34.4,
+        "peg_fwd": 1.9,
+        "per_fwd": 27.807695,
+        "pbr": 25.240223,
+        "ps": 15.5934105,
+        "forward_eps_growth": 34.3,
         "revenue_growth": 21.3,
         "earnings_surprise": 9.93,
-        "eps_revision_1m": 21.44,
-        "target_gap": 30.3,
-        "band_pct": 71.1,
-        "dividend_yield": 0.52,
+        "eps_revision_1m": 19.22,
+        "target_gap": 31.4,
+        "band_pct": 71.8,
+        "dividend_yield": 0.55,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
@@ -2231,12 +2239,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 2.21,
+        "value": 1.9,
         "limit": 0.8
       },
       "ratings": {
         "fundamental": 89,
-        "price_reflection": 83,
+        "price_reflection": 86,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -2279,7 +2287,7 @@
           "components": [
             {
               "id": "peg",
-              "score": 96
+              "score": 92
             },
             {
               "id": "forward_per",
@@ -2296,14 +2304,14 @@
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 72,
+          "peer_percentile": 86,
           "peer_group_size": 8
         }
       },
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "8035",
@@ -2311,23 +2319,23 @@
       "market": "us",
       "sector": "semiconductor",
       "metrics": {
-        "peg_fwd": 2.05,
-        "per_fwd": 49.054836,
-        "pbr": 13.799344,
-        "ps": 11.684759,
-        "forward_eps_growth": 2.2,
-        "revenue_growth": 8.6,
-        "earnings_surprise": 14.56,
+        "peg_fwd": 1.64,
+        "per_fwd": 43.352604,
+        "pbr": 12.19528,
+        "ps": 9.607739,
+        "forward_eps_growth": 2.5,
+        "revenue_growth": 33.3,
+        "earnings_surprise": 3.24,
         "eps_revision_1m": null,
-        "target_gap": 17.4,
-        "band_pct": 69.9,
-        "dividend_yield": 1.15,
+        "target_gap": 30.5,
+        "band_pct": 58.0,
+        "dividend_yield": 1.43,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_forward_vs_trailing_eps",
         "operating_margin": 28.9,
-        "return_on_equity": 29.3,
-        "free_cash_flow_margin": 9.4,
+        "return_on_equity": 30.9,
+        "free_cash_flow_margin": null,
         "debt_to_equity": null
       },
       "fundamental_gate": {
@@ -2340,12 +2348,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 2.05,
+        "value": 1.64,
         "limit": 0.8
       },
       "ratings": {
-        "fundamental": 78,
-        "price_reflection": 96,
+        "fundamental": 76,
+        "price_reflection": 93,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -2354,27 +2362,23 @@
       },
       "rating_quality": {
         "fundamental": {
-          "available": 4,
+          "available": 3,
           "total": 5,
           "components": [
             {
               "id": "growth",
-              "score": 57
+              "score": 67
             },
             {
               "id": "profitability",
               "score": 96
             },
             {
-              "id": "cash_generation",
-              "score": 78
-            },
-            {
               "id": "outlook",
-              "score": 92
+              "score": 63
             }
           ],
-          "level": "high",
+          "level": "medium",
           "peer_percentile": 15,
           "peer_group_size": 8
         },
@@ -2384,11 +2388,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 94
+              "score": 87
             },
             {
               "id": "forward_per",
-              "score": 95
+              "score": 91
             },
             {
               "id": "pbr",
@@ -2396,7 +2400,7 @@
             },
             {
               "id": "ps",
-              "score": 94
+              "score": 86
             }
           ],
           "level": "medium",
@@ -2408,7 +2412,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "AMZN",
@@ -2416,24 +2420,24 @@
       "market": "us",
       "sector": "ai_bigtech",
       "metrics": {
-        "peg_fwd": 1.25,
-        "per_fwd": 23.42687,
-        "pbr": 5.6532745,
-        "ps": 3.3643847,
-        "forward_eps_growth": 13.8,
-        "revenue_growth": 16.6,
+        "peg_fwd": 1.24,
+        "per_fwd": 26.733656,
+        "pbr": 6.6089115,
+        "ps": 3.766264,
+        "forward_eps_growth": 13.7,
+        "revenue_growth": 19.6,
         "earnings_surprise": 68.18,
-        "eps_revision_1m": 0.33,
-        "target_gap": 34.7,
-        "band_pct": 44.0,
+        "eps_revision_1m": 1.0,
+        "target_gap": 15.3,
+        "band_pct": 91.5,
         "dividend_yield": 0.0,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
-        "operating_margin": 13.1,
-        "return_on_equity": 24.3,
-        "free_cash_flow_margin": 1.3,
-        "debt_to_equity": 53.3
+        "operating_margin": 13.7,
+        "return_on_equity": 30.6,
+        "free_cash_flow_margin": 2.9,
+        "debt_to_equity": 40.5
       },
       "fundamental_gate": {
         "status": "pass",
@@ -2445,12 +2449,12 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 1.25,
+        "value": 1.24,
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 71,
-        "price_reflection": 55,
+        "fundamental": 74,
+        "price_reflection": 62,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -2464,27 +2468,27 @@
           "components": [
             {
               "id": "growth",
-              "score": 68
+              "score": 69
             },
             {
               "id": "profitability",
-              "score": 87
+              "score": 89
             },
             {
               "id": "cash_generation",
-              "score": 54
+              "score": 60
             },
             {
               "id": "balance_sheet",
-              "score": 63
+              "score": 69
             },
             {
               "id": "outlook",
-              "score": 73
+              "score": 75
             }
           ],
           "level": "high",
-          "peer_percentile": 26,
+          "peer_percentile": 38,
           "peer_group_size": 9
         },
         "price_reflection": {
@@ -2493,31 +2497,31 @@
           "components": [
             {
               "id": "peg",
-              "score": 52
+              "score": 51
             },
             {
               "id": "forward_per",
-              "score": 58
+              "score": 66
             },
             {
               "id": "pbr",
-              "score": 85
+              "score": 92
             },
             {
               "id": "ps",
-              "score": 34
+              "score": 38
             }
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 50,
+          "peer_percentile": 63,
           "peer_group_size": 9
         }
       },
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "ANET",
@@ -2525,16 +2529,16 @@
       "market": "us",
       "sector": "ai_bigtech",
       "metrics": {
-        "peg_fwd": 2.22,
-        "per_fwd": 37.26477,
-        "pbr": 15.542899,
-        "ps": 21.588947,
+        "peg_fwd": 2.01,
+        "per_fwd": 40.369423,
+        "pbr": 16.83783,
+        "ps": 23.387596,
         "forward_eps_growth": 22.9,
         "revenue_growth": 35.1,
         "earnings_surprise": 7.73,
         "eps_revision_1m": 0.3,
-        "target_gap": 15.5,
-        "band_pct": 69.0,
+        "target_gap": 6.6,
+        "band_pct": 87.4,
         "dividend_yield": 0.0,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -2554,7 +2558,7 @@
       "valuation_gate": {
         "status": "fail",
         "basis": "peg",
-        "value": 2.22,
+        "value": 2.01,
         "limit": 1.2
       },
       "ratings": {
@@ -2598,11 +2602,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 82
+              "score": 77
             },
             {
               "id": "forward_per",
-              "score": 85
+              "score": 88
             },
             {
               "id": "pbr",
@@ -2622,7 +2626,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "VRT",
@@ -2630,24 +2634,24 @@
       "market": "us",
       "sector": "industrial",
       "metrics": {
-        "peg_fwd": 1.46,
-        "per_fwd": 31.1575,
-        "pbr": 24.878347,
-        "ps": 9.74335,
-        "forward_eps_growth": 36.2,
-        "revenue_growth": 30.1,
-        "earnings_surprise": 15.67,
+        "peg_fwd": 1.12,
+        "per_fwd": 26.652472,
+        "pbr": 21.849676,
+        "ps": 8.101466,
+        "forward_eps_growth": 35.0,
+        "revenue_growth": 24.1,
+        "earnings_surprise": 6.42,
         "eps_revision_1m": null,
-        "target_gap": 36.8,
-        "band_pct": 59.9,
-        "dividend_yield": 0.09,
+        "target_gap": 42.5,
+        "band_pct": 47.0,
+        "dividend_yield": 0.11,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
-        "operating_margin": 16.4,
-        "return_on_equity": 45.1,
-        "free_cash_flow_margin": 18.1,
-        "debt_to_equity": 76.9
+        "operating_margin": 20.4,
+        "return_on_equity": 43.9,
+        "free_cash_flow_margin": 23.5,
+        "debt_to_equity": 70.2
       },
       "fundamental_gate": {
         "status": "pass",
@@ -2657,14 +2661,14 @@
         "eps_revision_limit": 0.0
       },
       "valuation_gate": {
-        "status": "fail",
+        "status": "pass",
         "basis": "peg_or_per",
-        "value": 1.46,
+        "value": 1.12,
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 84,
-        "price_reflection": 77,
+        "fundamental": 82,
+        "price_reflection": 68,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -2678,23 +2682,23 @@
           "components": [
             {
               "id": "growth",
-              "score": 84
+              "score": 81
             },
             {
               "id": "profitability",
-              "score": 92
+              "score": 95
             },
             {
               "id": "cash_generation",
-              "score": 92
+              "score": 96
             },
             {
               "id": "balance_sheet",
-              "score": 52
+              "score": 55
             },
             {
               "id": "outlook",
-              "score": 93
+              "score": 74
             }
           ],
           "level": "high",
@@ -2707,11 +2711,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 60
+              "score": 47
             },
             {
               "id": "forward_per",
-              "score": 75
+              "score": 66
             },
             {
               "id": "pbr",
@@ -2719,7 +2723,7 @@
             },
             {
               "id": "ps",
-              "score": 87
+              "score": 78
             }
           ],
           "level": "medium",
@@ -2727,10 +2731,10 @@
           "peer_group_size": 2
         }
       },
-      "quant_gate_pass": false,
+      "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "SMCI",
@@ -2739,15 +2743,15 @@
       "sector": "ai_bigtech",
       "metrics": {
         "peg_fwd": 0.91,
-        "per_fwd": 8.68767,
-        "pbr": 2.2838771,
-        "ps": 0.55223805,
+        "per_fwd": 8.575941,
+        "pbr": 2.254505,
+        "ps": 0.5451359,
         "forward_eps_growth": 16.7,
         "revenue_growth": 122.7,
         "earnings_surprise": 34.51,
         "eps_revision_1m": null,
-        "target_gap": 31.4,
-        "band_pct": 21.7,
+        "target_gap": 33.1,
+        "band_pct": 22.3,
         "dividend_yield": 0.0,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -2839,7 +2843,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "VST",
@@ -2847,17 +2851,17 @@
       "market": "us",
       "sector": "industrial",
       "metrics": {
-        "peg_fwd": 0.48,
-        "per_fwd": 14.488427,
-        "pbr": 16.977903,
-        "ps": 2.7179213,
-        "forward_eps_growth": 25.4,
+        "peg_fwd": 0.41,
+        "per_fwd": 14.346137,
+        "pbr": 16.051777,
+        "ps": 2.5696616,
+        "forward_eps_growth": 23.2,
         "revenue_growth": 43.4,
         "earnings_surprise": 53.35,
         "eps_revision_1m": null,
-        "target_gap": 42.5,
-        "band_pct": 27.6,
-        "dividend_yield": 0.56,
+        "target_gap": 49.8,
+        "band_pct": 17.8,
+        "dividend_yield": 0.62,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
@@ -2876,12 +2880,12 @@
       "valuation_gate": {
         "status": "pass",
         "basis": "peg_or_per",
-        "value": 0.48,
+        "value": 0.41,
         "limit": 1.2
       },
       "ratings": {
         "fundamental": 71,
-        "price_reflection": 43,
+        "price_reflection": 42,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -2895,7 +2899,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 83
+              "score": 82
             },
             {
               "id": "profitability",
@@ -2924,11 +2928,11 @@
           "components": [
             {
               "id": "peg",
-              "score": 25
+              "score": 23
             },
             {
               "id": "forward_per",
-              "score": 37
+              "score": 36
             },
             {
               "id": "pbr",
@@ -2936,7 +2940,7 @@
             },
             {
               "id": "ps",
-              "score": 29
+              "score": 27
             }
           ],
           "level": "medium",
@@ -2947,7 +2951,7 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     },
     {
       "ticker": "PLTR",
@@ -2956,15 +2960,15 @@
       "sector": "growth",
       "metrics": {
         "peg_fwd": 1.76,
-        "per_fwd": 61.709827,
-        "pbr": 36.666664,
-        "ps": 59.311302,
+        "per_fwd": 58.754436,
+        "pbr": 34.910637,
+        "ps": 56.470787,
         "forward_eps_growth": 41.9,
         "revenue_growth": 84.7,
         "earnings_surprise": 18.08,
         "eps_revision_1m": null,
-        "target_gap": 41.0,
-        "band_pct": 22.6,
+        "target_gap": 48.1,
+        "band_pct": 16.5,
         "dividend_yield": 0.0,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
@@ -3056,7 +3060,7 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260801"
     }
   ]
 }
