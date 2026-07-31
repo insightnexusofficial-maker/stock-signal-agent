@@ -1,15 +1,16 @@
 """
-사여?! - 알림 발송 (v6: 검증 쇼크 + 매수 상태 전환)
+사여?! - 알림 발송 (v7: 중요 사이클 변경 + 매수 상태 전환)
 =====================================================
 - 🟢🟢 강력 매수 (strong 신규 진입)
 - 🚨 지금 매수! (RSI 임계값 상향 돌파)
-- 🚨 검증된 공식 발표 쇼크 (별도 07:00 KST 실행)
+- 🚨 검증된 공식 발표로 인한 중요 사이클 변경 (발표 직후 실행)
 """
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 import hashlib
+import requests
 
-from event_alerts import due_shock_alerts
+from event_alerts import due_cycle_interrupt_alerts, due_shock_alerts
 from notification_policy import build_buy_notification, evaluate_buy_alert
 
 try:
@@ -19,6 +20,8 @@ except ValueError:
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
+
+CYCLE_REPORT_URL = "https://stock-sayo-study.web.app/data/cycle-latest.json"
 
 
 # ============================================================
@@ -164,6 +167,63 @@ def send_due_event_shock_alerts(event_feed=None, now=None):
 
     if sent_count == 0:
         print("   📭 07:00 이벤트 쇼크 알림 없음")
+    return sent_count
+
+
+def send_due_cycle_interrupt_alerts(cycle_report=None, now=None):
+    """중요 공식 발표가 만든 사이클 중간 변경을 검증 후 최대 한 번 발송한다."""
+    if cycle_report is None:
+        try:
+            response = requests.get(CYCLE_REPORT_URL, timeout=12)
+            response.raise_for_status()
+            cycle_report = response.json()
+        except Exception:
+            print("   ⚠️  사이클 중간 변경 리포트 로드 실패")
+            return 0
+
+    sent_count = 0
+    for alert in due_cycle_interrupt_alerts(cycle_report, now=now):
+        report_id = alert["report_id"]
+        state_id = "cycle_interrupt_" + hashlib.sha256(
+            report_id.encode("utf-8")
+        ).hexdigest()[:32]
+        state_ref = db.collection("state").document(state_id)
+        try:
+            claimed = _claim_event_shock(
+                db.transaction(), state_ref, report_id, alert["notify_at"]
+            )
+        except Exception:
+            print("   ⚠️  사이클 중간 변경 알림 claim 실패")
+            continue
+        if not claimed:
+            continue
+        try:
+            delivered = send_push(
+                alert["title"], alert["body"], tag=alert["tag"], data=alert["data"]
+            )
+        except Exception:
+            delivered = 0
+            print("   ⚠️  사이클 중간 변경 알림 발송 실패")
+        if delivered <= 0:
+            try:
+                _release_event_shock_claim(db.transaction(), state_ref)
+            except Exception:
+                print("   ⚠️  사이클 중간 변경 알림 claim 해제 실패")
+            continue
+        try:
+            state_ref.set({
+                "sent": True,
+                "status": "delivered",
+                "report_id": report_id,
+                "notify_at": alert["notify_at"],
+                "delivered_at": firestore.SERVER_TIMESTAMP,
+                "delivered_count": delivered,
+            }, merge=True)
+        except Exception:
+            print("   ⚠️  사이클 중간 변경 전달 상태 저장 실패 (claim 유지)")
+        sent_count += 1
+    if sent_count == 0:
+        print("   📭 즉시 알릴 사이클 중요 변화 없음")
     return sent_count
 
 

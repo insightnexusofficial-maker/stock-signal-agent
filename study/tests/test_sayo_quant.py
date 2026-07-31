@@ -6,10 +6,32 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from sayo_quant import apply_peer_context, fundamental_gate, fundamental_rating, normalize_stock, price_reflection_rating, valuation_gate  # noqa: E402
+from sayo_quant import apply_peer_context, apply_post_earnings_adjustment, fundamental_gate, fundamental_rating, normalize_stock, price_reflection_rating, valuation_gate  # noqa: E402
 
 
 class SayoQuantAlignmentTests(unittest.TestCase):
+    def test_post_earnings_consensus_cut_reduces_strength_and_raises_price_burden(self):
+        previous = {
+            "data_as_of": "20260728",
+            "metrics": {"forward_eps_growth": 20},
+            "ratings": {"fundamental": 80, "price_reflection": 55},
+        }
+        refreshed = {
+            "data_as_of": "20260731",
+            "metrics": {"forward_eps_growth": 10, "eps_revision_1m": -2},
+            "ratings": {"fundamental": 76, "price_reflection": 60},
+        }
+
+        adjusted = apply_post_earnings_adjustment(
+            previous,
+            refreshed,
+            {"event_id": "earnings-TEST-q2"},
+            __import__("datetime").datetime.fromisoformat("2026-07-31T20:00:00+09:00"),
+        )
+
+        self.assertEqual(adjusted["ratings"]["fundamental"], 66)
+        self.assertEqual(adjusted["ratings"]["price_reflection"], 70)
+        self.assertEqual(adjusted["assessment"]["consensus_direction"], "lowered")
     def test_semiconductor_peg_uses_same_strict_limit(self):
         criteria = {"peg_max": 0.8}
         self.assertEqual(valuation_gate({"peg_fwd": 0.79, "sector": "semiconductor"}, criteria, "us")["status"], "pass")

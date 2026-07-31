@@ -784,7 +784,7 @@ class UploaderRegressionTests(unittest.TestCase):
     @patch("uploader.requests.get")
     def test_event_feed_requires_fresh_official_contract(self, requests_get):
         requests_get.return_value = FakeResponse({
-            "schema_version": "1.0",
+            "schema_version": "1.2",
             "feed_id": "market-events-aaaaaaaaaaaaaaaa",
             "content_sha256": "a" * 64,
             "generated_at": "2026-07-28T23:40:00+09:00",
@@ -810,6 +810,7 @@ class UploaderRegressionTests(unittest.TestCase):
         )
 
         self.assertEqual(feed["feed_id"], "market-events-aaaaaaaaaaaaaaaa")
+        self.assertEqual(feed["schema_version"], "1.2")
         self.assertEqual(feed["events"][0]["id"], "earnings-NVDA")
 
     @patch("uploader.requests.get")

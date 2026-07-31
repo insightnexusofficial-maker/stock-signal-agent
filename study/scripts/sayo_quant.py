@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from copy import deepcopy
+from datetime import datetime
 from typing import Any
 
 
@@ -355,3 +357,62 @@ def apply_peer_context(stocks: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def criteria_digest(criteria_config: dict[str, Any]) -> str:
     canonical = json.dumps(criteria_config.get("criteria", {}), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def apply_post_earnings_adjustment(
+    previous: dict[str, Any],
+    refreshed: dict[str, Any],
+    event: dict[str, Any],
+    updated_at: datetime,
+) -> dict[str, Any]:
+    """실적 뒤 새 EPS 전망이 확인된 경우에만 기업 판단을 교체한다."""
+
+    candidate = deepcopy(refreshed)
+    previous_growth = as_number(previous.get("metrics", {}).get("forward_eps_growth"))
+    current_growth = as_number(candidate.get("metrics", {}).get("forward_eps_growth"))
+    revision = as_number(candidate.get("metrics", {}).get("eps_revision_1m"))
+    growth_delta = (
+        current_growth - previous_growth
+        if current_growth is not None and previous_growth is not None
+        else None
+    )
+    lowered = bool(
+        (revision is not None and revision < -1)
+        or (growth_delta is not None and growth_delta <= -5)
+    )
+    penalty = 0
+    if lowered:
+        penalty = 10 if (
+            (revision is not None and revision <= -5)
+            or (growth_delta is not None and growth_delta <= -10)
+        ) else 5
+        fundamental = candidate.get("ratings", {}).get("fundamental")
+        burden = candidate.get("ratings", {}).get("price_reflection")
+        if isinstance(fundamental, int):
+            candidate["ratings"]["fundamental"] = clamp_rating(fundamental - penalty)
+        if isinstance(burden, int):
+            candidate["ratings"]["price_reflection"] = clamp_rating(burden + penalty)
+
+    if lowered:
+        direction = "lowered"
+        label = "실적 발표 뒤 EPS 전망 하향 반영"
+    elif revision is not None and revision > 1:
+        direction = "raised"
+        label = "실적 발표 뒤 EPS 전망 상향 확인"
+    else:
+        direction = "unchanged"
+        label = "실적 발표 뒤 EPS 전망 유지"
+    candidate["assessment"] = {
+        "state": "updated_after_earnings",
+        "label": label,
+        "event_id": event["event_id"],
+        "updated_at": updated_at.isoformat(timespec="seconds"),
+        "previous_data_as_of": previous.get("data_as_of"),
+        "eps_revision_1m": revision,
+        "forward_eps_growth_change_pp": (
+            round(growth_delta, 1) if growth_delta is not None else None
+        ),
+        "consensus_direction": direction,
+        "score_adjustment": penalty,
+    }
+    return candidate

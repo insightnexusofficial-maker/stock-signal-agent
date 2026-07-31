@@ -9,7 +9,7 @@ from typing import Any
 
 KST = timezone(timedelta(hours=9))
 SCHEMA_VERSION = "1.2"
-LOGIC_VERSION = "cycle-engine-v4-2026-07-19"
+LOGIC_VERSION = "cycle-engine-v5-2026-07-31"
 METHODOLOGY_VERSION = "semiconductor-cycle-ai-roles-2026-07-18"
 PILLARS = {"demand", "inventory", "pricing", "supply", "earnings"}
 DIRECTIONS = {"positive", "negative", "neutral"}
@@ -158,6 +158,7 @@ def build_report(
     now: datetime | None = None,
     companies: list[dict[str, Any]] | None = None,
     company_map_version: str | None = None,
+    update_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     now = now or datetime.now(KST)
     today = now.date()
@@ -180,7 +181,15 @@ def build_report(
             "supporting_evidence_ids": supporting,
             "contrary_evidence_ids": contrary,
         })
-    report_id = f"semiconductor-cycle-{today.isoformat()}"
+    context = update_context or {
+        "type": "weekly",
+        "critical": False,
+        "event_ids": [],
+        "status_changes": [],
+        "reason": "토요일 정기 전체 조사",
+    }
+    suffix = "event" if context.get("type") == "event_interrupt" else "weekly"
+    report_id = f"semiconductor-cycle-{now.strftime('%Y-%m-%d-%H%M')}-{suffix}"
     quality_gate = {
         "status": "passed" if valid else "insufficient",
         "mode": "verified-only",
@@ -198,6 +207,7 @@ def build_report(
         "generated_at": now.isoformat(timespec="seconds"),
         "expires_at": (now + timedelta(days=8)).isoformat(timespec="seconds"),
         "fallback_status": "pending-neutral",
+        "update_context": context,
         "quality_gate": quality_gate,
         "segments": segments,
         "company_map_version": company_map_version,

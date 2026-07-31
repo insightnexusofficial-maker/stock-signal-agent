@@ -41,6 +41,7 @@ jobs:
         run: python scripts/check_due_events.py
 
       - name: Detect official earnings result publication
+        id: earnings
         if: ${{ steps.due.outputs.active == 'true' || ((github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *') && steps.due.outputs.backfill_active == 'true') }}
         env:
           INCLUDE_RECENT_OVERDUE: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' }}
@@ -49,6 +50,16 @@ jobs:
       - name: Collect supported official macro results
         if: ${{ steps.due.outputs.active == 'true' }}
         run: python scripts/collect_event_results.py
+
+      - name: Apply verified announcement impact to the cycle
+        id: impact
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        run: python scripts/apply_event_cycle_impact.py
+
+      - name: Refresh company assessments only after an earnings result
+        id: quant
+        if: ${{ steps.earnings.outputs.changed == 'true' }}
+        run: python scripts/sync_sayo_quant.py
 
       - name: Build verified event feed
         id: build
@@ -59,6 +70,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: |
           python -m unittest discover -s tests -p "test_*event*.py" -v
+          python -m unittest tests/test_apply_event_cycle_impact.py tests/test_sync_sayo_quant_lifecycle.py -v
           python scripts/validate_build.py
 
       - name: Save verified event snapshot
@@ -66,14 +78,36 @@ jobs:
         run: |
           git config user.name "stock-sayo-study-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/event-calendar.json data/event-results.json public/data/event-latest.json
+          git add data/event-calendar.json data/event-results.json data/evidence.json public/data/event-latest.json public/data/cycle-latest.json public/data/quant-latest.json
           git diff --cached --quiet || git commit -m "chore: refresh verified event feed"
           git push
 
       - name: Install Firebase CLI
-        if: ${{ env.FIREBASE_TOKEN != '' && steps.build.outputs.changed == 'true' }}
+        if: ${{ env.FIREBASE_TOKEN != '' && (steps.build.outputs.changed == 'true' || steps.impact.outputs.cycle_changed == 'true' || steps.quant.outputs.changed == 'true') }}
         run: npm install --global firebase-tools
 
       - name: Deploy validated event feed
-        if: ${{ env.FIREBASE_TOKEN != '' && steps.build.outputs.changed == 'true' }}
+        if: ${{ env.FIREBASE_TOKEN != '' && (steps.build.outputs.changed == 'true' || steps.impact.outputs.cycle_changed == 'true' || steps.quant.outputs.changed == 'true') }}
         run: firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"
+
+      - name: Install alert dependencies for a critical interrupt
+        if: ${{ steps.impact.outputs.critical == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
+        working-directory: .
+        run: pip install --disable-pip-version-check --no-input -r requirements-uploader.txt
+
+      - name: Create temporary Firebase key for a critical interrupt
+        if: ${{ steps.impact.outputs.critical == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
+        working-directory: .
+        run: |
+          umask 077
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-key.json
+
+      - name: Push the audited critical cycle interrupt
+        if: ${{ steps.impact.outputs.critical == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
+        working-directory: .
+        run: python send_cycle_interrupt_alerts.py
+
+      - name: Remove temporary alert credentials
+        if: always()
+        working-directory: .
+        run: rm -f firebase-key.json

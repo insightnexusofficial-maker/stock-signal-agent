@@ -9,15 +9,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/site.css?v=20260731a">
-  <script src="assets/site.js?v=20260731a" defer></script>
+  <link rel="stylesheet" href="assets/site.css?v=20260731e">
+  <script src="assets/site.js?v=20260731e" defer></script>
 </head>
 <body class="site-page">
   <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header class="topbar"><div class="topbar-inner">
     <a class="wordmark" href="index.html">반도체 · AI 지도</a>
     <button class="mobile-nav-button" type="button" aria-expanded="false" aria-controls="topnav">메뉴</button>
-    <nav class="topnav" id="topnav" aria-label="주요 페이지"><a href="index.html">산업 지도</a><a href="companies.html">기업 · 정량</a><a href="cycle.html">사이클</a><a href="methodology.html" aria-current="page">방법론</a></nav>
+    <nav class="topnav" id="topnav" aria-label="주요 페이지"><a href="index.html">산업 지도</a><a href="companies.html">기업 분석</a><a href="cycle.html">사이클</a><a href="methodology.html" aria-current="page">방법론</a></nav>
   </div></header>
 
   <section class="page-hero"><div class="hero-inner">
@@ -28,25 +28,27 @@
 
   <main class="page-main" id="main">
     <section class="section-block">
-      <div class="section-head"><div><p class="section-kicker">QUANT RATING</p><h2>기업 Rating</h2><p class="section-copy">기업별 펀더멘털과 주가반영을 1–100으로 비교합니다.</p></div></div>
+      <div class="section-head"><div><p class="section-kicker">COMPANY CHECK</p><h2>기업 판단</h2><p class="section-copy">기업별 실적 체력과 현재 가격에 반영된 기대를 1–100점으로 비교합니다.</p></div></div>
       <div class="table-wrap"><table class="data-table">
         <thead><tr><th>구분</th><th>무엇을 보나</th><th>표시</th><th>학습 포인트</th></tr></thead>
         <tbody>
-          <tr><td>펀더멘털</td><td>성장·수익성·현금창출·재무안정성·전망</td><td>1–100 Rating + 근거 범위</td><td>세 축 이상이 있어야 산정하며, 높을수록 현재 실적 체력이 강함</td></tr>
-          <tr><td>주가반영</td><td>PEG·선행 PER·PBR·PS와 동종업계 상대 위치</td><td>1–100 Rating + 근거 범위</td><td>높을수록 성장 기대가 가격에 많이 반영됨</td></tr>
+          <tr><td>실적 체력</td><td>성장·수익성·현금창출·재무안정성·전망</td><td>1–100점 + 근거 범위</td><td>세 축 이상이 있어야 산정하며, 높을수록 현재 실적 체력이 강함</td></tr>
+          <tr><td>가격 부담</td><td>이익 대비 가격 수준과 동종업계 상대 위치</td><td>1–100점 + 근거 범위</td><td>높을수록 성장 기대가 현재 가격에 많이 반영됨</td></tr>
           <tr><td>사이클</td><td>공식 출처의 수요·재고·가격·공급·이익 근거</td><td>사이클 우호/중립/주의</td><td>산업 흐름을 영역별로 일반화하지 않기</td></tr>
         </tbody>
       </table></div>
     </section>
 
     <section class="section-block">
-      <div class="section-head"><div><p class="section-kicker">WEEKLY PIPELINE</p><h2>7일 주기 업데이트</h2><p class="section-copy">수집 실패나 검증 실패가 기존 확정본을 덮어쓰지 못합니다.</p></div></div>
+      <div class="section-head"><div><p class="section-kicker">WEEKLY + EVENT</p><h2>토요일 전체 점검 + 발표 직후 재점검</h2><p class="section-copy">매주 토요일 전체 자료를 조사하고, 공식 발표가 사이클에 영향을 줄 때만 주중에 다시 반영합니다.</p></div></div>
       <div class="timeline">
         <article class="timeline-item"><h3>허용 출처 수집</h3><p>공식 IR·공시·WSTS·SEMI 등 등록된 도메인의 신규 항목만 가져옵니다.</p></article>
         <article class="timeline-item"><h3>정규화와 중복 제거</h3><p>URL·발행일·출처군·산업 영역·증거 축이 없는 항목은 검증 대기열로 보냅니다.</p></article>
         <article class="timeline-item"><h3>근거 추출</h3><p>직접 발행일이 있는 최근 30일 자료에서 사실·수치·출처를 분리합니다.</p></article>
         <article class="timeline-item"><h3>반대 근거 확인</h3><p>긍정 근거만 보지 않고 같은 영역의 반대 신호가 있는지 함께 확인합니다.</p></article>
         <article class="timeline-item"><h3>규칙 기반 확정</h3><p>독립 출처군 2개와 증거 축 2개, 반대 근거 노출 조건을 코드로 확인합니다.</p></article>
+        <article class="timeline-item"><h3>발표 직후 재점검</h3><p>주요 기업 실적과 거시지표 발표 뒤 공식 결과를 확인합니다. 영향이 작으면 기존 상태를 유지하고, 유의미한 변화만 중간 반영합니다.</p></article>
+        <article class="timeline-item"><h3>중요 변화 알림</h3><p>감사 규칙을 통과한 중요한 악화나 사이클 상태 변화만 연결된 알림 앱으로 보냅니다.</p></article>
         <article class="timeline-item"><h3>원자적 발행</h3><p>HTML과 JSON 검증을 모두 통과한 경우에만 새 리포트를 발행합니다. 만료 시 중립으로 폴백합니다.</p></article>
       </div>
     </section>

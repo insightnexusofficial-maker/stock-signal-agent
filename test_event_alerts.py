@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from event_alerts import due_result_alerts, due_shock_alerts
+from event_alerts import due_cycle_interrupt_alerts, due_result_alerts, due_shock_alerts
 
 
 def feed_with_result(result):
@@ -129,6 +129,47 @@ class EventAlertTests(unittest.TestCase):
             due_shock_alerts(
                 feed,
                 now=datetime.fromisoformat("2026-08-13T07:00:00+09:00"),
+            ),
+            [],
+        )
+
+    def test_critical_cycle_interrupt_is_due_immediately(self):
+        report = {
+            "schema_version": "1.2",
+            "report_id": "semiconductor-cycle-2026-08-12-2140-event",
+            "generated_at": "2026-08-12T21:40:00+09:00",
+            "expires_at": "2026-08-19T21:40:00+09:00",
+            "quality_gate": {"status": "passed"},
+            "update_context": {
+                "type": "event_interrupt",
+                "critical": True,
+                "event_ids": ["macro-us-cpi-2026-07"],
+                "status_changes": [{"segment": "cloud_capex", "label": "클라우드 설비투자"}],
+                "reason": "공식 CPI 쇼크 기준을 통과했다.",
+            },
+        }
+
+        alerts = due_cycle_interrupt_alerts(
+            report,
+            now=datetime.fromisoformat("2026-08-12T21:41:00+09:00"),
+        )
+
+        self.assertEqual(len(alerts), 1)
+        self.assertEqual(alerts[0]["data"]["type"], "cycle_interrupt")
+
+    def test_noncritical_cycle_interrupt_is_not_pushed(self):
+        report = {
+            "schema_version": "1.2",
+            "report_id": "event-1",
+            "generated_at": "2026-08-12T21:40:00+09:00",
+            "expires_at": "2026-08-19T21:40:00+09:00",
+            "quality_gate": {"status": "passed"},
+            "update_context": {"type": "event_interrupt", "critical": False},
+        }
+        self.assertEqual(
+            due_cycle_interrupt_alerts(
+                report,
+                now=datetime.fromisoformat("2026-08-12T21:41:00+09:00"),
             ),
             [],
         )

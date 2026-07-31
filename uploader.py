@@ -329,7 +329,7 @@ def fetch_event_feed(url=None, now=None):
                 event_times_valid = False
                 break
         if (
-            feed.get("schema_version") != "1.0"
+            feed.get("schema_version") not in {"1.0", "1.2"}
             or feed.get("quality_gate", {}).get("status") != "passed"
             or feed.get("quality_gate", {}).get("mode") != "official-only"
             or feed.get("shock_policy", {}).get("mode") != "objective-official-data-only"
@@ -344,7 +344,7 @@ def fetch_event_feed(url=None, now=None):
         ):
             raise ValueError("검증 또는 만료 조건을 통과하지 못한 이벤트 feed")
         return {
-            "schema_version": "1.0",
+            "schema_version": feed.get("schema_version"),
             "feed_id": feed.get("feed_id"),
             "content_sha256": feed.get("content_sha256"),
             "generated_at": feed.get("generated_at"),
@@ -354,6 +354,7 @@ def fetch_event_feed(url=None, now=None):
             "shock_policy": feed.get("shock_policy") or {},
             "events": feed["events"],
             "recent_results": feed["recent_results"],
+            "company_trackers": feed.get("company_trackers") or [],
         }
     except Exception as error:
         _record_collection_error(

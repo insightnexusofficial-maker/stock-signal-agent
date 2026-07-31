@@ -123,7 +123,11 @@
       return acc;
     }, {});
     const evidenceCount = Array.isArray(report.evidence) ? report.evidence.length : 0;
-    target.innerHTML = `<div class="cycle-summary-card">
+    const updateContext = report.update_context || {};
+    const interruptNotice = updateContext.type === "event_interrupt"
+      ? `<div class="notice ${updateContext.critical ? "caution" : ""}">${updateContext.critical ? "중요 발표로 즉시 재점검" : "정기 점검 사이 공식 발표 반영"} · ${escapeHtml(updateContext.reason || "발표 영향을 다시 확인했습니다.")}</div>`
+      : "";
+    target.innerHTML = `${interruptNotice}<div class="cycle-summary-card">
       <div>
         <p class="section-kicker">이번 주 사이클</p>
         <h3>영역별 현재 상태</h3>

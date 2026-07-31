@@ -27,7 +27,9 @@ REVIEW_STATUSES = {"verified", "pending", "rejected"}
 TREND_CHANGES = {"strengthening", "unchanged", "weakening", "mixed"}
 RISK_LEVELS = {"low", "medium", "high"}
 CYCLE_STATUS_EFFECTS = {"none_single_source", "review_required", "evidence_candidate"}
-AUTOMATED_OFFICIAL_RESULT_PREFIXES = ("macro-fomc-", "earnings-")
+AUTOMATED_OFFICIAL_RESULT_PREFIXES = (
+    "macro-fomc-", "macro-us-cpi-", "macro-us-jobs-", "macro-us-pce-", "earnings-"
+)
 
 
 class EventDataError(ValueError):

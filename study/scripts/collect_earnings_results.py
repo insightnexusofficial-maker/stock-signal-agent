@@ -445,6 +445,10 @@ def main() -> None:
         os.environ.get("INCLUDE_RECENT_OVERDUE", "").lower() == "true"
     )
     checked, added = collect(include_recent_overdue=include_recent_overdue)
+    output_path = os.environ.get("GITHUB_OUTPUT")
+    if output_path:
+        with Path(output_path).open("a", encoding="utf-8") as handle:
+            handle.write(f"changed={'true' if added else 'false'}\n")
     print(f"발표 창 공식 결과 확인 {checked}건 · 검토 대기 추가 {added}건")
 
 

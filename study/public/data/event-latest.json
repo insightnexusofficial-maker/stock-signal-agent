@@ -144,7 +144,7 @@
       "schedule_source_url": "https://www.bea.gov/news/schedule",
       "segments": [],
       "sync_status": "synced",
-      "result_collection_status": "manual-official-review"
+      "result_collection_status": "automated-official"
     },
     {
       "id": "earnings-8035-fy2027q1",
@@ -240,7 +240,7 @@
       "schedule_source_url": "https://www.bls.gov/schedule/news_release/empsit.htm",
       "segments": [],
       "sync_status": "scheduled",
-      "result_collection_status": "manual-official-review"
+      "result_collection_status": "automated-official"
     },
     {
       "id": "earnings-VST-2026q2",
@@ -315,7 +315,7 @@
       "schedule_source_url": "https://www.bls.gov/schedule/news_release/cpi.htm",
       "segments": [],
       "sync_status": "scheduled",
-      "result_collection_status": "manual-official-review"
+      "result_collection_status": "automated-official"
     },
     {
       "id": "earnings-AMAT-fy2026q3",

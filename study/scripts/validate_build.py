@@ -131,8 +131,8 @@ def validate_html(path: Path) -> list[str]:
         for pattern in STRONG_UNSOURCED_PATTERNS:
             if pattern in text:
                 errors.append(f"companies.html: 출처 없는 강한 주장 금지어 포함 {pattern}")
-        if "주가반영 Rating" not in text:
-            errors.append("companies.html: 주가반영 Rating 설명 없음")
+        if "가격 부담 점수" not in text:
+            errors.append("companies.html: 가격 부담 점수 설명 없음")
     return errors
 
 
@@ -141,9 +141,13 @@ def validate_json() -> list[str]:
     quant = json.loads((PUBLIC / "data/quant-latest.json").read_text(encoding="utf-8"))
     cycle = json.loads((PUBLIC / "data/cycle-latest.json").read_text(encoding="utf-8"))
     event_feed = json.loads((PUBLIC / "data/event-latest.json").read_text(encoding="utf-8"))
+    event_calendar = json.loads((ROOT / "data/event-calendar.json").read_text(encoding="utf-8"))
     registry = json.loads((ROOT / "data/sources.json").read_text(encoding="utf-8"))
-    allowed_domains = {item["allowed_domain"] for item in registry.get("sources", [])}
+    allowed_domains = {
+        item["allowed_domain"] for item in registry.get("sources", [])
+    } | set(event_calendar.get("allowed_domains") or [])
     source_by_id = {item["id"]: item for item in registry.get("sources", [])}
+    event_by_id = {item["id"]: item for item in event_calendar.get("events", [])}
     if quant.get("schema_version") not in {"1.0", "1.1", "1.2"} or not quant.get("stocks"):
         errors.append("quant-latest.json 계약 또는 종목 목록 오류")
     if cycle.get("schema_version") not in {"1.0", "1.1", "1.2"} or not cycle.get("segments"):
@@ -236,7 +240,12 @@ def validate_json() -> list[str]:
         if urlparse(item.get("source_url", "")).hostname not in allowed_domains:
             errors.append(f"cycle: 허용되지 않은 근거 도메인 {item.get('source_url')}")
         source = source_by_id.get(item.get("source_id"))
-        if not source:
+        origin_event = event_by_id.get(item.get("origin_event_id"))
+        if origin_event and item.get("source_id") == origin_event.get("id"):
+            expected_family = f"event_{str(origin_event.get('ticker') or 'company').lower()}_ir"
+            if item.get("source_family") != expected_family:
+                errors.append(f"cycle: 이벤트 출처군 불일치 {evidence_id}")
+        elif not source:
             errors.append(f"cycle: 등록되지 않은 source_id {item.get('source_id')}")
         elif urlparse(item.get("source_url", "")).hostname != source.get("allowed_domain") or item.get("source_family") != source.get("source_family"):
             errors.append(f"cycle: 출처 등록정보 불일치 {evidence_id}")
@@ -287,13 +296,13 @@ def validate_json() -> list[str]:
         for key in ("fundamental", "price_reflection"):
             value = ratings.get(key)
             if value is not None and not 1 <= int(value) <= 100:
-                errors.append(f"quant: {stock.get('ticker')} {key} Rating 범위 오류")
+                errors.append(f"quant: {stock.get('ticker')} {key} 점수 범위 오류")
         if quant.get("schema_version") in {"1.1", "1.2"}:
             if ratings.get("reference_line") != 50:
-                errors.append(f"quant: {stock.get('ticker')} Rating 기준선 오류")
+                errors.append(f"quant: {stock.get('ticker')} 점수 기준선 오류")
             orientation = ratings.get("orientation", {})
             if orientation.get("fundamental") != "higher_is_stronger" or orientation.get("price_reflection") != "higher_is_more_priced_in":
-                errors.append(f"quant: {stock.get('ticker')} Rating 방향 오류")
+                errors.append(f"quant: {stock.get('ticker')} 점수 방향 오류")
             for key in ("fundamental", "price_reflection"):
                 quality = stock.get("rating_quality", {}).get(key, {})
                 if quality.get("level") not in {"high", "medium", "low", "unavailable"}:

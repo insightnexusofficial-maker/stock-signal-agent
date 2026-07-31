@@ -16,6 +16,57 @@ import collect_event_results
 
 
 class CollectEventResultsTests(unittest.TestCase):
+    def test_builds_verified_jobs_result_from_official_series(self):
+        event = {
+            "id": "macro-us-jobs-2026-07",
+            "scheduled_at": "2026-08-07T21:30:00+09:00",
+        }
+        series = {
+            "CES0000000001": {"2026-06": 158000, "2026-07": 158120},
+            "LNS14000000": {"2026-06": 4.2, "2026-07": 4.3},
+        }
+        result = collect_event_results.build_jobs_result(
+            event, series, {"results": []},
+            datetime.fromisoformat("2026-08-07T21:35:00+09:00"),
+        )
+        self.assertEqual(result["facts"][0]["value"], 120)
+        self.assertNotIn("shock", result)
+
+    def test_builds_audited_cpi_shock(self):
+        event = {
+            "id": "macro-us-cpi-2026-07",
+            "scheduled_at": "2026-08-12T21:30:00+09:00",
+        }
+        series = {
+            "CUSR0000SA0": {"2025-06": 99, "2025-07": 100, "2026-06": 104, "2026-07": 105},
+            "CUSR0000SA0L1E": {"2025-07": 100, "2026-06": 103, "2026-07": 104},
+        }
+        result = collect_event_results.build_cpi_result(
+            event, series, {"results": []},
+            datetime.fromisoformat("2026-08-12T21:35:00+09:00"),
+        )
+        self.assertTrue(result["shock"]["audit_passed"])
+        self.assertEqual(result["shock"]["rule_id"], "macro-inflation-mom-0_6pct")
+
+    def test_parses_verified_pce_result(self):
+        event = {
+            "id": "macro-us-pce-2026-06",
+            "scheduled_at": "2026-07-30T21:30:00+09:00",
+            "result_source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-june-2026",
+        }
+        html = """
+        <p>From the preceding month, the PCE price index for June decreased 0.1 percent.
+        Excluding food and energy, the PCE price index increased 0.1 percent.</p>
+        <p>From the same month one year ago, the PCE price index for June increased 3.7 percent.
+        Excluding food and energy, the PCE price index increased 3.3 percent from one year ago.</p>
+        """
+        result = collect_event_results.build_pce_result(
+            event, html, {"results": []},
+            datetime.fromisoformat("2026-07-30T21:35:00+09:00"),
+        )
+        self.assertEqual(result["facts"][0]["value"], -0.1)
+        self.assertEqual(result["facts"][1]["value"], 3.7)
+
     def test_discovers_latest_official_html_statement(self):
         html = """
         <a href="/newsevents/pressreleases/monetary20260617a.htm">HTML</a>

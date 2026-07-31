@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """공개 공식 페이지에서 검증 가능한 거시 발표 결과를 갱신한다.
 
-현재 자동 수집 대상은 Federal Reserve FOMC 성명이다. 인증 키나 세션을
-사용하지 않고 공식 HTML 성명만 읽으며, 파싱에 실패하면 기존 결과를
-보존하고 실패로 종료한다.
+자동 수집 대상은 FOMC, 미국 CPI·고용, PCE다. 인증 키나 세션 없이
+Federal Reserve·BLS·BEA의 공식 공개 자료만 읽으며, 파싱에 실패하면
+기존 결과를 보존한다.
 """
 
 from __future__ import annotations
@@ -27,6 +27,8 @@ CALENDAR_PATH = ROOT / "data" / "event-calendar.json"
 RESULTS_PATH = ROOT / "data" / "event-results.json"
 FED_CALENDAR_URL = "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 FED_HOST = "www.federalreserve.gov"
+BLS_API_URL = "https://api.bls.gov/publicAPI/v2/timeseries/data/"
+BEA_HOST = "www.bea.gov"
 STATEMENT_PATH = re.compile(
     r"^/newsevents/pressreleases/monetary(?P<date>\d{8})a\.htm$"
 )
@@ -34,6 +36,20 @@ TARGET_RANGE = re.compile(
     r"target range for the federal funds rate at\s+"
     r"(?P<lower>\d+(?:-\d+/\d+|\.\d+)?)\s+to\s+"
     r"(?P<upper>\d+(?:-\d+/\d+|\.\d+)?)\s+percent",
+    re.IGNORECASE,
+)
+PCE_MOM = re.compile(
+    r"From the preceding month, the PCE price index for \w+ "
+    r"(?P<direction>increased|decreased) (?P<value>\d+(?:\.\d+)?) percent.*?"
+    r"Excluding food and energy, the PCE price index "
+    r"(?P<core_direction>increased|decreased) (?P<core_value>\d+(?:\.\d+)?) percent",
+    re.IGNORECASE,
+)
+PCE_YOY = re.compile(
+    r"From the same month one year ago, the PCE price index for \w+ "
+    r"(?P<direction>increased|decreased) (?P<value>\d+(?:\.\d+)?) percent.*?"
+    r"Excluding food and energy, the PCE price index "
+    r"(?P<core_direction>increased|decreased) (?P<core_value>\d+(?:\.\d+)?) percent",
     re.IGNORECASE,
 )
 
@@ -81,6 +97,181 @@ def _fetch_official_html(url: str, timeout: int = 20) -> str:
     )
     with urlopen(request, timeout=timeout) as response:
         return response.read().decode("utf-8", errors="replace")
+
+
+def _fetch_bea_html(url: str, timeout: int = 20) -> str:
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname != BEA_HOST:
+        raise ValueError("BEA 공식 HTTPS URL만 수집할 수 있습니다.")
+    request = Request(url, headers={"User-Agent": "stock-sayo-study-public-data/1.0"})
+    with urlopen(request, timeout=timeout) as response:
+        return response.read().decode("utf-8", errors="replace")
+
+
+def _fetch_bls_series(series_ids: list[str], start_year: int, end_year: int) -> dict:
+    body = json.dumps({
+        "seriesid": series_ids,
+        "startyear": str(start_year),
+        "endyear": str(end_year),
+    }).encode("utf-8")
+    request = Request(
+        BLS_API_URL,
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "stock-sayo-study-public-data/1.0",
+        },
+    )
+    with urlopen(request, timeout=20) as response:
+        document = json.load(response)
+    if document.get("status") != "REQUEST_SUCCEEDED":
+        raise ValueError("BLS 공식 API 요청이 실패했습니다.")
+    output = {}
+    for series in document.get("Results", {}).get("series", []):
+        values = {}
+        for item in series.get("data", []):
+            period = str(item.get("period") or "")
+            if not re.fullmatch(r"M(?:0[1-9]|1[0-2])", period):
+                continue
+            values[f"{item['year']}-{period[1:]}"] = float(item["value"])
+        output[series.get("seriesID")] = values
+    return output
+
+
+def _month_shift(value: str, offset: int) -> str:
+    year, month = map(int, value.split("-"))
+    index = year * 12 + month - 1 + offset
+    return f"{index // 12:04d}-{index % 12 + 1:02d}"
+
+
+def _event_reference_month(event: dict) -> str:
+    match = re.search(r"(20\d{2})-(0[1-9]|1[0-2])$", str(event.get("id") or ""))
+    if not match:
+        raise ValueError("거시 이벤트 기준월을 확인하지 못했습니다.")
+    return match.group(0)
+
+
+def _signed(direction: str, value: str) -> float:
+    number = float(value)
+    return -number if direction.lower() == "decreased" else number
+
+
+def _previous_fact(results: dict, prefix: str, metric: str, event_id: str) -> float | None:
+    candidates = []
+    for item in results.get("results", []):
+        if item.get("event_id") == event_id or not str(item.get("event_id", "")).startswith(prefix):
+            continue
+        for fact in item.get("facts", []):
+            if fact.get("metric") == metric:
+                candidates.append((item.get("reference_period", ""), float(fact["value"])))
+    return max(candidates, default=(None, None))[1]
+
+
+def _inflation_shock(mom: float, yoy: float, previous_yoy: float | None) -> dict | None:
+    if abs(mom) >= 0.6:
+        return {
+            "is_shock": True, "severity": "shock",
+            "rule_id": "macro-inflation-mom-0_6pct",
+            "reason": f"공식 물가지표 전월 대비 변동률이 {mom:+.1f}%로 쇼크 기준을 넘었다.",
+            "audit_passed": True,
+        }
+    if previous_yoy is not None and abs(yoy - previous_yoy) >= 0.5:
+        return {
+            "is_shock": True, "severity": "shock",
+            "rule_id": "macro-inflation-yoy-change-0_5pp",
+            "reason": f"공식 물가지표 전년 대비 상승률이 직전 발표보다 {yoy - previous_yoy:+.1f}%p 변했다.",
+            "audit_passed": True,
+        }
+    return None
+
+
+def build_jobs_result(event: dict, series: dict, results: dict, retrieved_at: datetime) -> dict:
+    reference = _event_reference_month(event)
+    previous = _month_shift(reference, -1)
+    payroll = series["CES0000000001"]
+    unemployment = series["LNS14000000"]
+    payroll_change = round(payroll[reference] - payroll[previous])
+    unemployment_change = round(unemployment[reference] - unemployment[previous], 1)
+    result = {
+        "event_id": event["id"], "status": "complete", "review_status": "verified",
+        "retrieved_at": retrieved_at.isoformat(timespec="seconds"),
+        "source_published_at": event["scheduled_at"], "reference_period": reference,
+        "summary": f"미국 비농업 고용은 전월보다 {payroll_change:+,d}천 명, 실업률은 {unemployment[reference]:.1f}%로 발표됐다.",
+        "facts": [
+            {"metric": "nonfarm_payroll_change", "value": payroll_change, "unit": "thousand_people", "comparison": "previous month"},
+            {"metric": "unemployment_rate", "value": unemployment[reference], "unit": "percent"},
+            {"metric": "unemployment_rate_change", "value": unemployment_change, "unit": "percentage_points", "comparison": "previous month"},
+        ],
+        "source_urls": [BLS_API_URL],
+    }
+    if abs(payroll_change) >= 500:
+        result["shock"] = {"is_shock": True, "severity": "shock", "rule_id": "macro-payroll-change-500k", "reason": f"비농업 고용 증감이 {payroll_change:+,d}천 명으로 쇼크 기준을 넘었다.", "audit_passed": True}
+    elif abs(unemployment_change) >= 0.5:
+        result["shock"] = {"is_shock": True, "severity": "shock", "rule_id": "macro-unemployment-change-0_5pp", "reason": f"실업률이 전월보다 {unemployment_change:+.1f}%p 변해 쇼크 기준을 넘었다.", "audit_passed": True}
+    return result
+
+
+def build_cpi_result(event: dict, series: dict, results: dict, retrieved_at: datetime) -> dict:
+    reference = _event_reference_month(event)
+    previous = _month_shift(reference, -1)
+    year_ago = _month_shift(reference, -12)
+    prior_year_ago = _month_shift(reference, -13)
+    headline = series["CUSR0000SA0"]
+    core = series["CUSR0000SA0L1E"]
+    mom = round((headline[reference] / headline[previous] - 1) * 100, 1)
+    yoy = round((headline[reference] / headline[year_ago] - 1) * 100, 1)
+    core_mom = round((core[reference] / core[previous] - 1) * 100, 1)
+    core_yoy = round((core[reference] / core[year_ago] - 1) * 100, 1)
+    prior_yoy = round((headline[previous] / headline[prior_year_ago] - 1) * 100, 1)
+    result = {
+        "event_id": event["id"], "status": "complete", "review_status": "verified",
+        "retrieved_at": retrieved_at.isoformat(timespec="seconds"),
+        "source_published_at": event["scheduled_at"], "reference_period": reference,
+        "summary": f"미국 CPI는 전월 대비 {mom:+.1f}%, 전년 대비 {yoy:+.1f}%로 발표됐다.",
+        "facts": [
+            {"metric": "cpi_mom", "value": mom, "unit": "percent", "comparison": "previous month"},
+            {"metric": "cpi_yoy", "value": yoy, "unit": "percent", "comparison": "same month previous year"},
+            {"metric": "core_cpi_mom", "value": core_mom, "unit": "percent", "comparison": "previous month"},
+            {"metric": "core_cpi_yoy", "value": core_yoy, "unit": "percent", "comparison": "same month previous year"},
+        ],
+        "source_urls": [BLS_API_URL],
+    }
+    shock = _inflation_shock(mom, yoy, prior_yoy)
+    if shock:
+        result["shock"] = shock
+    return result
+
+
+def build_pce_result(event: dict, html: str, results: dict, retrieved_at: datetime) -> dict:
+    parser = _OfficialPageParser()
+    parser.feed(html)
+    text = " ".join(parser.text)
+    mom_match = PCE_MOM.search(text)
+    yoy_match = PCE_YOY.search(text)
+    if not mom_match or not yoy_match:
+        raise ValueError("BEA 발표문에서 PCE 물가지표를 확인하지 못했습니다.")
+    mom = _signed(mom_match.group("direction"), mom_match.group("value"))
+    core_mom = _signed(mom_match.group("core_direction"), mom_match.group("core_value"))
+    yoy = _signed(yoy_match.group("direction"), yoy_match.group("value"))
+    core_yoy = _signed(yoy_match.group("core_direction"), yoy_match.group("core_value"))
+    reference = _event_reference_month(event)
+    result = {
+        "event_id": event["id"], "status": "complete", "review_status": "verified",
+        "retrieved_at": retrieved_at.isoformat(timespec="seconds"),
+        "source_published_at": event["scheduled_at"], "reference_period": reference,
+        "summary": f"미국 PCE 물가지수는 전월 대비 {mom:+.1f}%, 전년 대비 {yoy:+.1f}%로 발표됐다.",
+        "facts": [
+            {"metric": "pce_price_index_mom", "value": mom, "unit": "percent", "comparison": "previous month"},
+            {"metric": "pce_price_index_yoy", "value": yoy, "unit": "percent", "comparison": "same month previous year"},
+            {"metric": "core_pce_price_index_mom", "value": core_mom, "unit": "percent", "comparison": "previous month"},
+            {"metric": "core_pce_price_index_yoy", "value": core_yoy, "unit": "percent", "comparison": "same month previous year"},
+        ],
+        "source_urls": [event["result_source_url"]],
+    }
+    shock = _inflation_shock(mom, yoy, _previous_fact(results, "macro-us-pce-", "pce_price_index_yoy", event["id"]))
+    if shock:
+        result["shock"] = shock
+    return result
 
 
 def discover_latest_fomc_statement(calendar_html: str) -> tuple[str, str]:
@@ -221,13 +412,45 @@ def build_fomc_result(
 def collect(now: datetime | None = None) -> bool:
     now = (now or datetime.now(timezone.utc)).astimezone(KST)
     sync = build_event_sync(CALENDAR_PATH, RESULTS_PATH, now=now)
-    if not any(
-        str(event_id).startswith("macro-fomc-")
-        for event_id in sync["due_event_ids"]
-    ):
-        return False
+    due_ids = set(sync["due_event_ids"])
     calendar = validate_calendar(_read_json(CALENDAR_PATH))
     results = validate_results(_read_json(RESULTS_PATH), calendar)
+    result_ids = {item["event_id"] for item in results.get("results", [])}
+    other_changed = False
+    for event in calendar.get("events", []):
+        event_id = event["id"]
+        if event_id not in due_ids or event_id in result_ids:
+            continue
+        try:
+            if event_id.startswith("macro-us-jobs-"):
+                reference = _event_reference_month(event)
+                year = int(reference[:4])
+                series = _fetch_bls_series(["CES0000000001", "LNS14000000"], year - 1, year)
+                candidate = build_jobs_result(event, series, results, now)
+            elif event_id.startswith("macro-us-cpi-"):
+                reference = _event_reference_month(event)
+                year = int(reference[:4])
+                series = _fetch_bls_series(["CUSR0000SA0", "CUSR0000SA0L1E"], year - 1, year)
+                candidate = build_cpi_result(event, series, results, now)
+            elif event_id.startswith("macro-us-pce-"):
+                candidate = build_pce_result(
+                    event, _fetch_bea_html(event["result_source_url"]), results, now
+                )
+            else:
+                continue
+        except (KeyError, TypeError, ValueError):
+            continue
+        results.setdefault("results", []).append(candidate)
+        result_ids.add(event_id)
+        other_changed = True
+    if other_changed:
+        results["results"].sort(key=lambda item: (item.get("source_published_at") or "", item["event_id"]))
+        results["generated_at"] = now.isoformat(timespec="seconds")
+        validate_results(results, calendar)
+        _atomic_write(RESULTS_PATH, results)
+
+    if not any(str(event_id).startswith("macro-fomc-") for event_id in due_ids):
+        return other_changed
     calendar_html = _fetch_official_html(FED_CALENDAR_URL)
     statement_date, statement_url = discover_latest_fomc_statement(calendar_html)
     if _decision_at(statement_date) > now:
@@ -279,7 +502,7 @@ def collect(now: datetime | None = None) -> bool:
             validate_results(results, calendar)
             if calendar_changed:
                 _atomic_write(CALENDAR_PATH, calendar)
-            return calendar_changed
+            return calendar_changed or other_changed
         results["results"] = [
             candidate if item.get("event_id") == event_id else item
             for item in results.get("results", [])

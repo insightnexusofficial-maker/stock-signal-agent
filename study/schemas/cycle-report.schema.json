@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://stock-sayo-study.web.app/schemas/cycle-report.schema.json",
   "type": "object",
-  "required": ["schema_version", "logic_version", "methodology_version", "evidence_sha256", "report_id", "generated_at", "expires_at", "fallback_status", "quality_gate", "segments", "company_map_version", "company_cycle", "evidence"],
+  "required": ["schema_version", "logic_version", "methodology_version", "evidence_sha256", "report_id", "generated_at", "expires_at", "fallback_status", "update_context", "quality_gate", "segments", "company_map_version", "company_cycle", "evidence"],
   "properties": {
     "schema_version": {"const": "1.2"},
     "logic_version": {"type": "string", "minLength": 1},
@@ -12,6 +12,17 @@
     "generated_at": {"type": "string", "format": "date-time"},
     "expires_at": {"type": "string", "format": "date-time"},
     "fallback_status": {"const": "pending-neutral"},
+    "update_context": {
+      "type": "object",
+      "required": ["type", "critical", "event_ids", "status_changes", "reason"],
+      "properties": {
+        "type": {"enum": ["weekly", "event_interrupt"]},
+        "critical": {"type": "boolean"},
+        "event_ids": {"type": "array", "items": {"type": "string"}},
+        "status_changes": {"type": "array"},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
     "quality_gate": {
       "type": "object",
       "required": ["status", "mode", "evidence_count", "message"],

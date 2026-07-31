@@ -1,11 +1,11 @@
 (function () {
   function ratingLabel(value) {
     if (!Number.isFinite(value)) return "데이터 대기";
-    if (value >= 85) return "매우 높음";
-    if (value >= 70) return "높음";
-    if (value >= 50) return "보통";
-    if (value >= 30) return "낮음";
-    return "매우 낮음";
+    if (value >= 85) return "실적 매우 강함";
+    if (value >= 70) return "실적 강함";
+    if (value >= 50) return "실적 보통";
+    if (value >= 30) return "실적 약함";
+    return "실적 매우 약함";
   }
 
   function reflectionLabel(value) {
@@ -20,7 +20,7 @@
   function qualityLabel(quality) {
     const available = Number(quality?.available) || 0;
     const total = Number(quality?.total) || 4;
-    const level = { high: "높은 신뢰", medium: "보통 신뢰", low: "낮은 신뢰", unavailable: "산정 보류" }[quality?.level] || "검증 대기";
+    const level = { high: "근거 충분", medium: "근거 보통", low: "근거 제한", unavailable: "판단 보류" }[quality?.level] || "검증 대기";
     return `${level} · 근거 ${available}/${total}`;
   }
 
@@ -42,7 +42,7 @@
 
   function renderPending(container, message) {
     container.className = "gauges quant-sync";
-    container.innerHTML = `<div class="rating-card is-pending"><div class="rating-head"><span class="rating-title">정량 Rating</span><strong class="rating-score">—</strong></div><div class="rating-meta">${escapeHtml(message)}</div></div>`;
+    container.innerHTML = `<div class="rating-card is-pending"><div class="rating-head"><span class="rating-title">기업 상태</span><strong class="rating-score">—</strong></div><div class="rating-meta">${escapeHtml(message)}</div></div>`;
   }
 
   function ratingCard(title, value, detail, kind, labeler = ratingLabel) {
@@ -78,9 +78,9 @@
     const reflectionDetail = `${qualityLabel(quality.price_reflection)}${providerNote}`;
     container.className = "gauges quant-sync";
     container.innerHTML = `
-      ${ratingCard("펀더멘털 Rating", ratings.fundamental, fundamentalDetail, "fundamental")}
-      ${ratingCard("주가반영 Rating", ratings.price_reflection, reflectionDetail, "price", reflectionLabel)}
-      <div class="quant-stamp">펀더멘털은 성장·수익성·현금·재무·전망을 함께 봄 · 주가반영은 밸류에이션 중심 · 50점은 중간 수준 · 기준일 ${escapeHtml(stock.data_as_of || "미확인")}</div>`;
+      ${ratingCard("실적 체력", ratings.fundamental, fundamentalDetail, "fundamental")}
+      ${ratingCard("가격 부담", ratings.price_reflection, reflectionDetail, "price", reflectionLabel)}
+      <div class="quant-stamp">${escapeHtml(stock.assessment?.label || "다음 실적 발표 전 기존 판단 유지")} · 실적 체력은 성장·이익·현금·재무·전망, 가격 부담은 현재 이익 대비 가격 수준 · 50점은 중간 · 기준일 ${escapeHtml(stock.data_as_of || "미확인")}</div>`;
   }
 
   async function loadQuant() {

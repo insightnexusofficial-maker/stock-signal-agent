@@ -8,7 +8,7 @@ class NotifierSecurityTests(unittest.TestCase):
     def setUpClass(cls):
         root = Path(__file__).parent
         cls.source = (root / "notifier.py").read_text(encoding="utf-8")
-        cls.workflow = (root / ".github/workflows/event_shock_alert.yml").read_text(
+        cls.workflow = (root / ".github/workflows/study-event-feed.yml").read_text(
             encoding="utf-8"
         )
         cls.messaging_worker = (
@@ -38,14 +38,15 @@ class NotifierSecurityTests(unittest.TestCase):
         delivered = self.source.index("delivered = send_push(", continue_after_error)
         self.assertLess(continue_after_error, delivered)
 
-    def test_alert_workflow_runs_at_0700_kst_and_cleans_credentials(self):
-        self.assertIn("- cron: '0 22 * * *'", self.workflow)
+    def test_critical_alert_runs_in_event_workflow_and_cleans_credentials(self):
+        self.assertIn("steps.impact.outputs.critical == 'true'", self.workflow)
+        self.assertIn("python send_cycle_interrupt_alerts.py", self.workflow)
         self.assertIn("if: always()", self.workflow)
         self.assertIn("run: rm -f firebase-key.json", self.workflow)
 
-    def test_alert_workflow_has_read_only_repository_permission(self):
-        self.assertRegex(self.workflow, r"permissions:\s+contents: read")
-        self.assertIn("persist-credentials: false", self.workflow)
+    def test_event_workflow_uses_scoped_repository_permission(self):
+        self.assertRegex(self.workflow, r"permissions:\s+contents: write")
+        self.assertIn("persist-credentials: true", self.workflow)
 
     def test_candidate_is_not_a_buy_push_type(self):
         buy_section = self.source[

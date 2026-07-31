@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://stock-sayo-study.web.app/schemas/quant-snapshot.schema.json",
   "type": "object",
-  "required": ["schema_version", "logic_version", "rating_logic_version", "criteria_sha256", "generated_at", "expires_at", "alignment", "stocks"],
+  "required": ["schema_version", "logic_version", "rating_logic_version", "criteria_sha256", "generated_at", "expires_at", "alignment", "assessment_policy", "stocks"],
   "properties": {
     "schema_version": {"enum": ["1.0", "1.1", "1.2"]},
     "logic_version": {"type": "string", "minLength": 1},
@@ -20,11 +20,20 @@
         "pending": {"type": "integer", "minimum": 0}
       }
     },
+    "assessment_policy": {
+      "type": "object",
+      "required": ["mode", "eps_revision_lowered_threshold", "forward_eps_growth_drop_threshold_pp"],
+      "properties": {
+        "mode": {"const": "hold-until-verified-earnings"},
+        "eps_revision_lowered_threshold": {"type": "number"},
+        "forward_eps_growth_drop_threshold_pp": {"type": "number"}
+      }
+    },
     "stocks": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["ticker", "name", "market", "sector", "metrics", "fundamental_gate", "valuation_gate", "ratings", "sayo_alignment", "data_as_of"],
+        "required": ["ticker", "name", "market", "sector", "metrics", "fundamental_gate", "valuation_gate", "ratings", "sayo_alignment", "data_as_of", "assessment"],
         "properties": {
           "ticker": {"type": "string"},
           "name": {"type": "string"},
@@ -51,6 +60,16 @@
           }
           ,"sayo_alignment": {"enum": ["aligned", "drift", "pending"]}
           ,"data_as_of": {"type": "string", "minLength": 1}
+          ,"assessment": {
+            "type": "object",
+            "required": ["state", "label"],
+            "properties": {
+              "state": {"enum": ["initial", "held_until_next_earnings", "waiting_for_post_earnings_data", "updated_after_earnings"]},
+              "label": {"type": "string", "minLength": 1},
+              "updated_at": {"type": "string", "format": "date-time"},
+              "event_id": {"type": "string"}
+            }
+          }
         }
       }
     }

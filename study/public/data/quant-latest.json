@@ -1,17 +1,22 @@
 {
   "schema_version": "1.2",
   "logic_version": "stock-sayo-v4-2026-07-18",
-  "rating_logic_version": "study-rating-v2-2026-07-19",
+  "rating_logic_version": "study-company-assessment-v3-2026-07-31",
   "criteria_sha256": "3577fcdc76fc80ee49afd5845f8f94ad7c9166fb210a1a334d2b6ddf815f4c53",
-  "generated_at": "2026-07-28T01:07:20+09:00",
-  "expires_at": "2026-08-05T01:07:20+09:00",
+  "generated_at": "2026-07-31T20:26:06+09:00",
+  "expires_at": "2026-08-08T20:26:06+09:00",
   "source": "Stock SAYO public Firestore snapshot",
-  "source_updated_at": "07월 28일 01:01",
+  "source_updated_at": "07월 31일 15:39",
   "alignment": {
     "mode": "reproduce-and-verify-step1",
     "aligned": 29,
     "drift": 0,
     "pending": 0
+  },
+  "assessment_policy": {
+    "mode": "hold-until-verified-earnings",
+    "eps_revision_lowered_threshold": -1.0,
+    "forward_eps_growth_drop_threshold_pp": -5.0
   },
   "stocks": [
     {
@@ -108,7 +113,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "000660",
@@ -204,7 +213,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "042700",
@@ -300,7 +313,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "267270",
@@ -396,7 +413,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "034020",
@@ -492,7 +513,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260724"
+      "data_as_of": "20260724",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "010120",
@@ -588,7 +613,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "251270",
@@ -684,7 +713,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "NVDA",
@@ -793,7 +826,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "AVGO",
@@ -902,7 +939,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "MU",
@@ -1007,7 +1048,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "MSFT",
@@ -1015,17 +1060,17 @@
       "market": "us",
       "sector": "ai_bigtech",
       "metrics": {
-        "peg_fwd": 1.18,
-        "per_fwd": 20.24753,
-        "pbr": 7.0325584,
-        "ps": 9.155162,
-        "forward_eps_growth": 15.5,
+        "peg_fwd": 1.21,
+        "per_fwd": 19.540962,
+        "pbr": 8.087563,
+        "ps": 10.524499,
+        "forward_eps_growth": 18.4,
         "revenue_growth": 18.3,
-        "earnings_surprise": 4.9,
-        "eps_revision_1m": 0.07,
-        "target_gap": 41.9,
-        "band_pct": 20.9,
-        "dividend_yield": 0.95,
+        "earnings_surprise": 11.81,
+        "eps_revision_1m": null,
+        "target_gap": 24.5,
+        "band_pct": 49.4,
+        "dividend_yield": 0.93,
         "peg_source": "yahoo_peg_ratio",
         "peg_quality": "provider_reported",
         "eps_growth_source": "yahoo_growth_estimates_1y",
@@ -1042,14 +1087,14 @@
         "eps_revision_limit": -1.0
       },
       "valuation_gate": {
-        "status": "pass",
+        "status": "fail",
         "basis": "peg",
-        "value": 1.18,
+        "value": 1.21,
         "limit": 1.2
       },
       "ratings": {
-        "fundamental": 78,
-        "price_reflection": 66,
+        "fundamental": 83,
+        "price_reflection": 70,
         "reference_line": 50,
         "orientation": {
           "fundamental": "higher_is_stronger",
@@ -1063,7 +1108,7 @@
           "components": [
             {
               "id": "growth",
-              "score": 69
+              "score": 72
             },
             {
               "id": "profitability",
@@ -1079,11 +1124,11 @@
             },
             {
               "id": "outlook",
-              "score": 59
+              "score": 88
             }
           ],
           "level": "high",
-          "peer_percentile": 38,
+          "peer_percentile": 50,
           "peer_group_size": 9
         },
         "price_reflection": {
@@ -1092,31 +1137,42 @@
           "components": [
             {
               "id": "peg",
-              "score": 49
+              "score": 50
             },
             {
               "id": "forward_per",
-              "score": 51
+              "score": 49
             },
             {
               "id": "pbr",
-              "score": 94
+              "score": 97
             },
             {
               "id": "ps",
-              "score": 84
+              "score": 90
             }
           ],
           "level": "medium",
           "note": "provider_peg_horizon_unavailable",
-          "peer_percentile": 75,
+          "peer_percentile": 88,
           "peer_group_size": 9
         }
       },
-      "quant_gate_pass": true,
+      "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260731",
+      "assessment": {
+        "state": "updated_after_earnings",
+        "label": "실적 발표 뒤 EPS 전망 유지",
+        "event_id": "earnings-MSFT-fy2026q4",
+        "updated_at": "2026-07-31T20:26:06+09:00",
+        "previous_data_as_of": "20260728",
+        "eps_revision_1m": null,
+        "forward_eps_growth_change_pp": 2.9,
+        "consensus_direction": "unchanged",
+        "score_adjustment": 0
+      }
     },
     {
       "ticker": "GOOGL",
@@ -1225,7 +1281,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "META",
@@ -1334,7 +1394,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "ORCL",
@@ -1443,7 +1507,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "CPNG",
@@ -1552,7 +1620,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "TSLA",
@@ -1661,7 +1733,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "AMD",
@@ -1766,7 +1842,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "TSM",
@@ -1867,7 +1947,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "INTC",
@@ -1976,7 +2060,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "AMAT",
@@ -2085,7 +2173,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "LRCX",
@@ -2194,7 +2286,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "ASML",
@@ -2303,7 +2399,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "8035",
@@ -2408,7 +2508,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "AMZN",
@@ -2517,7 +2621,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "ANET",
@@ -2622,7 +2730,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "VRT",
@@ -2730,7 +2842,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "SMCI",
@@ -2839,7 +2955,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "VST",
@@ -2947,7 +3067,11 @@
       "quant_gate_pass": true,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     },
     {
       "ticker": "PLTR",
@@ -3056,7 +3180,11 @@
       "quant_gate_pass": false,
       "sayo_alignment": "aligned",
       "metric_quality": "ok",
-      "data_as_of": "20260728"
+      "data_as_of": "20260728",
+      "assessment": {
+        "state": "held_until_next_earnings",
+        "label": "다음 실적 발표 전 기존 판단 유지"
+      }
     }
   ]
 }

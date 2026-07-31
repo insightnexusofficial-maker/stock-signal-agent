@@ -1,16 +1,40 @@
 {
   "schema_version": "1.2",
-  "logic_version": "cycle-engine-v4-2026-07-19",
+  "logic_version": "cycle-engine-v5-2026-07-31",
   "methodology_version": "semiconductor-cycle-ai-roles-2026-07-18",
-  "evidence_sha256": "291ec94ed130f2fe61ccfdfe94fc043b0cb9f67320cdf9f1c1a84147214561db",
-  "report_id": "semiconductor-cycle-2026-07-28",
-  "generated_at": "2026-07-28T01:11:00+09:00",
-  "expires_at": "2026-08-05T01:11:00+09:00",
+  "evidence_sha256": "d90993e9bce33fbe849eff2032ac61492e760a39614aa6a1e6fb2f25c857aee2",
+  "report_id": "semiconductor-cycle-2026-07-31-2020-event",
+  "generated_at": "2026-07-31T20:20:03+09:00",
+  "expires_at": "2026-08-08T20:20:03+09:00",
   "fallback_status": "pending-neutral",
+  "update_context": {
+    "type": "event_interrupt",
+    "critical": false,
+    "event_ids": [
+      "earnings-MSFT-fy2026q4"
+    ],
+    "status_changes": [
+      {
+        "segment": "cloud_capex",
+        "label": "클라우드 설비투자",
+        "from": "neutral",
+        "to": "neutral",
+        "confidence_delta": 20
+      },
+      {
+        "segment": "ai_services",
+        "label": "AI 모델·서비스",
+        "from": "neutral",
+        "to": "neutral",
+        "confidence_delta": 20
+      }
+    ],
+    "reason": "공식 발표 근거로 사이클 상태 또는 확신도가 유의미하게 변했다."
+  },
   "quality_gate": {
     "status": "passed",
     "mode": "verified-only",
-    "evidence_count": 6,
+    "evidence_count": 14,
     "message": "검증된 공식 근거만 사이클 상태에 반영합니다."
   },
   "segments": [
@@ -19,11 +43,18 @@
       "id": "cloud_capex",
       "label": "클라우드 설비투자",
       "status": "neutral",
-      "confidence": 25,
+      "confidence": 45,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "supporting_evidence_ids": [
+        "event-1c5913cb3e1e",
+        "event-56d504aaada6",
+        "event-8885847c48b9",
+        "event-f635e68093ad"
+      ],
+      "contrary_evidence_ids": [
+        "event-ddb92d1dc611"
+      ]
     },
     {
       "order": "02",
@@ -41,12 +72,10 @@
       "id": "memory_hbm_dram",
       "label": "HBM·DRAM",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 25,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [
-        "semi-memory-investment-20260629"
-      ],
+      "supporting_evidence_ids": [],
       "contrary_evidence_ids": []
     },
     {
@@ -54,12 +83,10 @@
       "id": "memory_nand",
       "label": "NAND",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 25,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [
-        "semi-nand-investment-20260629"
-      ],
+      "supporting_evidence_ids": [],
       "contrary_evidence_ids": []
     },
     {
@@ -71,8 +98,8 @@
       "horizon_months": "3-6",
       "reason": "서로 다른 출처군과 증거 축에서 긍정 근거가 확인됐습니다.",
       "supporting_evidence_ids": [
-        "tsmc-q2-results-20260716",
-        "semi-logic-equipment-20260714"
+        "semi-logic-equipment-20260714",
+        "tsmc-q2-results-20260716"
       ],
       "contrary_evidence_ids": []
     },
@@ -118,11 +145,18 @@
       "id": "ai_services",
       "label": "AI 모델·서비스",
       "status": "neutral",
-      "confidence": 25,
+      "confidence": 45,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "supporting_evidence_ids": [
+        "event-94a8cf12787e",
+        "event-ab92837cbb9f",
+        "event-e5fd92724eb0",
+        "event-f639fdf7552c"
+      ],
+      "contrary_evidence_ids": [
+        "event-044398eb26ac"
+      ]
     }
   ],
   "company_map_version": "company-cycle-map-v1-2026-07-19",
@@ -132,7 +166,7 @@
       "name": "삼성전자",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 54,
+      "confidence": 45,
       "primary_segment": "memory_hbm_dram",
       "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -155,7 +189,7 @@
       "name": "SK하이닉스",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "memory_hbm_dram",
       "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -204,7 +238,7 @@
       "name": "브로드컴",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 30,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -223,7 +257,7 @@
       "name": "마이크론",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "memory_hbm_dram",
       "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -355,7 +389,7 @@
       "name": "마이크로소프트",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 45,
       "primary_segment": "cloud_capex",
       "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -374,7 +408,7 @@
       "name": "구글",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 45,
       "primary_segment": "cloud_capex",
       "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -393,7 +427,7 @@
       "name": "메타",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 45,
       "primary_segment": "cloud_capex",
       "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -412,7 +446,7 @@
       "name": "오라클",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 45,
       "primary_segment": "cloud_capex",
       "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -431,7 +465,7 @@
       "name": "아마존",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 45,
       "primary_segment": "cloud_capex",
       "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -450,7 +484,7 @@
       "name": "아리스타 네트웍스",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 29,
+      "confidence": 43,
       "primary_segment": "cloud_capex",
       "reason": "주요 영역인 클라우드 설비투자의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -518,7 +552,7 @@
       "name": "팔란티어",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 45,
       "primary_segment": "ai_services",
       "reason": "주요 영역인 AI 모델·서비스의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -576,14 +610,32 @@
   ],
   "evidence": [
     {
-      "id": "semi-memory-investment-20260629",
-      "source_id": "semi_news",
-      "segment": "memory_hbm_dram",
+      "id": "vertiv-malaysia-capacity-20260701",
+      "source_id": "vertiv_ir",
+      "segment": "power_infrastructure",
       "pillar": "supply",
       "direction": "positive",
-      "fact": "SEMI는 2026년 300mm 메모리 장비 투자가 29% 증가해 520억 달러에 이를 것으로 전망했다.",
-      "source_url": "https://www.semi.org/en/semi-press-release/semi-projects-300mm-memory-equipment-investment-to-surpass-50-billion-dollars-in-2026",
-      "published_at": "2026-06-29",
+      "fact": "Vertiv는 아시아의 AI·고밀도 컴퓨팅 인프라 수요에 대응하기 위해 말레이시아 생산시설을 새로 가동했다.",
+      "source_url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Increases-Manufacturing-Capacity-with-New-Facility-in-Malaysia-to-Support-Growing-Demand-for-AI-and-Digital-Infrastructure-Across-Asia/default.aspx",
+      "published_at": "2026-07-01",
+      "max_age_days": 120,
+      "source_family": "infrastructure_vertiv_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "codex-primary-source-review",
+      "audited_by": "codex-contrary-review"
+    },
+    {
+      "id": "semi-equipment-forecast-20260714",
+      "source_id": "semi_news",
+      "segment": "equipment_materials",
+      "pillar": "earnings",
+      "direction": "positive",
+      "fact": "SEMI는 2026년 반도체 제조장비 매출이 전년 대비 23.2% 증가한 1,659억 달러에 이를 것으로 전망했다.",
+      "source_url": "https://www.semi.org/en/taxonomy/term/45726",
+      "published_at": "2026-07-14",
       "max_age_days": 120,
       "source_family": "industry_association_semi",
       "confidence": "direct",
@@ -594,14 +646,14 @@
       "audited_by": "codex-contrary-review"
     },
     {
-      "id": "semi-nand-investment-20260629",
+      "id": "semi-logic-equipment-20260714",
       "source_id": "semi_news",
-      "segment": "memory_nand",
-      "pillar": "demand",
+      "segment": "foundry_logic",
+      "pillar": "supply",
       "direction": "positive",
-      "fact": "SEMI는 AI 배치에 따른 저장 수요를 배경으로 2026년 3D NAND 장비 투자가 28% 증가할 것으로 전망했다.",
-      "source_url": "https://www.semi.org/en/semi-press-release/semi-projects-300mm-memory-equipment-investment-to-surpass-50-billion-dollars-in-2026",
-      "published_at": "2026-06-29",
+      "fact": "SEMI는 2026년 파운드리·로직용 웨이퍼팹 장비 매출이 선단공정 증설에 힘입어 18.9% 증가할 것으로 전망했다.",
+      "source_url": "https://www.semi.org/en/taxonomy/term/45726",
+      "published_at": "2026-07-14",
       "max_age_days": 120,
       "source_family": "industry_association_semi",
       "confidence": "direct",
@@ -630,58 +682,194 @@
       "audited_by": "codex-contrary-review"
     },
     {
-      "id": "semi-logic-equipment-20260714",
-      "source_id": "semi_news",
-      "segment": "foundry_logic",
-      "pillar": "supply",
-      "direction": "positive",
-      "fact": "SEMI는 2026년 파운드리·로직용 웨이퍼팹 장비 매출이 선단공정 증설에 힘입어 18.9% 증가할 것으로 전망했다.",
-      "source_url": "https://www.semi.org/en/taxonomy/term/45726",
-      "published_at": "2026-07-14",
-      "max_age_days": 120,
-      "source_family": "industry_association_semi",
+      "id": "event-044398eb26ac",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "ai_services",
+      "pillar": "earnings",
+      "direction": "negative",
+      "fact": "Microsoft FY2026 Q4 실적: xbox content services revenue yoy percent은 공식 비교 기준 -10%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
       "confidence": "direct",
       "review_status": "verified",
       "audit_passed": true,
-      "contrary": false,
-      "reviewed_by": "codex-primary-source-review",
-      "audited_by": "codex-contrary-review"
+      "contrary": true,
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
     },
     {
-      "id": "semi-equipment-forecast-20260714",
-      "source_id": "semi_news",
-      "segment": "equipment_materials",
+      "id": "event-1c5913cb3e1e",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "cloud_capex",
       "pillar": "earnings",
       "direction": "positive",
-      "fact": "SEMI는 2026년 반도체 제조장비 매출이 전년 대비 23.2% 증가한 1,659억 달러에 이를 것으로 전망했다.",
-      "source_url": "https://www.semi.org/en/taxonomy/term/45726",
-      "published_at": "2026-07-14",
-      "max_age_days": 120,
-      "source_family": "industry_association_semi",
+      "fact": "Microsoft FY2026 Q4 실적: revenue yoy percent은 공식 비교 기준 +18%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
       "confidence": "direct",
       "review_status": "verified",
       "audit_passed": true,
       "contrary": false,
-      "reviewed_by": "codex-primary-source-review",
-      "audited_by": "codex-contrary-review"
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
     },
     {
-      "id": "vertiv-malaysia-capacity-20260701",
-      "source_id": "vertiv_ir",
-      "segment": "power_infrastructure",
-      "pillar": "supply",
+      "id": "event-56d504aaada6",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "cloud_capex",
+      "pillar": "demand",
       "direction": "positive",
-      "fact": "Vertiv는 아시아의 AI·고밀도 컴퓨팅 인프라 수요에 대응하기 위해 말레이시아 생산시설을 새로 가동했다.",
-      "source_url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Increases-Manufacturing-Capacity-with-New-Facility-in-Malaysia-to-Support-Growing-Demand-for-AI-and-Digital-Infrastructure-Across-Asia/default.aspx",
-      "published_at": "2026-07-01",
-      "max_age_days": 120,
-      "source_family": "infrastructure_vertiv_ir",
+      "fact": "Microsoft FY2026 Q4 실적: azure revenue yoy percent은 공식 비교 기준 +43%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
       "confidence": "direct",
       "review_status": "verified",
       "audit_passed": true,
       "contrary": false,
-      "reviewed_by": "codex-primary-source-review",
-      "audited_by": "codex-contrary-review"
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
+    },
+    {
+      "id": "event-8885847c48b9",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "cloud_capex",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "Microsoft FY2026 Q4 실적: microsoft cloud revenue yoy percent은 공식 비교 기준 +27%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
+    },
+    {
+      "id": "event-94a8cf12787e",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "ai_services",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "Microsoft FY2026 Q4 실적: microsoft cloud revenue yoy percent은 공식 비교 기준 +27%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
+    },
+    {
+      "id": "event-ab92837cbb9f",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "ai_services",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "Microsoft FY2026 Q4 실적: commercial rpo yoy percent은 공식 비교 기준 +84%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
+    },
+    {
+      "id": "event-ddb92d1dc611",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "cloud_capex",
+      "pillar": "earnings",
+      "direction": "negative",
+      "fact": "Microsoft FY2026 Q4 실적: xbox content services revenue yoy percent은 공식 비교 기준 -10%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": true,
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
+    },
+    {
+      "id": "event-e5fd92724eb0",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "ai_services",
+      "pillar": "earnings",
+      "direction": "positive",
+      "fact": "Microsoft FY2026 Q4 실적: revenue yoy percent은 공식 비교 기준 +18%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
+    },
+    {
+      "id": "event-f635e68093ad",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "cloud_capex",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "Microsoft FY2026 Q4 실적: commercial rpo yoy percent은 공식 비교 기준 +84%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
+    },
+    {
+      "id": "event-f639fdf7552c",
+      "source_id": "earnings-MSFT-fy2026q4",
+      "segment": "ai_services",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "Microsoft FY2026 Q4 실적: azure revenue yoy percent은 공식 비교 기준 +43%였다.",
+      "source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "published_at": "2026-07-31",
+      "max_age_days": 30,
+      "source_family": "event_msft_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "official-event-impact-review",
+      "audited_by": "deterministic-generalization-guard",
+      "origin_event_id": "earnings-MSFT-fy2026q4"
     }
   ]
 }

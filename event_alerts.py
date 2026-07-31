@@ -117,3 +117,43 @@ def due_shock_alerts(event_feed, now=None):
             "notify_at": notify_at.isoformat(timespec="seconds"),
         })
     return alerts
+
+
+def due_cycle_interrupt_alerts(cycle_report, now=None):
+    """감사된 중요 발표가 만든 중간 사이클 재평가만 즉시 알린다."""
+    now = (now or datetime.now(KST)).astimezone(KST)
+    if not isinstance(cycle_report, dict):
+        return []
+    generated_at = _parse_kst(cycle_report.get("generated_at"))
+    expires_at = _parse_kst(cycle_report.get("expires_at"))
+    context = cycle_report.get("update_context") or {}
+    report_id = str(cycle_report.get("report_id") or "")
+    if (
+        cycle_report.get("schema_version") != "1.2"
+        or cycle_report.get("quality_gate", {}).get("status") != "passed"
+        or context.get("type") != "event_interrupt"
+        or context.get("critical") is not True
+        or generated_at is None
+        or expires_at is None
+        or not report_id
+        or not (generated_at <= now <= min(expires_at, generated_at + ALERT_GRACE))
+    ):
+        return []
+    changes = context.get("status_changes") or []
+    event_ids = [str(value) for value in context.get("event_ids") or [] if str(value)]
+    reason = str(context.get("reason") or "중요 공식 발표로 사이클을 즉시 재점검했습니다.")
+    labels = [str(item.get("label") or item.get("segment") or "") for item in changes]
+    changed_label = ", ".join(value for value in labels if value)
+    body = f"{changed_label + ' · ' if changed_label else ''}{reason}"[:220]
+    return [{
+        "report_id": report_id,
+        "title": "🚨 사이클 중요 변화 확인",
+        "body": body,
+        "tag": f"cycle-interrupt-{report_id}"[:120],
+        "data": {
+            "type": "cycle_interrupt",
+            "report_id": report_id,
+            "event_ids": ",".join(event_ids)[:500],
+        },
+        "notify_at": generated_at.isoformat(timespec="seconds"),
+    }]
