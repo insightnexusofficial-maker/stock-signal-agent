@@ -197,31 +197,100 @@
   }
 
   function renderEventCards(feed, target) {
-    const events = Array.isArray(feed?.events) ? feed.events : [];
-    if (!events.length) {
-      target.innerHTML = '<div class="notice"><strong>확정 일정 대기</strong><br>공식 발표기관이 날짜를 확인한 항목만 표시합니다.</div>';
+    const trackers = Array.isArray(feed?.company_trackers) ? feed.company_trackers : [];
+    target.classList.remove("grid", "grid-3");
+    if (!trackers.length) {
+      target.innerHTML = '<div class="notice"><strong>실적 일정 갱신 대기</strong><br>공식 IR 기준 추적 목록을 불러오지 못했습니다.</div>';
       return;
     }
+    const roleLabel = {
+      demand_capex: "수요·CAPEX 결정자",
+      ai_chip_design: "AI 칩 설계",
+      manufacturing_memory: "제조·메모리",
+      equipment_materials: "장비·소부장",
+      physical_infrastructure: "데이터센터 물리 인프라",
+      ai_monetization: "AI 수익화 검증",
+    };
     const statusLabel = {
       scheduled: "발표 예정",
-      due: "결과 확인 중",
-      synced: "공식 결과 동기화",
-      overdue: "결과 검증 대기",
+      date_confirmed: "날짜 확정 · 시각 미정",
+      reviewed: "추세·리스크 검토 완료",
+      review_pending: "공식 결과·검토 확인 중",
+      awaiting_official_date: "공식 발표일 미정",
     };
-    target.innerHTML = events.slice(0, 9).map((item) => `<article class="content-card">
-      <div class="status-row">
-        <p class="section-kicker">${item.kind === "macro" ? "거시" : "기업"}${item.ticker ? ` · ${escapeHtml(item.ticker)}` : ""}</p>
-        <span class="status-badge ${item.sync_status === "synced" ? "status-favorable" : "status-neutral"}">${escapeHtml(
-          item.sync_status === "due" && item.result_collection_status === "manual-official-review"
-            ? "검증 불가 · 공식 결과 확인 필요"
-            : (statusLabel[item.sync_status] || "일정 확인")
-        )}</span>
+    const trendLabel = {
+      strengthening: "추세 강화",
+      unchanged: "추세 유지",
+      weakening: "추세 약화",
+      mixed: "추세 혼조",
+    };
+    const riskLabel = { low: "리스크 낮음", medium: "리스크 중간", high: "리스크 높음" };
+    const statusBucket = (status) => {
+      if (status === "scheduled" || status === "date_confirmed") return "scheduled";
+      if (status === "reviewed") return "reviewed";
+      if (status === "review_pending") return "pending";
+      return "waiting";
+    };
+    const grouped = trackers.reduce((groups, item) => {
+      (groups[item.primary_role] ||= []).push(item);
+      return groups;
+    }, {});
+    const sync = feed.event_sync || {};
+    const isStale = feed?.quality_gate?.status === "stale" || (feed?.expires_at && new Date(feed.expires_at).getTime() <= Date.now());
+    const groupsMarkup = Object.entries(grouped).map(([role, items], index) => `
+      <details class="earnings-group" ${index < 2 ? "open" : ""}>
+        <summary><strong>${escapeHtml(roleLabel[role] || role)}</strong><span>${items.length}개사</span></summary>
+        <div class="earnings-list">
+          ${items.map((item) => {
+            const event = item.event;
+            const dateText = event
+              ? `${formatEventTime(event)}${event.scheduled_at ? " KST" : ""}`
+              : "공식 발표일 공지 대기";
+            const impact = item.impact_review;
+            return `<div class="earnings-row" data-tracker-bucket="${statusBucket(item.tracker_status)}">
+              <div><b>${escapeHtml(item.name)}</b><span>${escapeHtml(item.ticker)}</span></div>
+              <div class="earnings-date">${dateText}</div>
+              <span class="status-badge ${item.tracker_status === "reviewed" ? "status-favorable" : "status-neutral"}">${escapeHtml(statusLabel[item.tracker_status] || "일정 확인")}</span>
+              <a href="${escapeHtml(event?.schedule_source_url || item.calendar_url)}" target="_blank" rel="noopener noreferrer">공식 IR</a>
+              ${impact ? `<div class="earnings-impact">
+                <div class="impact-badges">
+                  <span class="status-badge status-neutral">${escapeHtml(trendLabel[impact.trend_change] || "추세 검토")}</span>
+                  <span class="status-badge ${impact.risk_level === "high" ? "status-caution" : "status-neutral"}">${escapeHtml(riskLabel[impact.risk_level] || "리스크 검토")}</span>
+                  <span class="impact-boundary">단일 기업 근거 · 사이클 상태 변경 없음</span>
+                </div>
+                <p><b>변화</b> ${escapeHtml(impact.summary)}</p>
+                <p><b>리스크</b> ${escapeHtml(impact.risk_summary)}</p>
+              </div>` : ""}
+            </div>`;
+          }).join("")}
+        </div>
+      </details>`).join("");
+    target.innerHTML = `
+      ${isStale ? '<div class="notice"><strong>일정 데이터 갱신 대기</strong><br>아래에는 마지막으로 검증된 공식 일정이 표시됩니다.</div>' : ""}
+      <div class="earnings-summary" aria-label="실적 일정 추적 현황">
+        <button type="button" data-tracker-filter="all" aria-pressed="true"><b>${trackers.length}</b>전체</button>
+        <button type="button" data-tracker-filter="scheduled" aria-pressed="false"><b>${Number(sync.scheduled_company_count) || 0}</b>발표 예정</button>
+        <button type="button" data-tracker-filter="reviewed" aria-pressed="false"><b>${Number(sync.reviewed_company_count) || 0}</b>검토 완료</button>
+        <button type="button" data-tracker-filter="pending" aria-pressed="false"><b>${Number(sync.review_pending_company_count) || 0}</b>결과 확인 중</button>
+        <button type="button" data-tracker-filter="waiting" aria-pressed="false"><b>${Number(sync.awaiting_company_count) || 0}</b>일정 대기</button>
       </div>
-      <h3>${escapeHtml(item.name)}</h3>
-      <p class="section-copy">${formatEventTime(item)} KST</p>
-      <p class="section-copy">${escapeHtml(item.time_note || "공식 발표 시각 기준")}</p>
-      <p><a href="${escapeHtml(item.schedule_source_url)}" target="_blank" rel="noopener noreferrer">공식 일정 확인</a></p>
-    </article>`).join("");
+      <div class="earnings-groups">${groupsMarkup}</div>`;
+    target.querySelectorAll("[data-tracker-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const selected = button.dataset.trackerFilter;
+        target.querySelectorAll("[data-tracker-filter]").forEach((item) => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+        target.querySelectorAll(".earnings-row").forEach((row) => {
+          row.hidden = selected !== "all" && row.dataset.trackerBucket !== selected;
+        });
+        target.querySelectorAll(".earnings-group").forEach((group) => {
+          const hasVisible = [...group.querySelectorAll(".earnings-row")].some((row) => !row.hidden);
+          group.hidden = !hasVisible;
+          if (hasVisible && selected !== "all") group.open = true;
+        });
+      });
+    });
   }
 
   function renderEventResults(feed, target) {
@@ -230,10 +299,21 @@
       target.innerHTML = '<div class="notice"><strong>최근 검증 결과 없음</strong><br>발표일이 지나고 공식 결과가 확인되면 이곳에 동기화 상태가 표시됩니다.</div>';
       return;
     }
-    target.innerHTML = `<h3>최근 공식 발표 결과</h3><div class="grid grid-2">${results.map((item) => `<article class="content-card">
+    const trendLabel = { strengthening: "추세 강화", unchanged: "추세 유지", weakening: "추세 약화", mixed: "추세 혼조" };
+    const riskLabel = { low: "리스크 낮음", medium: "리스크 중간", high: "리스크 높음" };
+    target.innerHTML = `<h3>최근 공식 발표 결과와 영향 검토</h3><div class="grid grid-2">${results.map((item) => `<article class="content-card">
       <p class="section-kicker">${escapeHtml(item.event_name || item.event_id)}</p>
       <h3>${escapeHtml(item.summary || "공식 결과 확인")}</h3>
       <p class="section-copy">${escapeHtml(item.reference_period || "")} · ${escapeHtml(item.retrieved_at || "")}</p>
+      ${item.impact_review ? `<div class="result-impact">
+        <div class="impact-badges">
+          <span class="status-badge status-neutral">${escapeHtml(trendLabel[item.impact_review.trend_change] || "추세 검토")}</span>
+          <span class="status-badge ${item.impact_review.risk_level === "high" ? "status-caution" : "status-neutral"}">${escapeHtml(riskLabel[item.impact_review.risk_level] || "리스크 검토")}</span>
+        </div>
+        <p><b>변화</b> ${escapeHtml(item.impact_review.summary)}</p>
+        <p><b>리스크</b> ${escapeHtml(item.impact_review.risk_summary)}</p>
+        <p class="section-copy">단일 기업 근거만으로 사이클 상태는 변경하지 않습니다.</p>
+      </div>` : (item.kind === "earnings" ? '<p class="status-badge status-neutral">추세·리스크 검토 대기</p>' : "")}
       ${item.shock?.is_shock ? '<p class="status-badge status-caution">객관적 쇼크 기준 충족 · 07:00 알림 대기</p>' : ""}
       <p><a href="${escapeHtml((item.source_urls || [])[0] || "#")}" target="_blank" rel="noopener noreferrer">공식 결과 보기</a></p>
     </article>`).join("")}</div>`;

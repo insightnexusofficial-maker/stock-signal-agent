@@ -40,11 +40,33 @@ class EventFeedTests(unittest.TestCase):
     def test_checked_in_documents_pass_contract(self):
         calendar = event_feed.validate_calendar(deepcopy(self.calendar))
         results = event_feed.validate_results(deepcopy(self.results), calendar)
-        self.assertGreaterEqual(len(calendar["monitors"]), 18)
+        self.assertEqual(
+            sum(item["kind"] == "earnings" for item in calendar["monitors"]),
+            23,
+        )
         self.assertIsInstance(results["results"], list)
 
-    def test_due_event_is_not_reported_as_synced_without_verified_result(self):
-        temp, calendar_path, results_path = self.write_documents()
+    def test_every_visible_public_company_has_one_tracker(self):
+        sync = event_feed.build_event_sync(
+            now=datetime.fromisoformat("2026-07-31T12:00:00+09:00"),
+        )
+
+        trackers = sync["company_trackers"]
+        self.assertEqual(len(trackers), 23)
+        self.assertEqual(len({item["ticker"] for item in trackers}), 23)
+        self.assertTrue(all(item["primary_role"] for item in trackers))
+        self.assertIn(
+            "awaiting_official_date",
+            {item["tracker_status"] for item in trackers},
+        )
+
+    def test_due_event_is_collected_but_not_synced_without_verified_review(self):
+        results = deepcopy(self.results)
+        results["results"] = [
+            item for item in results["results"]
+            if item["event_id"] != "earnings-MSFT-fy2026q4"
+        ]
+        temp, calendar_path, results_path = self.write_documents(results=results)
         self.addCleanup(temp.cleanup)
 
         sync = event_feed.build_event_sync(
@@ -54,7 +76,7 @@ class EventFeedTests(unittest.TestCase):
         )
 
         self.assertIn("earnings-MSFT-fy2026q4", sync["due_event_ids"])
-        self.assertIn(
+        self.assertNotIn(
             "earnings-MSFT-fy2026q4",
             sync["unsupported_due_event_ids"],
         )
@@ -63,7 +85,7 @@ class EventFeedTests(unittest.TestCase):
             if item["id"] == "earnings-MSFT-fy2026q4"
         )
         self.assertEqual(event["sync_status"], "due")
-        self.assertEqual(event["result_collection_status"], "manual-official-review")
+        self.assertEqual(event["result_collection_status"], "automated-official")
 
     def test_fomc_due_event_has_an_automated_official_collector(self):
         results = deepcopy(self.results)
@@ -91,7 +113,7 @@ class EventFeedTests(unittest.TestCase):
             sync["unsupported_due_event_ids"],
         )
 
-    def test_date_only_event_never_becomes_due_at_a_guessed_time(self):
+    def test_date_only_event_is_checked_on_official_date_without_guessed_time(self):
         calendar = deepcopy(self.calendar)
         event = next(
             item for item in calendar["events"]
@@ -110,12 +132,12 @@ class EventFeedTests(unittest.TestCase):
             now=datetime.fromisoformat("2026-08-27T08:00:00+09:00"),
         )
 
-        self.assertNotIn("earnings-NVDA-fy2027q2", sync["due_event_ids"])
+        self.assertIn("earnings-NVDA-fy2027q2", sync["due_event_ids"])
         event = next(
             item for item in sync["upcoming"]
             if item["id"] == "earnings-NVDA-fy2027q2"
         )
-        self.assertEqual(event["sync_status"], "scheduled")
+        self.assertEqual(event["sync_status"], "due")
         self.assertIsNone(event["scheduled_at"])
 
     def test_confirmed_event_requires_exact_timezone_aware_time(self):
@@ -145,6 +167,16 @@ class EventFeedTests(unittest.TestCase):
             "source_urls": [
                 "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast"
             ],
+            "impact_review": {
+                "trend_change": "unchanged",
+                "risk_level": "medium",
+                "cycle_status_effect": "none_single_source",
+                "summary": "공식 실적 한 건의 추세 검토",
+                "risk_summary": "단일 기업 근거이므로 세그먼트 일반화 위험이 있다.",
+                "reviewed_at": "2026-07-30T07:15:00+09:00",
+                "review_method": "official-result-rules-audited",
+                "audit_passed": True,
+            },
         }]
         temp, calendar_path, results_path = self.write_documents(results=results)
         self.addCleanup(temp.cleanup)
@@ -165,6 +197,22 @@ class EventFeedTests(unittest.TestCase):
             sync["recent_results"][0]["source_published_at"],
             "2026-07-30T05:10:00+09:00",
         )
+        tracker = next(
+            item for item in sync["company_trackers"]
+            if item["ticker"] == "MSFT"
+        )
+        self.assertEqual(tracker["tracker_status"], "reviewed")
+
+    def test_complete_earnings_result_requires_impact_review(self):
+        results = deepcopy(self.results)
+        result = next(
+            item for item in results["results"]
+            if item["event_id"] == "earnings-MSFT-fy2026q4"
+        )
+        result.pop("impact_review")
+
+        with self.assertRaises(event_feed.EventDataError):
+            event_feed.validate_results(results, self.calendar)
 
     def test_complete_result_requires_verified_review(self):
         results = deepcopy(self.results)
@@ -199,7 +247,7 @@ class EventFeedTests(unittest.TestCase):
         sync = event_feed.build_event_sync(
             calendar_path,
             results_path,
-            now=datetime.fromisoformat("2026-08-06T09:00:00+09:00"),
+            now=datetime.fromisoformat("2026-08-09T09:00:00+09:00"),
         )
 
         self.assertEqual(sync["calendar_status"], "stale")

@@ -19,7 +19,7 @@ from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
-from event_feed import KST, validate_calendar, validate_results
+from event_feed import KST, build_event_sync, validate_calendar, validate_results
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -220,6 +220,12 @@ def build_fomc_result(
 
 def collect(now: datetime | None = None) -> bool:
     now = (now or datetime.now(timezone.utc)).astimezone(KST)
+    sync = build_event_sync(CALENDAR_PATH, RESULTS_PATH, now=now)
+    if not any(
+        str(event_id).startswith("macro-fomc-")
+        for event_id in sync["due_event_ids"]
+    ):
+        return False
     calendar = validate_calendar(_read_json(CALENDAR_PATH))
     results = validate_results(_read_json(RESULTS_PATH), calendar)
     calendar_html = _fetch_official_html(FED_CALENDAR_URL)

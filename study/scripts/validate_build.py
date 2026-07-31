@@ -152,14 +152,42 @@ def validate_json() -> list[str]:
     if event_feed != expected_event_feed:
         errors.append("event-latest.json이 검증된 일정·결과 원본과 일치하지 않음")
     if (
-        event_feed.get("schema_version") != "1.0"
+        event_feed.get("schema_version") != "1.2"
         or event_feed.get("quality_gate", {}).get("mode") != "official-only"
         or not re.fullmatch(r"[0-9a-f]{64}", str(event_feed.get("content_sha256", "")))
         or len(event_feed.get("events", [])) > 24
         or len(event_feed.get("recent_results", [])) > 12
         or "unsupported_due_event_ids" not in event_feed.get("event_sync", {})
+        or len(event_feed.get("company_trackers", [])) != 23
+        or "reviewed_company_count" not in event_feed.get("event_sync", {})
+        or "review_pending_company_count" not in event_feed.get("event_sync", {})
     ):
         errors.append("event-latest.json 계약 오류")
+    for tracker in event_feed.get("company_trackers", []):
+        if tracker.get("tracker_status") not in {
+            "scheduled",
+            "date_confirmed",
+            "reviewed",
+            "review_pending",
+            "awaiting_official_date",
+        }:
+            errors.append(f"event-latest.json 추적 상태 오류 {tracker.get('ticker')}")
+        if tracker.get("tracker_status") == "reviewed" and not tracker.get("impact_review"):
+            errors.append(f"event-latest.json 영향 검토 누락 {tracker.get('ticker')}")
+    company_page = (PUBLIC / "companies.html").read_text(encoding="utf-8")
+    visible_public_tickers = {
+        ticker.strip().upper()
+        for ticker in re.findall(r'<span class="tick">([^<]+)</span>', company_page)
+        if ticker.strip() != "비상장"
+    }
+    tracked_tickers = {
+        str(item.get("ticker") or "").upper()
+        for item in event_feed.get("company_trackers", [])
+    }
+    if tracked_tickers != visible_public_tickers:
+        errors.append(
+            "event-latest.json 실적 추적 범위가 웹페이지 상장사와 일치하지 않음"
+        )
     if any(
         result.get("shock", {}).get("is_shock") is True
         and (

@@ -353,6 +353,80 @@ a { color: inherit; }
 }
 .companies-page .event-disclosure-body .sec-desc { margin-top: 18px; }
 .companies-page .data-contract { margin-top: 18px; }
+.earnings-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.earnings-summary button {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 8px;
+  color: var(--muted);
+  background: #f8f9fd;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.earnings-summary button:hover { border-color: var(--accent); }
+.earnings-summary button[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 2px rgba(75,102,207,.08);
+}
+.earnings-summary b { color: var(--navy); font: 700 22px/1 "IBM Plex Mono", monospace; }
+.earnings-groups { display: grid; gap: 10px; }
+.earnings-group {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.earnings-group > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.earnings-group > summary::-webkit-details-marker { display: none; }
+.earnings-group > summary span { color: var(--muted); font-size: 12px; }
+.earnings-list { border-top: 1px solid var(--line); }
+.earnings-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.1fr) minmax(190px, 1.5fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.earnings-row:last-child { border-bottom: 0; }
+.earnings-row > div:first-child { display: flex; align-items: baseline; gap: 8px; }
+.earnings-row > div:first-child span { color: var(--muted); font: 500 11px "IBM Plex Mono", monospace; }
+.earnings-date { color: var(--muted); }
+.earnings-row a { color: var(--accent-strong); font-weight: 600; }
+.earnings-impact {
+  grid-column: 1 / -1;
+  border-top: 1px dashed var(--line);
+  padding-top: 11px;
+}
+.earnings-impact p, .result-impact p { margin: 7px 0 0; color: var(--muted); line-height: 1.55; }
+.earnings-impact p b, .result-impact p b { color: var(--ink); }
+.impact-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.impact-boundary { color: var(--muted); font-size: 11px; }
+.result-impact {
+  margin-top: 16px;
+  border-top: 1px dashed var(--line);
+  padding-top: 14px;
+}
+[hidden] { display: none !important; }
 .companies-page .gauges.quant-sync {
   display: grid;
   grid-template-columns: repeat(2,minmax(0,1fr));
@@ -386,6 +460,9 @@ a { color: inherit; }
   .section-head { align-items: start; flex-direction: column; }
   .cycle-summary-card { grid-template-columns: 1fr; }
   .cycle-summary-counts { min-width: 0; width: 100%; }
+  .earnings-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .earnings-row { grid-template-columns: minmax(0, 1fr) auto; gap: 7px 12px; }
+  .earnings-date { grid-column: 1 / -1; }
 }
 
 @media (max-width: 520px) {
@@ -394,6 +471,7 @@ a { color: inherit; }
   .content-card, .segment-card { padding: 20px; }
   .companies-page .gauges.quant-sync { grid-template-columns: 1fr; }
   .cycle-summary-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .earnings-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -97,10 +97,14 @@ class CollectEventResultsTests(unittest.TestCase):
                 (ROOT / "data" / "event-calendar.json").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            results_path.write_text(
-                (ROOT / "data" / "event-results.json").read_text(encoding="utf-8"),
-                encoding="utf-8",
+            results_document = json.loads(
+                (ROOT / "data" / "event-results.json").read_text(encoding="utf-8")
             )
+            results_document["results"] = [
+                item for item in results_document["results"]
+                if item["event_id"] != "macro-fomc-2026-07-29"
+            ]
+            results_path.write_text(json.dumps(results_document), encoding="utf-8")
             calendar_html = """
             <a href="/newsevents/pressreleases/monetary20260729a.htm">HTML</a>
             """
@@ -135,7 +139,7 @@ class CollectEventResultsTests(unittest.TestCase):
                 item for item in results["results"]
                 if item["event_id"] == "macro-fomc-2026-07-29"
             )
-            self.assertEqual(fomc["retrieved_at"], "2026-07-30T13:00:48+09:00")
+            self.assertEqual(fomc["retrieved_at"], "2026-07-30T13:30:00+09:00")
 
 
 if __name__ == "__main__":

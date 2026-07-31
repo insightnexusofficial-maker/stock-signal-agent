@@ -1,9 +1,9 @@
 {
-  "schema_version": "1.0",
-  "feed_id": "market-events-5f235571df49ffc6",
-  "content_sha256": "5f235571df49ffc6995e397124a27fa37c92c1f42564b648118c4d900e1222e1",
-  "generated_at": "2026-07-30T21:53:40+09:00",
-  "expires_at": "2026-08-05T08:45:00+09:00",
+  "schema_version": "1.2",
+  "feed_id": "market-events-5296eada1197cf41",
+  "content_sha256": "5296eada1197cf414cf9380ec5a015ab6292fd3016fafcf8ee6721661b425c06",
+  "generated_at": "2026-07-31T14:00:00+09:00",
+  "expires_at": "2026-08-08T12:00:00+09:00",
   "quality_gate": {
     "status": "passed",
     "mode": "official-only",
@@ -11,21 +11,22 @@
   },
   "event_sync": {
     "calendar_status": "fresh",
-    "monitored_company_count": 12,
+    "monitored_company_count": 23,
     "monitored_macro_count": 6,
     "due_event_ids": [
-      "earnings-MSFT-fy2026q4",
-      "earnings-META-2026q2",
-      "earnings-LRCX-2026june",
-      "earnings-AMZN-2026q2"
+      "earnings-AMZN-2026q2",
+      "earnings-8035-fy2027q1"
     ],
-    "overdue_event_ids": [],
-    "unsupported_due_event_ids": [
-      "earnings-MSFT-fy2026q4",
+    "overdue_event_ids": [
       "earnings-META-2026q2",
       "earnings-LRCX-2026june",
-      "earnings-AMZN-2026q2"
-    ]
+      "earnings-VRT-2026q2"
+    ],
+    "unsupported_due_event_ids": [],
+    "scheduled_company_count": 6,
+    "reviewed_company_count": 1,
+    "review_pending_company_count": 5,
+    "awaiting_company_count": 11
   },
   "shock_policy": {
     "version": "market-shock-v1-2026-07-28",
@@ -33,6 +34,25 @@
     "mode": "objective-official-data-only"
   },
   "events": [
+    {
+      "id": "earnings-VRT-2026q2",
+      "kind": "earnings",
+      "ticker": "VRT",
+      "name": "Vertiv 2026 Q2 실적",
+      "scheduled_date": "2026-07-29",
+      "scheduled_at": "2026-07-30T00:00:00+09:00",
+      "monitor_after": "2026-07-30T00:05:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "콘퍼런스콜 11:00 미국 동부시간",
+      "schedule_source_name": "Vertiv",
+      "schedule_source_url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Announces-Date-of-Second-Quarter-2026-Earnings-Release-and-Conference-Call/default.aspx",
+      "segments": [
+        "power_infrastructure"
+      ],
+      "sync_status": "overdue",
+      "result_collection_status": "automated-official"
+    },
     {
       "id": "macro-fomc-2026-07-29",
       "kind": "macro",
@@ -67,8 +87,8 @@
         "cloud_capex",
         "ai_services"
       ],
-      "sync_status": "due",
-      "result_collection_status": "manual-official-review"
+      "sync_status": "overdue",
+      "result_collection_status": "automated-official"
     },
     {
       "id": "earnings-LRCX-2026june",
@@ -86,8 +106,8 @@
       "segments": [
         "equipment_materials"
       ],
-      "sync_status": "due",
-      "result_collection_status": "manual-official-review"
+      "sync_status": "overdue",
+      "result_collection_status": "automated-official"
     },
     {
       "id": "earnings-MSFT-fy2026q4",
@@ -106,8 +126,8 @@
         "cloud_capex",
         "ai_services"
       ],
-      "sync_status": "due",
-      "result_collection_status": "manual-official-review"
+      "sync_status": "synced",
+      "result_collection_status": "automated-official"
     },
     {
       "id": "macro-us-pce-2026-06",
@@ -127,6 +147,25 @@
       "result_collection_status": "manual-official-review"
     },
     {
+      "id": "earnings-8035-fy2027q1",
+      "kind": "earnings",
+      "ticker": "8035",
+      "name": "Tokyo Electron FY2027 Q1 실적",
+      "scheduled_date": "2026-07-30",
+      "scheduled_at": null,
+      "monitor_after": "2026-07-31T00:00:00+09:00",
+      "schedule_timezone": "Asia/Tokyo",
+      "schedule_status": "date_confirmed",
+      "time_note": "발표일 확정 · 정확한 시각은 공식 페이지에서 재확인",
+      "schedule_source_name": "Tokyo Electron",
+      "schedule_source_url": "https://www.tel.com/ir/calendar/",
+      "segments": [
+        "equipment_materials"
+      ],
+      "sync_status": "due",
+      "result_collection_status": "automated-official"
+    },
+    {
       "id": "earnings-AMZN-2026q2",
       "kind": "earnings",
       "ticker": "AMZN",
@@ -144,7 +183,27 @@
         "ai_services"
       ],
       "sync_status": "due",
-      "result_collection_status": "manual-official-review"
+      "result_collection_status": "automated-official"
+    },
+    {
+      "id": "earnings-ANET-2026q2",
+      "kind": "earnings",
+      "ticker": "ANET",
+      "name": "Arista Networks 2026 Q2 실적",
+      "scheduled_date": "2026-08-04",
+      "scheduled_at": "2026-08-05T05:30:00+09:00",
+      "monitor_after": "2026-08-05T05:35:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "13:30 미국 태평양시간",
+      "schedule_source_name": "Arista Networks",
+      "schedule_source_url": "https://investors.arista.com/Communications/Press-Releases-and-Events/Press-Release-Detail/2026/Arista-Networks-to-Announce-Q2-2026-Financial-Results-on-Tuesday-August-4-2026/default.aspx",
+      "segments": [
+        "cloud_capex",
+        "power_infrastructure"
+      ],
+      "sync_status": "scheduled",
+      "result_collection_status": "automated-official"
     },
     {
       "id": "earnings-AMD-2026q2",
@@ -164,7 +223,7 @@
         "foundry_logic"
       ],
       "sync_status": "scheduled",
-      "result_collection_status": "manual-official-review"
+      "result_collection_status": "automated-official"
     },
     {
       "id": "macro-us-jobs-2026-07",
@@ -182,6 +241,25 @@
       "segments": [],
       "sync_status": "scheduled",
       "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "earnings-VST-2026q2",
+      "kind": "earnings",
+      "ticker": "VST",
+      "name": "Vistra 2026 Q2 실적",
+      "scheduled_date": "2026-08-07",
+      "scheduled_at": "2026-08-07T23:00:00+09:00",
+      "monitor_after": "2026-08-07T23:05:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "10:00 미국 동부시간",
+      "schedule_source_name": "Vistra",
+      "schedule_source_url": "https://investor.vistracorp.com/2026-07-06-Vistra-to-Report-Second-Quarter-Results-on-Aug-7%2C-2026",
+      "segments": [
+        "power_infrastructure"
+      ],
+      "sync_status": "scheduled",
+      "result_collection_status": "automated-official"
     },
     {
       "id": "company-TSM-monthly-revenue-2026-07",
@@ -203,6 +281,26 @@
       "result_collection_status": "manual-official-review"
     },
     {
+      "id": "earnings-SMCI-fy2026q4",
+      "kind": "earnings",
+      "ticker": "SMCI",
+      "name": "Supermicro FY2026 Q4 실적",
+      "scheduled_date": "2026-08-11",
+      "scheduled_at": "2026-08-12T06:00:00+09:00",
+      "monitor_after": "2026-08-12T06:05:00+09:00",
+      "schedule_timezone": "America/Los_Angeles",
+      "schedule_status": "confirmed",
+      "time_note": "14:00 미국 태평양시간",
+      "schedule_source_name": "Supermicro",
+      "schedule_source_url": "https://ir.supermicro.com/events-and-presentations/event-details/2026/Fiscal-4Q-2026-Results-2026-g23ewVabuT/default.aspx",
+      "segments": [
+        "power_infrastructure",
+        "ai_compute_design"
+      ],
+      "sync_status": "scheduled",
+      "result_collection_status": "automated-official"
+    },
+    {
       "id": "macro-us-cpi-2026-07",
       "kind": "macro",
       "ticker": null,
@@ -218,6 +316,25 @@
       "segments": [],
       "sync_status": "scheduled",
       "result_collection_status": "manual-official-review"
+    },
+    {
+      "id": "earnings-AMAT-fy2026q3",
+      "kind": "earnings",
+      "ticker": "AMAT",
+      "name": "Applied Materials FY2026 Q3 실적",
+      "scheduled_date": "2026-08-13",
+      "scheduled_at": "2026-08-14T05:30:00+09:00",
+      "monitor_after": "2026-08-14T05:35:00+09:00",
+      "schedule_timezone": "America/New_York",
+      "schedule_status": "confirmed",
+      "time_note": "16:30 미국 동부시간",
+      "schedule_source_name": "Applied Materials",
+      "schedule_source_url": "https://ir.appliedmaterials.com/news-releases/news-release-details/applied-materials-report-fiscal-third-quarter-2026-results-aug",
+      "segments": [
+        "equipment_materials"
+      ],
+      "sync_status": "scheduled",
+      "result_collection_status": "automated-official"
     },
     {
       "id": "earnings-NVDA-fy2027q2",
@@ -236,7 +353,7 @@
         "ai_compute_design"
       ],
       "sync_status": "scheduled",
-      "result_collection_status": "manual-official-review"
+      "result_collection_status": "automated-official"
     },
     {
       "id": "company-TSM-monthly-revenue-2026-08",
@@ -258,7 +375,498 @@
       "result_collection_status": "manual-official-review"
     }
   ],
+  "company_trackers": [
+    {
+      "ticker": "AMD",
+      "name": "AMD",
+      "primary_role": "ai_chip_design",
+      "segments": [
+        "ai_compute_design",
+        "foundry_logic"
+      ],
+      "calendar_url": "https://ir.amd.com/news-events/ir-calendar",
+      "tracker_status": "scheduled",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-AMD-2026q2",
+        "name": "AMD 2026 Q2 실적",
+        "scheduled_date": "2026-08-04",
+        "scheduled_at": "2026-08-05T06:00:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "14:00 미국 태평양시간",
+        "schedule_source_name": "AMD",
+        "schedule_source_url": "https://ir.amd.com/news-events/press-releases/detail/1289/amd-to-report-fiscal-second-quarter-2026-financial-results"
+      }
+    },
+    {
+      "ticker": "AVGO",
+      "name": "Broadcom",
+      "primary_role": "ai_chip_design",
+      "segments": [
+        "ai_compute_design",
+        "cloud_capex"
+      ],
+      "calendar_url": "https://investor.broadcom.com/",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA",
+      "primary_role": "ai_chip_design",
+      "segments": [
+        "ai_compute_design"
+      ],
+      "calendar_url": "https://investor.nvidia.com/events-and-presentations/default.aspx",
+      "tracker_status": "scheduled",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-NVDA-fy2027q2",
+        "name": "NVIDIA FY2027 Q2 실적",
+        "scheduled_date": "2026-08-26",
+        "scheduled_at": "2026-08-27T06:00:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "14:00 미국 태평양시간",
+        "schedule_source_name": "NVIDIA",
+        "schedule_source_url": "https://investor.nvidia.com/events-and-presentations/events-and-presentations/event-details/2026/NVIDIA-2nd-Quarter-FY27-Financial-Results/default.aspx"
+      }
+    },
+    {
+      "ticker": "PLTR",
+      "name": "Palantir",
+      "primary_role": "ai_monetization",
+      "segments": [
+        "ai_services"
+      ],
+      "calendar_url": "https://investors.palantir.com/events",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "GOOGL",
+      "name": "Alphabet",
+      "primary_role": "demand_capex",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "calendar_url": "https://abc.xyz/investor/",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "AMZN",
+      "name": "Amazon",
+      "primary_role": "demand_capex",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "calendar_url": "https://ir.aboutamazon.com/events/default.aspx",
+      "tracker_status": "review_pending",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-AMZN-2026q2",
+        "name": "Amazon 2026 Q2 실적",
+        "scheduled_date": "2026-07-30",
+        "scheduled_at": "2026-07-31T06:00:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "14:00 미국 태평양시간",
+        "schedule_source_name": "Amazon",
+        "schedule_source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-to-Webcast-Second-Quarter-2026-Financial-Results-Conference-Call/default.aspx"
+      }
+    },
+    {
+      "ticker": "META",
+      "name": "Meta",
+      "primary_role": "demand_capex",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "calendar_url": "https://investor.atmeta.com/investor-events/default.aspx",
+      "tracker_status": "review_pending",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-META-2026q2",
+        "name": "Meta 2026 Q2 실적",
+        "scheduled_date": "2026-07-29",
+        "scheduled_at": "2026-07-30T05:30:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "콘퍼런스콜 13:30 미국 태평양시간",
+        "schedule_source_name": "Meta",
+        "schedule_source_url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-to-Announce-Second-Quarter-2026-Results/default.aspx"
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "name": "Microsoft",
+      "primary_role": "demand_capex",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "calendar_url": "https://www.microsoft.com/en-us/Investor/events/FY-2026/earnings-fy-2026-q4",
+      "tracker_status": "reviewed",
+      "impact_review": {
+        "trend_change": "strengthening",
+        "risk_level": "medium",
+        "cycle_status_effect": "none_single_source",
+        "summary": "Azure 43%, Microsoft Cloud 27%, 상업 잔여계약 84% 성장으로 AI·클라우드 인프라 수요 추세는 강화됐다.",
+        "risk_summary": "개인용 컴퓨팅 매출은 4%, Xbox 콘텐츠·서비스는 10% 감소했고 Xbox 손상차손도 발생해 전사 수요가 균일하게 강한 것은 아니다.",
+        "supporting_fact_metrics": [
+          "azure_revenue_yoy_percent",
+          "microsoft_cloud_revenue_yoy_percent",
+          "commercial_rpo_yoy_percent"
+        ],
+        "risk_fact_metrics": [
+          "more_personal_computing_revenue_yoy_percent",
+          "xbox_content_services_revenue_yoy_percent"
+        ],
+        "reviewed_at": "2026-07-31T14:00:00+09:00",
+        "review_method": "official-result-rules-audited",
+        "audit_passed": true
+      },
+      "event": {
+        "id": "earnings-MSFT-fy2026q4",
+        "name": "Microsoft FY2026 Q4 실적",
+        "scheduled_date": "2026-07-29",
+        "scheduled_at": "2026-07-30T06:30:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "콘퍼런스콜 14:30 미국 태평양시간",
+        "schedule_source_name": "Microsoft",
+        "schedule_source_url": "https://news.microsoft.com/source/2026/07/08/microsoft-announces-quarterly-earnings-release-date-68/"
+      }
+    },
+    {
+      "ticker": "ORCL",
+      "name": "Oracle",
+      "primary_role": "demand_capex",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "calendar_url": "https://investor.oracle.com/events-and-presentations/default.aspx",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "ASML",
+      "name": "ASML",
+      "primary_role": "equipment_materials",
+      "segments": [
+        "equipment_materials"
+      ],
+      "calendar_url": "https://www.asml.com/en/investors/financial-calendar",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "AMAT",
+      "name": "Applied Materials",
+      "primary_role": "equipment_materials",
+      "segments": [
+        "equipment_materials"
+      ],
+      "calendar_url": "https://ir.appliedmaterials.com/events/",
+      "tracker_status": "scheduled",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-AMAT-fy2026q3",
+        "name": "Applied Materials FY2026 Q3 실적",
+        "scheduled_date": "2026-08-13",
+        "scheduled_at": "2026-08-14T05:30:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "16:30 미국 동부시간",
+        "schedule_source_name": "Applied Materials",
+        "schedule_source_url": "https://ir.appliedmaterials.com/news-releases/news-release-details/applied-materials-report-fiscal-third-quarter-2026-results-aug"
+      }
+    },
+    {
+      "ticker": "LRCX",
+      "name": "Lam Research",
+      "primary_role": "equipment_materials",
+      "segments": [
+        "equipment_materials"
+      ],
+      "calendar_url": "https://investor.lamresearch.com/events",
+      "tracker_status": "review_pending",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-LRCX-2026june",
+        "name": "Lam Research 2026년 6월 분기 실적",
+        "scheduled_date": "2026-07-29",
+        "scheduled_at": "2026-07-30T06:00:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "14:00 미국 태평양시간",
+        "schedule_source_name": "Lam Research",
+        "schedule_source_url": "https://investor.lamresearch.com/events?item=93"
+      }
+    },
+    {
+      "ticker": "8035",
+      "name": "Tokyo Electron",
+      "primary_role": "equipment_materials",
+      "segments": [
+        "equipment_materials"
+      ],
+      "calendar_url": "https://www.tel.com/ir/calendar/",
+      "tracker_status": "review_pending",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-8035-fy2027q1",
+        "name": "Tokyo Electron FY2027 Q1 실적",
+        "scheduled_date": "2026-07-30",
+        "scheduled_at": null,
+        "schedule_status": "date_confirmed",
+        "time_note": "발표일 확정 · 정확한 시각은 공식 페이지에서 재확인",
+        "schedule_source_name": "Tokyo Electron",
+        "schedule_source_url": "https://www.tel.com/ir/calendar/"
+      }
+    },
+    {
+      "ticker": "042700",
+      "name": "한미반도체",
+      "primary_role": "equipment_materials",
+      "segments": [
+        "equipment_materials"
+      ],
+      "calendar_url": "https://www.hanmisemi.com/eng/ir/ir.php",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "INTC",
+      "name": "Intel",
+      "primary_role": "manufacturing_memory",
+      "segments": [
+        "foundry_logic",
+        "ai_compute_design"
+      ],
+      "calendar_url": "https://www.intc.com/news-events/ir-calendar",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "MU",
+      "name": "Micron",
+      "primary_role": "manufacturing_memory",
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand"
+      ],
+      "calendar_url": "https://investors.micron.com/events-and-presentations",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "000660",
+      "name": "SK하이닉스",
+      "primary_role": "manufacturing_memory",
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand"
+      ],
+      "calendar_url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "TSM",
+      "name": "TSMC",
+      "primary_role": "manufacturing_memory",
+      "segments": [
+        "foundry_logic"
+      ],
+      "calendar_url": "https://investor.tsmc.com/english/financial-calendar",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "005930",
+      "name": "삼성전자",
+      "primary_role": "manufacturing_memory",
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand",
+        "foundry_logic"
+      ],
+      "calendar_url": "https://news.samsung.com/global/tag/earnings-release",
+      "tracker_status": "awaiting_official_date",
+      "impact_review": null,
+      "event": null
+    },
+    {
+      "ticker": "ANET",
+      "name": "Arista Networks",
+      "primary_role": "physical_infrastructure",
+      "segments": [
+        "cloud_capex",
+        "power_infrastructure"
+      ],
+      "calendar_url": "https://investors.arista.com/Communications/Press-Releases-and-Events/default.aspx",
+      "tracker_status": "scheduled",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-ANET-2026q2",
+        "name": "Arista Networks 2026 Q2 실적",
+        "scheduled_date": "2026-08-04",
+        "scheduled_at": "2026-08-05T05:30:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "13:30 미국 태평양시간",
+        "schedule_source_name": "Arista Networks",
+        "schedule_source_url": "https://investors.arista.com/Communications/Press-Releases-and-Events/Press-Release-Detail/2026/Arista-Networks-to-Announce-Q2-2026-Financial-Results-on-Tuesday-August-4-2026/default.aspx"
+      }
+    },
+    {
+      "ticker": "SMCI",
+      "name": "Supermicro",
+      "primary_role": "physical_infrastructure",
+      "segments": [
+        "power_infrastructure",
+        "ai_compute_design"
+      ],
+      "calendar_url": "https://ir.supermicro.com/events-and-presentations/default.aspx",
+      "tracker_status": "scheduled",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-SMCI-fy2026q4",
+        "name": "Supermicro FY2026 Q4 실적",
+        "scheduled_date": "2026-08-11",
+        "scheduled_at": "2026-08-12T06:00:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "14:00 미국 태평양시간",
+        "schedule_source_name": "Supermicro",
+        "schedule_source_url": "https://ir.supermicro.com/events-and-presentations/event-details/2026/Fiscal-4Q-2026-Results-2026-g23ewVabuT/default.aspx"
+      }
+    },
+    {
+      "ticker": "VRT",
+      "name": "Vertiv",
+      "primary_role": "physical_infrastructure",
+      "segments": [
+        "power_infrastructure"
+      ],
+      "calendar_url": "https://investors.vertiv.com/events-presentations/events-presentations/default.aspx",
+      "tracker_status": "review_pending",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-VRT-2026q2",
+        "name": "Vertiv 2026 Q2 실적",
+        "scheduled_date": "2026-07-29",
+        "scheduled_at": "2026-07-30T00:00:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "콘퍼런스콜 11:00 미국 동부시간",
+        "schedule_source_name": "Vertiv",
+        "schedule_source_url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Announces-Date-of-Second-Quarter-2026-Earnings-Release-and-Conference-Call/default.aspx"
+      }
+    },
+    {
+      "ticker": "VST",
+      "name": "Vistra",
+      "primary_role": "physical_infrastructure",
+      "segments": [
+        "power_infrastructure"
+      ],
+      "calendar_url": "https://investor.vistracorp.com/events-and-presentations/default.aspx",
+      "tracker_status": "scheduled",
+      "impact_review": null,
+      "event": {
+        "id": "earnings-VST-2026q2",
+        "name": "Vistra 2026 Q2 실적",
+        "scheduled_date": "2026-08-07",
+        "scheduled_at": "2026-08-07T23:00:00+09:00",
+        "schedule_status": "confirmed",
+        "time_note": "10:00 미국 동부시간",
+        "schedule_source_name": "Vistra",
+        "schedule_source_url": "https://investor.vistracorp.com/2026-07-06-Vistra-to-Report-Second-Quarter-Results-on-Aug-7%2C-2026"
+      }
+    }
+  ],
   "recent_results": [
+    {
+      "event_id": "earnings-MSFT-fy2026q4",
+      "event_name": "Microsoft FY2026 Q4 실적",
+      "kind": "earnings",
+      "ticker": "MSFT",
+      "status": "complete",
+      "review_status": "verified",
+      "retrieved_at": "2026-07-31T14:00:00+09:00",
+      "source_published_at": null,
+      "reference_period": "Microsoft FY2026 Q4",
+      "summary": "Microsoft FY2026 Q4 매출은 전년 동기 대비 18% 증가했고, Azure 매출 성장률은 43%였다.",
+      "facts": [
+        {
+          "metric": "revenue_yoy_percent",
+          "value": 18,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "microsoft_cloud_revenue_yoy_percent",
+          "value": 27,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "azure_revenue_yoy_percent",
+          "value": 43,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "commercial_rpo_yoy_percent",
+          "value": 84,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "more_personal_computing_revenue_yoy_percent",
+          "value": -4,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "xbox_content_services_revenue_yoy_percent",
+          "value": -10,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        }
+      ],
+      "source_urls": [
+        "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast"
+      ],
+      "revision_of": null,
+      "impact_review": {
+        "trend_change": "strengthening",
+        "risk_level": "medium",
+        "cycle_status_effect": "none_single_source",
+        "summary": "Azure 43%, Microsoft Cloud 27%, 상업 잔여계약 84% 성장으로 AI·클라우드 인프라 수요 추세는 강화됐다.",
+        "risk_summary": "개인용 컴퓨팅 매출은 4%, Xbox 콘텐츠·서비스는 10% 감소했고 Xbox 손상차손도 발생해 전사 수요가 균일하게 강한 것은 아니다.",
+        "supporting_fact_metrics": [
+          "azure_revenue_yoy_percent",
+          "microsoft_cloud_revenue_yoy_percent",
+          "commercial_rpo_yoy_percent"
+        ],
+        "risk_fact_metrics": [
+          "more_personal_computing_revenue_yoy_percent",
+          "xbox_content_services_revenue_yoy_percent"
+        ],
+        "reviewed_at": "2026-07-31T14:00:00+09:00",
+        "review_method": "official-result-rules-audited",
+        "audit_passed": true
+      }
+    },
     {
       "event_id": "macro-us-pce-2026-06",
       "event_name": "미국 2026년 6월 PCE",
@@ -299,7 +907,8 @@
       "source_urls": [
         "https://www.bea.gov/news/2026/personal-income-and-outlays-june-2026"
       ],
-      "revision_of": null
+      "revision_of": null,
+      "impact_review": null
     },
     {
       "event_id": "macro-fomc-2026-07-29",
@@ -333,7 +942,8 @@
       "source_urls": [
         "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm"
       ],
-      "revision_of": null
+      "revision_of": null,
+      "impact_review": null
     }
   ]
 }

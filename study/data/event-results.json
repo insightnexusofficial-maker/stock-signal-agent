@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-30T21:53:40+09:00",
+  "generated_at": "2026-07-31T14:00:00+09:00",
   "results": [
     {
       "event_id": "macro-fomc-2026-07-29",
@@ -69,6 +69,74 @@
       "source_urls": [
         "https://www.bea.gov/news/2026/personal-income-and-outlays-june-2026"
       ]
+    },
+    {
+      "event_id": "earnings-MSFT-fy2026q4",
+      "status": "complete",
+      "review_status": "verified",
+      "retrieved_at": "2026-07-31T14:00:00+09:00",
+      "reference_period": "Microsoft FY2026 Q4",
+      "summary": "Microsoft FY2026 Q4 매출은 전년 동기 대비 18% 증가했고, Azure 매출 성장률은 43%였다.",
+      "facts": [
+        {
+          "metric": "revenue_yoy_percent",
+          "value": 18,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "microsoft_cloud_revenue_yoy_percent",
+          "value": 27,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "azure_revenue_yoy_percent",
+          "value": 43,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "commercial_rpo_yoy_percent",
+          "value": 84,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "more_personal_computing_revenue_yoy_percent",
+          "value": -4,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        },
+        {
+          "metric": "xbox_content_services_revenue_yoy_percent",
+          "value": -10,
+          "unit": "percent",
+          "comparison": "same quarter previous year"
+        }
+      ],
+      "source_urls": [
+        "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast"
+      ],
+      "impact_review": {
+        "trend_change": "strengthening",
+        "risk_level": "medium",
+        "cycle_status_effect": "none_single_source",
+        "summary": "Azure 43%, Microsoft Cloud 27%, 상업 잔여계약 84% 성장으로 AI·클라우드 인프라 수요 추세는 강화됐다.",
+        "risk_summary": "개인용 컴퓨팅 매출은 4%, Xbox 콘텐츠·서비스는 10% 감소했고 Xbox 손상차손도 발생해 전사 수요가 균일하게 강한 것은 아니다.",
+        "supporting_fact_metrics": [
+          "azure_revenue_yoy_percent",
+          "microsoft_cloud_revenue_yoy_percent",
+          "commercial_rpo_yoy_percent"
+        ],
+        "risk_fact_metrics": [
+          "more_personal_computing_revenue_yoy_percent",
+          "xbox_content_services_revenue_yoy_percent"
+        ],
+        "reviewed_at": "2026-07-31T14:00:00+09:00",
+        "review_method": "official-result-rules-audited",
+        "audit_passed": true
+      }
     }
   ]
 }

@@ -2,8 +2,10 @@ name: Verified official event feed
 
 on:
   schedule:
-    # 공식 발표 뒤 30분 이내 확인한다. 인증 API나 사용자 데이터는 사용하지 않는다.
-    - cron: "17,47 * * * *"
+    # 매일 07:15 KST: 향후 공식 실적 발표일 발견.
+    - cron: "15 22 * * *"
+    # 평일 주요 글로벌 발표 창에만 매시간 확인한다(기존 30분×24/7 대비 82% 축소).
+    - cron: "17 20-23,5-9,12-14 * * 1-5"
   workflow_dispatch:
 
 permissions:
@@ -16,7 +18,7 @@ concurrency:
 jobs:
   update-verify-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
     defaults:
@@ -30,19 +32,35 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Collect official public event results
+      - name: Discover official earnings dates
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' }}
+        run: python scripts/discover_earnings_calendar.py
+
+      - name: Check whether an announcement window is active
+        id: due
+        run: python scripts/check_due_events.py
+
+      - name: Detect official earnings result publication
+        if: ${{ steps.due.outputs.active == 'true' }}
+        run: python scripts/collect_earnings_results.py
+
+      - name: Collect supported official macro results
+        if: ${{ steps.due.outputs.active == 'true' }}
         run: python scripts/collect_event_results.py
 
       - name: Build verified event feed
         id: build
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: python scripts/build_event_feed.py
 
       - name: Run event tests and static validation
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: |
           python -m unittest discover -s tests -p "test_*event*.py" -v
           python scripts/validate_build.py
 
       - name: Save verified event snapshot
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: |
           git config user.name "stock-sayo-study-bot"
           git config user.email "actions@users.noreply.github.com"

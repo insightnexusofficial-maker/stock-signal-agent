@@ -18,12 +18,16 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CALENDAR_PATH = ROOT / "data" / "event-calendar.json"
 DEFAULT_RESULTS_PATH = ROOT / "data" / "event-results.json"
 
-SCHEMA_VERSION = "1.0"
+SOURCE_SCHEMA_VERSION = "1.0"
+PUBLIC_SCHEMA_VERSION = "1.2"
 EVENT_KINDS = {"earnings", "company_metric", "macro"}
 SCHEDULE_STATUSES = {"confirmed", "date_confirmed", "unconfirmed"}
 RESULT_STATUSES = {"complete", "partial", "unavailable"}
 REVIEW_STATUSES = {"verified", "pending", "rejected"}
-AUTOMATED_OFFICIAL_RESULT_PREFIXES = ("macro-fomc-",)
+TREND_CHANGES = {"strengthening", "unchanged", "weakening", "mixed"}
+RISK_LEVELS = {"low", "medium", "high"}
+CYCLE_STATUS_EFFECTS = {"none_single_source", "review_required", "evidence_candidate"}
+AUTOMATED_OFFICIAL_RESULT_PREFIXES = ("macro-fomc-", "earnings-")
 
 
 class EventDataError(ValueError):
@@ -66,7 +70,7 @@ def _official_url(value, allowed_domains: set[str], field: str) -> str:
 
 
 def validate_calendar(document: dict) -> dict:
-    if document.get("schema_version") != SCHEMA_VERSION:
+    if document.get("schema_version") != SOURCE_SCHEMA_VERSION:
         raise EventDataError("unsupported event calendar schema")
 
     allowed_domains = {
@@ -96,11 +100,19 @@ def validate_calendar(document: dict) -> dict:
         raise EventDataError("calendar expires_at must follow generated_at")
 
     monitor_ids = set()
+    earnings_tickers = set()
     for monitor in document.get("monitors", []):
         monitor_id = str(monitor.get("id") or "")
         if not monitor_id or monitor_id in monitor_ids:
             raise EventDataError("missing or duplicate monitor id")
         monitor_ids.add(monitor_id)
+        if monitor.get("kind") == "earnings":
+            ticker = str(monitor.get("ticker") or "").upper()
+            if not ticker or ticker in earnings_tickers:
+                raise EventDataError("missing or duplicate earnings ticker")
+            earnings_tickers.add(ticker)
+            if not str(monitor.get("primary_role") or "").strip():
+                raise EventDataError(f"missing primary_role: {monitor_id}")
         _official_url(monitor.get("calendar_url"), allowed_domains, "calendar_url")
         if monitor.get("results_url"):
             _official_url(monitor.get("results_url"), allowed_domains, "results_url")
@@ -134,7 +146,7 @@ def validate_calendar(document: dict) -> dict:
 
 
 def validate_results(document: dict, calendar: dict) -> dict:
-    if document.get("schema_version") != SCHEMA_VERSION:
+    if document.get("schema_version") != SOURCE_SCHEMA_VERSION:
         raise EventDataError("unsupported event result schema")
     _parse_datetime(document.get("generated_at"), "result generated_at")
 
@@ -166,6 +178,32 @@ def validate_results(document: dict, calendar: dict) -> dict:
             _official_url(source_url, allowed_domains, "result source")
         if result.get("status") == "complete" and result.get("review_status") != "verified":
             raise EventDataError(f"complete result is not verified: {event_id}")
+        impact_review = result.get("impact_review")
+        event = next(
+            (item for item in calendar.get("events", []) if item.get("id") == event_id),
+            None,
+        )
+        if result.get("status") == "complete" and event and event.get("kind") == "earnings":
+            if not impact_review:
+                raise EventDataError(f"complete earnings result has no impact review: {event_id}")
+        if impact_review:
+            if result.get("review_status") != "verified":
+                raise EventDataError(f"unverified impact review: {event_id}")
+            if impact_review.get("trend_change") not in TREND_CHANGES:
+                raise EventDataError(f"invalid trend change: {event_id}")
+            if impact_review.get("risk_level") not in RISK_LEVELS:
+                raise EventDataError(f"invalid risk level: {event_id}")
+            if impact_review.get("cycle_status_effect") not in CYCLE_STATUS_EFFECTS:
+                raise EventDataError(f"invalid cycle status effect: {event_id}")
+            if impact_review.get("audit_passed") is not True:
+                raise EventDataError(f"impact review audit missing: {event_id}")
+            _parse_datetime(
+                impact_review.get("reviewed_at"),
+                f"{event_id}.impact_review.reviewed_at",
+            )
+            for field in ("summary", "risk_summary"):
+                if not str(impact_review.get(field) or "").strip():
+                    raise EventDataError(f"impact review {field} missing: {event_id}")
         shock = result.get("shock") or {}
         if shock.get("is_shock") is True:
             if (
@@ -219,6 +257,7 @@ def _public_result(result: dict, event: dict | None = None) -> dict:
         "facts": result.get("facts") or [],
         "source_urls": result.get("source_urls") or [],
         "revision_of": result.get("revision_of"),
+        "impact_review": result.get("impact_review"),
     }
     shock = result.get("shock") or {}
     if shock.get("is_shock") is True:
@@ -249,6 +288,11 @@ def build_event_sync(calendar_path=None, results_path=None, now=None) -> dict:
     event_by_id = {
         event["id"]: event for event in calendar.get("events", [])
     }
+    earnings_events_by_ticker: dict[str, list[dict]] = {}
+    for event in calendar.get("events", []):
+        if event.get("kind") != "earnings" or not event.get("ticker"):
+            continue
+        earnings_events_by_ticker.setdefault(str(event["ticker"]).upper(), []).append(event)
 
     upcoming = []
     due_event_ids = []
@@ -268,9 +312,19 @@ def build_event_sync(calendar_path=None, results_path=None, now=None) -> dict:
         if verified_complete:
             sync_status = "synced"
         elif not event.get("scheduled_at"):
-            # 발표일만 공식 확인된 이벤트는 임의 시각으로 due 처리하지 않는다.
-            # 공식 시각이 확인돼 scheduled_at이 생긴 뒤에만 결과 수집을 시작한다.
-            sync_status = "scheduled"
+            # 시각은 추정하지 않되 공식 발표일 당일과 다음 날에는 공식 IR의
+            # 결과 공개 여부를 확인한다.
+            scheduled_date = _parse_date(event["scheduled_date"], "scheduled_date")
+            if now.date() < scheduled_date:
+                sync_status = "scheduled"
+            elif now.date() <= scheduled_date + timedelta(days=1):
+                sync_status = "due"
+                due_event_ids.append(event["id"])
+                if not _has_automated_official_collector(event):
+                    unsupported_due_event_ids.append(event["id"])
+            else:
+                sync_status = "overdue"
+                overdue_event_ids.append(event["id"])
         elif now < event_moment:
             sync_status = "scheduled"
         elif now <= capture_until:
@@ -318,8 +372,75 @@ def build_event_sync(calendar_path=None, results_path=None, now=None) -> dict:
 
     calendar_expires_at = _parse_datetime(calendar["expires_at"], "expires_at")
     calendar_status = "fresh" if calendar_expires_at > now else "stale"
+    company_trackers = []
+    for monitor in calendar.get("monitors", []):
+        if monitor.get("kind") != "earnings":
+            continue
+        ticker = str(monitor["ticker"]).upper()
+        ticker_events = sorted(
+            earnings_events_by_ticker.get(ticker, []),
+            key=_event_moment,
+        )
+        future_events = [event for event in ticker_events if _event_moment(event) >= now]
+        past_events = [event for event in ticker_events if _event_moment(event) < now]
+        selected = future_events[0] if future_events else (past_events[-1] if past_events else None)
+        selected_result = result_by_event.get(selected["id"]) if selected else None
+        verified_impact = bool(
+            selected_result
+            and selected_result.get("status") == "complete"
+            and selected_result.get("review_status") == "verified"
+            and selected_result.get("impact_review")
+        )
+        if not selected:
+            tracker_status = "awaiting_official_date"
+        elif future_events and selected.get("scheduled_at"):
+            tracker_status = "scheduled"
+        elif future_events:
+            tracker_status = "date_confirmed"
+        elif verified_impact:
+            tracker_status = "reviewed"
+        else:
+            tracker_status = "review_pending"
+        company_trackers.append({
+            "ticker": ticker,
+            "name": monitor["name"],
+            "primary_role": monitor["primary_role"],
+            "segments": monitor.get("segments") or [],
+            "calendar_url": monitor["calendar_url"],
+            "tracker_status": tracker_status,
+            "impact_review": (
+                selected_result.get("impact_review")
+                if verified_impact
+                else None
+            ),
+            "event": ({
+                "id": selected["id"],
+                "name": selected["name"],
+                "scheduled_date": selected["scheduled_date"],
+                "scheduled_at": selected.get("scheduled_at"),
+                "schedule_status": selected["schedule_status"],
+                "time_note": selected.get("time_note"),
+                "schedule_source_name": selected.get("schedule_source_name"),
+                "schedule_source_url": selected["schedule_source_url"],
+            } if selected else None),
+        })
+    company_trackers.sort(key=lambda item: (item["primary_role"], item["name"]))
+    scheduled_company_count = sum(
+        item["tracker_status"] in {"scheduled", "date_confirmed"}
+        for item in company_trackers
+    )
+    reviewed_company_count = sum(
+        item["tracker_status"] == "reviewed" for item in company_trackers
+    )
+    review_pending_company_count = sum(
+        item["tracker_status"] == "review_pending" for item in company_trackers
+    )
+    awaiting_company_count = sum(
+        item["tracker_status"] == "awaiting_official_date"
+        for item in company_trackers
+    )
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": PUBLIC_SCHEMA_VERSION,
         "calendar_generated_at": calendar["generated_at"],
         "calendar_expires_at": calendar["expires_at"],
         "calendar_status": calendar_status,
@@ -330,6 +451,11 @@ def build_event_sync(calendar_path=None, results_path=None, now=None) -> dict:
         "monitored_macro_count": sum(
             monitor.get("kind") == "macro" for monitor in calendar.get("monitors", [])
         ),
+        "scheduled_company_count": scheduled_company_count,
+        "reviewed_company_count": reviewed_company_count,
+        "review_pending_company_count": review_pending_company_count,
+        "awaiting_company_count": awaiting_company_count,
+        "company_trackers": company_trackers,
         "upcoming": upcoming,
         "recent_results": recent_results,
         "due_event_ids": due_event_ids,
@@ -354,7 +480,7 @@ def build_public_feed(calendar_path=None, results_path=None, now=None) -> dict:
     ).hexdigest()
     quality_status = "passed" if sync["calendar_status"] == "fresh" else "stale"
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": PUBLIC_SCHEMA_VERSION,
         "feed_id": f"market-events-{content_hash[:16]}",
         "content_sha256": content_hash,
         "generated_at": max(
@@ -378,6 +504,10 @@ def build_public_feed(calendar_path=None, results_path=None, now=None) -> dict:
             "due_event_ids": sync["due_event_ids"],
             "overdue_event_ids": sync["overdue_event_ids"],
             "unsupported_due_event_ids": sync["unsupported_due_event_ids"],
+            "scheduled_company_count": sync["scheduled_company_count"],
+            "reviewed_company_count": sync["reviewed_company_count"],
+            "review_pending_company_count": sync["review_pending_company_count"],
+            "awaiting_company_count": sync["awaiting_company_count"],
         },
         "shock_policy": {
             "version": calendar["shock_policy"]["version"],
@@ -385,5 +515,6 @@ def build_public_feed(calendar_path=None, results_path=None, now=None) -> dict:
             "mode": "objective-official-data-only",
         },
         "events": sync["upcoming"][:24],
+        "company_trackers": sync["company_trackers"],
         "recent_results": sync["recent_results"][:12],
     }
