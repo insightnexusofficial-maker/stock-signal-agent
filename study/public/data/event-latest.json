@@ -13,12 +13,11 @@
     "calendar_status": "fresh",
     "monitored_company_count": 23,
     "monitored_macro_count": 6,
-    "due_event_ids": [
-      "earnings-AMZN-2026q2"
-    ],
+    "due_event_ids": [],
     "overdue_event_ids": [
       "earnings-META-2026q2",
       "earnings-LRCX-2026june",
+      "earnings-AMZN-2026q2",
       "earnings-VRT-2026q2",
       "earnings-8035-fy2027q1"
     ],
@@ -34,62 +33,6 @@
     "mode": "objective-official-data-only"
   },
   "events": [
-    {
-      "id": "macro-us-pce-2026-06",
-      "kind": "macro",
-      "ticker": null,
-      "name": "미국 2026년 6월 PCE",
-      "scheduled_date": "2026-07-30",
-      "scheduled_at": "2026-07-30T21:30:00+09:00",
-      "monitor_after": "2026-07-30T21:35:00+09:00",
-      "schedule_timezone": "America/New_York",
-      "schedule_status": "confirmed",
-      "time_note": "08:30 미국 동부시간",
-      "schedule_source_name": "U.S. Bureau of Economic Analysis",
-      "schedule_source_url": "https://www.bea.gov/news/schedule",
-      "segments": [],
-      "sync_status": "synced",
-      "result_collection_status": "manual-official-review"
-    },
-    {
-      "id": "earnings-8035-fy2027q1",
-      "kind": "earnings",
-      "ticker": "8035",
-      "name": "Tokyo Electron FY2027 Q1 실적",
-      "scheduled_date": "2026-07-30",
-      "scheduled_at": null,
-      "monitor_after": "2026-07-31T00:00:00+09:00",
-      "schedule_timezone": "Asia/Tokyo",
-      "schedule_status": "date_confirmed",
-      "time_note": "발표일 확정 · 정확한 시각은 공식 페이지에서 재확인",
-      "schedule_source_name": "Tokyo Electron",
-      "schedule_source_url": "https://www.tel.com/ir/calendar/",
-      "segments": [
-        "equipment_materials"
-      ],
-      "sync_status": "overdue",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "earnings-AMZN-2026q2",
-      "kind": "earnings",
-      "ticker": "AMZN",
-      "name": "Amazon 2026 Q2 실적",
-      "scheduled_date": "2026-07-30",
-      "scheduled_at": "2026-07-31T06:00:00+09:00",
-      "monitor_after": "2026-07-31T06:05:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "14:00 미국 태평양시간",
-      "schedule_source_name": "Amazon",
-      "schedule_source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-to-Webcast-Second-Quarter-2026-Financial-Results-Conference-Call/default.aspx",
-      "segments": [
-        "cloud_capex",
-        "ai_services"
-      ],
-      "sync_status": "due",
-      "result_collection_status": "automated-official"
-    },
     {
       "id": "earnings-ANET-2026q2",
       "kind": "earnings",
