@@ -7,11 +7,16 @@
 """
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
+from datetime import datetime, timedelta, timezone
 import hashlib
 import requests
 
 from event_alerts import due_cycle_interrupt_alerts, due_shock_alerts
-from notification_policy import build_buy_notification, evaluate_buy_alert
+from notification_policy import (
+    build_buy_notification,
+    evaluate_buy_alert,
+    is_kr_buy_alert_session,
+)
 
 try:
     firebase_admin.get_app()
@@ -22,6 +27,7 @@ except ValueError:
 db = firestore.client()
 
 CYCLE_REPORT_URL = "https://stock-sayo-study.web.app/data/cycle-latest.json"
+PUSH_TTL = timedelta(minutes=10)
 
 
 # ============================================================
@@ -37,6 +43,7 @@ def _mode_emoji(mode):
 
 
 def send_push(title, body, tag=None, data=None):
+    expires_at = datetime.now(timezone.utc) + PUSH_TTL
     tokens_ref = db.collection("fcm_tokens").stream()
     tokens = []
     for doc in tokens_ref:
@@ -61,6 +68,7 @@ def send_push(title, body, tag=None, data=None):
                 token=token,
                 data=data or {},
                 webpush=messaging.WebpushConfig(
+                    headers={"TTL": str(int(PUSH_TTL.total_seconds()))},
                     notification=messaging.WebpushNotification(
                         title=title,
                         body=body,
@@ -74,10 +82,14 @@ def send_push(title, body, tag=None, data=None):
                     ),
                 ),
                 android=messaging.AndroidConfig(
+                    ttl=PUSH_TTL,
                     notification=messaging.AndroidNotification(tag=tag) if tag else None
                 ),
                 apns=messaging.APNSConfig(
-                    headers={"apns-collapse-id": tag} if tag else None,
+                    headers={
+                        **({"apns-collapse-id": tag} if tag else {}),
+                        "apns-expiration": str(int(expires_at.timestamp())),
+                    },
                     payload=messaging.APNSPayload(
                         aps=messaging.Aps(
                             thread_id=tag or "default",
@@ -240,7 +252,7 @@ def send_due_event_result_alerts(event_feed, now=None):
 # ============================================================
 # 메인 알림 로직
 # ============================================================
-def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
+def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None, now=None):
     """
     매크로 + 종목 시그널 검토 후 알림 발송.
     
@@ -267,9 +279,9 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
         return
     
     all_stocks = (
-        [(stock, "stock") for stock in (data.get("kr_stock") or [])]
-        + [(stock, "stock") for stock in (data.get("us_stock") or [])]
-        + [(stock, "etf") for stock in (data.get("kr_etf") or [])]
+        [(stock, "stock", "kr") for stock in (data.get("kr_stock") or [])]
+        + [(stock, "stock", "us") for stock in (data.get("us_stock") or [])]
+        + [(stock, "etf", "kr") for stock in (data.get("kr_etf") or [])]
     )
     sample_id = (
         data.get("collection_finished_at")
@@ -286,11 +298,21 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
     
     new_rsi_map = {}
     sent_count = 0
+    suppressed_kr_count = 0
+    kr_alert_session = is_kr_buy_alert_session(now)
     
     # === 종목별 시그널 처리 ===
-    for stock, instrument_type in all_stocks:
+    for stock, instrument_type, market in all_stocks:
         code = stock.get("code")
         if not code:
+            continue
+
+        # 미국장 수집은 야간에도 계속하되, 국내 종목·ETF는 한국 정규장 밖에서
+        # 상태 평가 자체를 미룬다. claim 뒤에 막으면 다음 장중 알림이 소실된다.
+        if market == "kr" and not kr_alert_session:
+            if code in prev_rsi_map:
+                new_rsi_map[code] = prev_rsi_map[code]
+            suppressed_kr_count += 1
             continue
         
         rsi = stock.get("rsi")
@@ -345,6 +367,9 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None):
             db.collection("state").document("rsi").set(new_rsi_map)
         except Exception as e:
             print(f"   ⚠️  RSI 상태 저장 실패: {e}")
+
+    if suppressed_kr_count:
+        print(f"   🌙 한국 장외 매수 알림 평가 보류: {suppressed_kr_count}개")
     
     # === 결과 ===
     if sent_count == 0:

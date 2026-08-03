@@ -1,6 +1,11 @@
 import unittest
+from datetime import datetime
 
-from notification_policy import build_buy_notification, evaluate_buy_alert
+from notification_policy import (
+    build_buy_notification,
+    evaluate_buy_alert,
+    is_kr_buy_alert_session,
+)
 
 
 def initialized_state(**overrides):
@@ -16,6 +21,16 @@ def initialized_state(**overrides):
 
 
 class NotificationPolicyTests(unittest.TestCase):
+    def test_kr_buy_alert_session_uses_kst_regular_hours(self):
+        self.assertFalse(is_kr_buy_alert_session(datetime.fromisoformat("2026-08-03T08:59:59+09:00")))
+        self.assertTrue(is_kr_buy_alert_session(datetime.fromisoformat("2026-08-03T09:00:00+09:00")))
+        self.assertTrue(is_kr_buy_alert_session(datetime.fromisoformat("2026-08-03T15:29:59+09:00")))
+        self.assertFalse(is_kr_buy_alert_session(datetime.fromisoformat("2026-08-03T15:30:00+09:00")))
+
+    def test_kr_buy_alert_session_rejects_night_and_weekend(self):
+        self.assertFalse(is_kr_buy_alert_session(datetime.fromisoformat("2026-08-04T01:06:00+09:00")))
+        self.assertFalse(is_kr_buy_alert_session(datetime.fromisoformat("2026-08-08T10:00:00+09:00")))
+
     def test_candidate_never_creates_push(self):
         stock = {
             "code": "TEST",

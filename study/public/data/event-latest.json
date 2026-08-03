@@ -1,8 +1,8 @@
 {
   "schema_version": "1.2",
-  "feed_id": "market-events-5296eada1197cf41",
-  "content_sha256": "5296eada1197cf414cf9380ec5a015ab6292fd3016fafcf8ee6721661b425c06",
-  "generated_at": "2026-07-31T14:00:00+09:00",
+  "feed_id": "market-events-c25e7356a93c6b47",
+  "content_sha256": "c25e7356a93c6b4751f8b343a0768507fd2a5be258ccb9c2ecdebc85c296ddd1",
+  "generated_at": "2026-08-01T08:14:35+09:00",
   "expires_at": "2026-08-08T12:00:00+09:00",
   "quality_gate": {
     "status": "passed",
@@ -13,14 +13,13 @@
     "calendar_status": "fresh",
     "monitored_company_count": 23,
     "monitored_macro_count": 6,
-    "due_event_ids": [
-      "earnings-AMZN-2026q2",
-      "earnings-8035-fy2027q1"
-    ],
+    "due_event_ids": [],
     "overdue_event_ids": [
       "earnings-META-2026q2",
       "earnings-LRCX-2026june",
-      "earnings-VRT-2026q2"
+      "earnings-AMZN-2026q2",
+      "earnings-VRT-2026q2",
+      "earnings-8035-fy2027q1"
     ],
     "unsupported_due_event_ids": [],
     "scheduled_company_count": 6,
@@ -34,157 +33,6 @@
     "mode": "objective-official-data-only"
   },
   "events": [
-    {
-      "id": "earnings-VRT-2026q2",
-      "kind": "earnings",
-      "ticker": "VRT",
-      "name": "Vertiv 2026 Q2 실적",
-      "scheduled_date": "2026-07-29",
-      "scheduled_at": "2026-07-30T00:00:00+09:00",
-      "monitor_after": "2026-07-30T00:05:00+09:00",
-      "schedule_timezone": "America/New_York",
-      "schedule_status": "confirmed",
-      "time_note": "콘퍼런스콜 11:00 미국 동부시간",
-      "schedule_source_name": "Vertiv",
-      "schedule_source_url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Announces-Date-of-Second-Quarter-2026-Earnings-Release-and-Conference-Call/default.aspx",
-      "segments": [
-        "power_infrastructure"
-      ],
-      "sync_status": "overdue",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "macro-fomc-2026-07-29",
-      "kind": "macro",
-      "ticker": null,
-      "name": "FOMC 금리결정",
-      "scheduled_date": "2026-07-29",
-      "scheduled_at": "2026-07-30T03:00:00+09:00",
-      "monitor_after": "2026-07-30T03:05:00+09:00",
-      "schedule_timezone": "America/New_York",
-      "schedule_status": "confirmed",
-      "time_note": "14:00 미국 동부시간",
-      "schedule_source_name": "Federal Reserve",
-      "schedule_source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
-      "segments": [],
-      "sync_status": "synced",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "earnings-META-2026q2",
-      "kind": "earnings",
-      "ticker": "META",
-      "name": "Meta 2026 Q2 실적",
-      "scheduled_date": "2026-07-29",
-      "scheduled_at": "2026-07-30T05:30:00+09:00",
-      "monitor_after": "2026-07-30T05:35:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "콘퍼런스콜 13:30 미국 태평양시간",
-      "schedule_source_name": "Meta",
-      "schedule_source_url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-to-Announce-Second-Quarter-2026-Results/default.aspx",
-      "segments": [
-        "cloud_capex",
-        "ai_services"
-      ],
-      "sync_status": "overdue",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "earnings-LRCX-2026june",
-      "kind": "earnings",
-      "ticker": "LRCX",
-      "name": "Lam Research 2026년 6월 분기 실적",
-      "scheduled_date": "2026-07-29",
-      "scheduled_at": "2026-07-30T06:00:00+09:00",
-      "monitor_after": "2026-07-30T06:05:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "14:00 미국 태평양시간",
-      "schedule_source_name": "Lam Research",
-      "schedule_source_url": "https://investor.lamresearch.com/events?item=93",
-      "segments": [
-        "equipment_materials"
-      ],
-      "sync_status": "overdue",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "earnings-MSFT-fy2026q4",
-      "kind": "earnings",
-      "ticker": "MSFT",
-      "name": "Microsoft FY2026 Q4 실적",
-      "scheduled_date": "2026-07-29",
-      "scheduled_at": "2026-07-30T06:30:00+09:00",
-      "monitor_after": "2026-07-30T06:35:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "콘퍼런스콜 14:30 미국 태평양시간",
-      "schedule_source_name": "Microsoft",
-      "schedule_source_url": "https://news.microsoft.com/source/2026/07/08/microsoft-announces-quarterly-earnings-release-date-68/",
-      "segments": [
-        "cloud_capex",
-        "ai_services"
-      ],
-      "sync_status": "synced",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "macro-us-pce-2026-06",
-      "kind": "macro",
-      "ticker": null,
-      "name": "미국 2026년 6월 PCE",
-      "scheduled_date": "2026-07-30",
-      "scheduled_at": "2026-07-30T21:30:00+09:00",
-      "monitor_after": "2026-07-30T21:35:00+09:00",
-      "schedule_timezone": "America/New_York",
-      "schedule_status": "confirmed",
-      "time_note": "08:30 미국 동부시간",
-      "schedule_source_name": "U.S. Bureau of Economic Analysis",
-      "schedule_source_url": "https://www.bea.gov/news/schedule",
-      "segments": [],
-      "sync_status": "synced",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "earnings-8035-fy2027q1",
-      "kind": "earnings",
-      "ticker": "8035",
-      "name": "Tokyo Electron FY2027 Q1 실적",
-      "scheduled_date": "2026-07-30",
-      "scheduled_at": null,
-      "monitor_after": "2026-07-31T00:00:00+09:00",
-      "schedule_timezone": "Asia/Tokyo",
-      "schedule_status": "date_confirmed",
-      "time_note": "발표일 확정 · 정확한 시각은 공식 페이지에서 재확인",
-      "schedule_source_name": "Tokyo Electron",
-      "schedule_source_url": "https://www.tel.com/ir/calendar/",
-      "segments": [
-        "equipment_materials"
-      ],
-      "sync_status": "due",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "earnings-AMZN-2026q2",
-      "kind": "earnings",
-      "ticker": "AMZN",
-      "name": "Amazon 2026 Q2 실적",
-      "scheduled_date": "2026-07-30",
-      "scheduled_at": "2026-07-31T06:00:00+09:00",
-      "monitor_after": "2026-07-31T06:05:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "14:00 미국 태평양시간",
-      "schedule_source_name": "Amazon",
-      "schedule_source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-to-Webcast-Second-Quarter-2026-Financial-Results-Conference-Call/default.aspx",
-      "segments": [
-        "cloud_capex",
-        "ai_services"
-      ],
-      "sync_status": "due",
-      "result_collection_status": "automated-official"
-    },
     {
       "id": "earnings-ANET-2026q2",
       "kind": "earnings",
@@ -794,6 +642,60 @@
     }
   ],
   "recent_results": [
+    {
+      "event_id": "earnings-LRCX-2026june",
+      "event_name": "Lam Research 2026년 6월 분기 실적",
+      "kind": "earnings",
+      "ticker": "LRCX",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-08-01T08:14:35+09:00",
+      "source_published_at": null,
+      "reference_period": "Lam Research 2026년 6월 분기 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://investor.lamresearch.com/quarterly-results"
+      ],
+      "revision_of": null,
+      "impact_review": null
+    },
+    {
+      "event_id": "earnings-VRT-2026q2",
+      "event_name": "Vertiv 2026 Q2 실적",
+      "kind": "earnings",
+      "ticker": "VRT",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-08-01T08:14:35+09:00",
+      "source_published_at": null,
+      "reference_period": "Vertiv 2026 Q2 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://investors.vertiv.com/financials/quarterly-results/default.aspx"
+      ],
+      "revision_of": null,
+      "impact_review": null
+    },
+    {
+      "event_id": "earnings-8035-fy2027q1",
+      "event_name": "Tokyo Electron FY2027 Q1 실적",
+      "kind": "earnings",
+      "ticker": "8035",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-07-31T23:38:11+09:00",
+      "source_published_at": null,
+      "reference_period": "Tokyo Electron FY2027 Q1 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://www.tel.com/ir/library/report/"
+      ],
+      "revision_of": null,
+      "impact_review": null
+    },
     {
       "event_id": "earnings-MSFT-fy2026q4",
       "event_name": "Microsoft FY2026 Q4 실적",

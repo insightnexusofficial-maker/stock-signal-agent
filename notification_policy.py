@@ -1,10 +1,26 @@
 """매수 푸시 정책을 Firebase 입출력과 분리한 순수 로직."""
 
-from datetime import datetime
+from datetime import datetime, time, timedelta, timezone
 
 
 BUY_ALERT_STATE_VERSION = 2
 DEFAULT_RSI_ZONE_OFFSET = 10
+KST = timezone(timedelta(hours=9))
+KR_MARKET_OPEN = time(9, 0)
+KR_MARKET_CLOSE = time(15, 30)
+
+
+def is_kr_buy_alert_session(now=None):
+    """한국 주식·ETF 매수 푸시를 평가해도 되는 정규장 시간인지 확인한다."""
+    now = now or datetime.now(KST)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=KST)
+    else:
+        now = now.astimezone(KST)
+    return (
+        now.weekday() < 5
+        and KR_MARKET_OPEN <= now.time().replace(tzinfo=None) < KR_MARKET_CLOSE
+    )
 
 
 def _number(value):

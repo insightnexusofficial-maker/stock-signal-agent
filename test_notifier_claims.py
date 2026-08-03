@@ -21,12 +21,41 @@ class FakeStateRef:
     def get(self, transaction=None):
         return FakeSnapshot(self.state)
 
+    def set(self, values, merge=False):
+        if not merge:
+            self.state = {}
+        self.state.update(values)
+
 
 class FakeTransaction:
     def set(self, state_ref, values, merge=False):
         if not merge:
             state_ref.state = {}
         state_ref.state.update(values)
+
+
+class FakeCollection:
+    def __init__(self, database, name):
+        self.database = database
+        self.name = name
+
+    def document(self, document_id):
+        key = (self.name, document_id)
+        return self.database.documents.setdefault(key, FakeStateRef())
+
+
+class FakeDatabase:
+    def __init__(self, market_data, rsi_state=None):
+        self.documents = {
+            ("stocks", "data"): FakeStateRef(market_data),
+            ("state", "rsi"): FakeStateRef(rsi_state or {}),
+        }
+
+    def collection(self, name):
+        return FakeCollection(self, name)
+
+    def transaction(self):
+        return FakeTransaction()
 
 
 def load_notifier_with_fake_firebase():
@@ -123,6 +152,51 @@ class EventShockClaimTests(unittest.TestCase):
 
         self.assertFalse(released)
         self.assertFalse(claimed)
+
+    def test_night_run_defers_kr_etf_state_but_still_evaluates_us(self):
+        database = FakeDatabase(
+            {
+                "collection_finished_at": "2026-08-04T01:06:00+09:00",
+                "kr_etf": [{"code": "KR-ETF", "rsi": 32}],
+                "us_stock": [{"code": "US-STOCK", "rsi": 41}],
+            },
+            rsi_state={"KR-ETF": 31, "US-STOCK": 40},
+        )
+
+        with (
+            patch.object(self.notifier, "db", database),
+            patch.object(self.notifier, "_claim_buy_alert", return_value=None) as claim,
+        ):
+            self.notifier.check_and_notify(
+                now=self.notifier.datetime.fromisoformat("2026-08-04T01:06:00+09:00")
+            )
+
+        self.assertEqual(claim.call_count, 1)
+        self.assertEqual(claim.call_args.args[2]["code"], "US-STOCK")
+        self.assertEqual(
+            database.documents[("state", "rsi")].state,
+            {"KR-ETF": 31, "US-STOCK": 41},
+        )
+
+    def test_regular_kr_session_evaluates_kr_etf(self):
+        database = FakeDatabase(
+            {
+                "collection_finished_at": "2026-08-04T10:06:00+09:00",
+                "kr_etf": [{"code": "KR-ETF", "rsi": 32}],
+            },
+            rsi_state={"KR-ETF": 31},
+        )
+
+        with (
+            patch.object(self.notifier, "db", database),
+            patch.object(self.notifier, "_claim_buy_alert", return_value=None) as claim,
+        ):
+            self.notifier.check_and_notify(
+                now=self.notifier.datetime.fromisoformat("2026-08-04T10:06:00+09:00")
+            )
+
+        self.assertEqual(claim.call_count, 1)
+        self.assertEqual(claim.call_args.args[2]["code"], "KR-ETF")
 
 
 if __name__ == "__main__":

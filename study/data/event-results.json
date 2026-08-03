@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-31T14:00:00+09:00",
+  "generated_at": "2026-08-01T08:14:35+09:00",
   "results": [
     {
       "event_id": "macro-fomc-2026-07-29",
@@ -137,6 +137,42 @@
         "review_method": "official-result-rules-audited",
         "audit_passed": true
       }
+    },
+    {
+      "event_id": "earnings-8035-fy2027q1",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-07-31T23:38:11+09:00",
+      "reference_period": "Tokyo Electron FY2027 Q1 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://www.tel.com/ir/library/report/"
+      ]
+    },
+    {
+      "event_id": "earnings-LRCX-2026june",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-08-01T08:14:35+09:00",
+      "reference_period": "Lam Research 2026년 6월 분기 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://investor.lamresearch.com/quarterly-results"
+      ]
+    },
+    {
+      "event_id": "earnings-VRT-2026q2",
+      "status": "partial",
+      "review_status": "pending",
+      "retrieved_at": "2026-08-01T08:14:35+09:00",
+      "reference_period": "Vertiv 2026 Q2 실적",
+      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
+      "facts": [],
+      "source_urls": [
+        "https://investors.vertiv.com/financials/quarterly-results/default.aspx"
+      ]
     }
   ]
 }

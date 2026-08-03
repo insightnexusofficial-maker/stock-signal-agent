@@ -78,6 +78,24 @@ class NotifierSecurityTests(unittest.TestCase):
         self.assertIn('"last_delivery_status": "delivered" if delivered > 0 else "failed"', self.source)
         self.assertIn('"last_delivery_sample_id": sample_id', self.source)
 
+    def test_kr_market_gate_precedes_state_updates_and_claim(self):
+        buy_loop = self.source[
+            self.source.index("for stock, instrument_type, market in all_stocks"):
+            self.source.index("# === RSI 상태 저장")
+        ]
+        gate = buy_loop.index('if market == "kr" and not kr_alert_session:')
+        rsi_update = buy_loop.index("new_rsi_map[code] = rsi")
+        claim = buy_loop.index("alert = _claim_buy_alert(")
+        self.assertLess(gate, rsi_update)
+        self.assertLess(gate, claim)
+        self.assertIn("new_rsi_map[code] = prev_rsi_map[code]", buy_loop)
+
+    def test_pushes_expire_instead_of_arriving_hours_late(self):
+        self.assertIn("PUSH_TTL = timedelta(minutes=10)", self.source)
+        self.assertIn('headers={"TTL": str(int(PUSH_TTL.total_seconds()))}', self.source)
+        self.assertIn("ttl=PUSH_TTL", self.source)
+        self.assertIn('"apns-expiration": str(int(expires_at.timestamp()))', self.source)
+
     def test_only_transition_and_verified_shock_push_paths_remain(self):
         self.assertNotIn('"type": "crisis"', self.source)
         self.assertNotIn('"type": "info"', self.source)
