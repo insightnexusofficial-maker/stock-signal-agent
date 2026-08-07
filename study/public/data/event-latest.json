@@ -13,18 +13,23 @@
     "calendar_status": "fresh",
     "monitored_company_count": 23,
     "monitored_macro_count": 6,
-    "due_event_ids": [],
+    "due_event_ids": [
+      "macro-us-jobs-2026-07",
+      "earnings-VST-2026q2"
+    ],
     "overdue_event_ids": [
       "earnings-META-2026q2",
       "earnings-LRCX-2026june",
       "earnings-AMZN-2026q2",
+      "earnings-AMD-2026q2",
       "earnings-VRT-2026q2",
-      "earnings-8035-fy2027q1"
+      "earnings-8035-fy2027q1",
+      "earnings-ANET-2026q2"
     ],
     "unsupported_due_event_ids": [],
-    "scheduled_company_count": 6,
+    "scheduled_company_count": 3,
     "reviewed_company_count": 1,
-    "review_pending_company_count": 5,
+    "review_pending_company_count": 8,
     "awaiting_company_count": 11
   },
   "shock_policy": {
@@ -33,46 +38,6 @@
     "mode": "objective-official-data-only"
   },
   "events": [
-    {
-      "id": "earnings-ANET-2026q2",
-      "kind": "earnings",
-      "ticker": "ANET",
-      "name": "Arista Networks 2026 Q2 실적",
-      "scheduled_date": "2026-08-04",
-      "scheduled_at": "2026-08-05T05:30:00+09:00",
-      "monitor_after": "2026-08-05T05:35:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "13:30 미국 태평양시간",
-      "schedule_source_name": "Arista Networks",
-      "schedule_source_url": "https://investors.arista.com/Communications/Press-Releases-and-Events/Press-Release-Detail/2026/Arista-Networks-to-Announce-Q2-2026-Financial-Results-on-Tuesday-August-4-2026/default.aspx",
-      "segments": [
-        "cloud_capex",
-        "power_infrastructure"
-      ],
-      "sync_status": "scheduled",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "earnings-AMD-2026q2",
-      "kind": "earnings",
-      "ticker": "AMD",
-      "name": "AMD 2026 Q2 실적",
-      "scheduled_date": "2026-08-04",
-      "scheduled_at": "2026-08-05T06:00:00+09:00",
-      "monitor_after": "2026-08-05T06:05:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "14:00 미국 태평양시간",
-      "schedule_source_name": "AMD",
-      "schedule_source_url": "https://ir.amd.com/news-events/press-releases/detail/1289/amd-to-report-fiscal-second-quarter-2026-financial-results",
-      "segments": [
-        "ai_compute_design",
-        "foundry_logic"
-      ],
-      "sync_status": "scheduled",
-      "result_collection_status": "automated-official"
-    },
     {
       "id": "macro-us-jobs-2026-07",
       "kind": "macro",
@@ -87,7 +52,7 @@
       "schedule_source_name": "U.S. Bureau of Labor Statistics",
       "schedule_source_url": "https://www.bls.gov/schedule/news_release/empsit.htm",
       "segments": [],
-      "sync_status": "scheduled",
+      "sync_status": "due",
       "result_collection_status": "automated-official"
     },
     {
@@ -106,7 +71,7 @@
       "segments": [
         "power_infrastructure"
       ],
-      "sync_status": "scheduled",
+      "sync_status": "due",
       "result_collection_status": "automated-official"
     },
     {
@@ -233,7 +198,7 @@
         "foundry_logic"
       ],
       "calendar_url": "https://ir.amd.com/news-events/ir-calendar",
-      "tracker_status": "scheduled",
+      "tracker_status": "review_pending",
       "impact_review": null,
       "event": {
         "id": "earnings-AMD-2026q2",
@@ -563,7 +528,7 @@
         "power_infrastructure"
       ],
       "calendar_url": "https://investors.arista.com/Communications/Press-Releases-and-Events/default.aspx",
-      "tracker_status": "scheduled",
+      "tracker_status": "review_pending",
       "impact_review": null,
       "event": {
         "id": "earnings-ANET-2026q2",
@@ -627,7 +592,7 @@
         "power_infrastructure"
       ],
       "calendar_url": "https://investor.vistracorp.com/events-and-presentations/default.aspx",
-      "tracker_status": "scheduled",
+      "tracker_status": "review_pending",
       "impact_review": null,
       "event": {
         "id": "earnings-VST-2026q2",
