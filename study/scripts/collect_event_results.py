@@ -29,6 +29,12 @@ FED_CALENDAR_URL = "https://www.federalreserve.gov/monetarypolicy/fomccalendars.
 FED_HOST = "www.federalreserve.gov"
 BLS_API_URL = "https://api.bls.gov/publicAPI/v2/timeseries/data/"
 BEA_HOST = "www.bea.gov"
+SUPPORTED_MACRO_PREFIXES = (
+    "macro-us-jobs-",
+    "macro-us-cpi-",
+    "macro-us-pce-",
+    "macro-fomc-",
+)
 STATEMENT_PATH = re.compile(
     r"^/newsevents/pressreleases/monetary(?P<date>\d{8})a\.htm$"
 )
@@ -409,12 +415,44 @@ def build_fomc_result(
     return result
 
 
-def collect(now: datetime | None = None) -> bool:
+def recent_overdue_macro_ids(
+    sync: dict,
+    calendar: dict,
+    results: dict,
+    now: datetime,
+) -> set[str]:
+    """Return uncollected official macro releases still inside a 3-day backfill."""
+
+    overdue_ids = set(sync.get("overdue_event_ids") or [])
+    result_ids = {item["event_id"] for item in results.get("results", [])}
+    backfill_ids = set()
+    for event in calendar.get("events", []):
+        event_id = str(event.get("id") or "")
+        if (
+            event_id not in overdue_ids
+            or event_id in result_ids
+            or event.get("kind") != "macro"
+            or not event.get("scheduled_at")
+            or not event_id.startswith(SUPPORTED_MACRO_PREFIXES)
+        ):
+            continue
+        published_at = datetime.fromisoformat(event["scheduled_at"]).astimezone(KST)
+        if published_at <= now <= published_at + timedelta(days=3):
+            backfill_ids.add(event_id)
+    return backfill_ids
+
+
+def collect(
+    now: datetime | None = None,
+    include_recent_overdue: bool = False,
+) -> bool:
     now = (now or datetime.now(timezone.utc)).astimezone(KST)
     sync = build_event_sync(CALENDAR_PATH, RESULTS_PATH, now=now)
     due_ids = set(sync["due_event_ids"])
     calendar = validate_calendar(_read_json(CALENDAR_PATH))
     results = validate_results(_read_json(RESULTS_PATH), calendar)
+    if include_recent_overdue:
+        due_ids.update(recent_overdue_macro_ids(sync, calendar, results, now))
     result_ids = {item["event_id"] for item in results.get("results", [])}
     other_changed = False
     for event in calendar.get("events", []):
@@ -525,6 +563,11 @@ def main() -> None:
         action="store_true",
         help="공식 페이지를 검사하되 파일은 바꾸지 않습니다.",
     )
+    parser.add_argument(
+        "--include-recent-overdue",
+        action="store_true",
+        help="발표 후 3일 이내의 미수집 공식 거시 결과를 한 번 백필합니다.",
+    )
     args = parser.parse_args()
     if args.check_only:
         calendar_html = _fetch_official_html(FED_CALENDAR_URL)
@@ -532,8 +575,8 @@ def main() -> None:
         lower, upper = parse_fomc_target_range(_fetch_official_html(statement_url))
         print(f"FOMC {statement_date}: {lower:g}%~{upper:g}%")
         return
-    changed = collect()
-    print("FOMC 공식 결과 갱신" if changed else "FOMC 공식 결과 변경 없음")
+    changed = collect(include_recent_overdue=args.include_recent_overdue)
+    print("공식 거시 결과 갱신" if changed else "공식 거시 결과 변경 없음")
 
 
 if __name__ == "__main__":

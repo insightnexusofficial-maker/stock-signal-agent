@@ -1,3 +1,13 @@
 {
-  "items": []
+  "items": [
+    {
+      "candidate_id": "92882f5400021aebe36aca5d",
+      "content_hash": "c2e80a7ec2c13bb5abec20b6e22bac30c911b763098c71e75326391b0a0a08a2",
+      "reviewed_at": "2026-08-09T13:45:00+09:00",
+      "terra_model": "codex-terra-low",
+      "sol_model": "codex-sol-high",
+      "sol_reason": "상태 변경 가능성이 아닌 단일 기업 직접 근거이나, 세그먼트 일반화 방지를 위해 독립 반대 의견 감사를 수행함",
+      "audit_passed": true
+    }
+  ]
 }

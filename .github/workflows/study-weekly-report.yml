@@ -38,7 +38,7 @@ jobs:
 
       - name: Sync verified official event results
         run: |
-          python scripts/collect_event_results.py
+          python scripts/collect_event_results.py --include-recent-overdue
           python scripts/build_event_feed.py
 
       - name: Extract and audit new evidence

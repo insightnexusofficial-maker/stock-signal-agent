@@ -48,8 +48,8 @@ jobs:
         run: python scripts/collect_earnings_results.py
 
       - name: Collect supported official macro results
-        if: ${{ steps.due.outputs.active == 'true' }}
-        run: python scripts/collect_event_results.py
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        run: python scripts/collect_event_results.py --include-recent-overdue
 
       - name: Apply verified announcement impact to the cycle
         id: impact

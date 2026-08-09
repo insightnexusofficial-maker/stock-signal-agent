@@ -16,6 +16,45 @@ import collect_event_results
 
 
 class CollectEventResultsTests(unittest.TestCase):
+    def test_recent_overdue_macro_gets_a_limited_backfill(self):
+        event = {
+            "id": "macro-us-jobs-2026-07",
+            "kind": "macro",
+            "scheduled_at": "2026-08-07T21:30:00+09:00",
+        }
+        sync = {"overdue_event_ids": [event["id"]]}
+
+        within_window = collect_event_results.recent_overdue_macro_ids(
+            sync,
+            {"events": [event]},
+            {"results": []},
+            datetime.fromisoformat("2026-08-09T14:00:00+09:00"),
+        )
+        after_window = collect_event_results.recent_overdue_macro_ids(
+            sync,
+            {"events": [event]},
+            {"results": []},
+            datetime.fromisoformat("2026-08-11T14:00:00+09:00"),
+        )
+
+        self.assertEqual(within_window, {event["id"]})
+        self.assertEqual(after_window, set())
+
+    def test_recent_overdue_macro_skips_existing_result(self):
+        event = {
+            "id": "macro-us-jobs-2026-07",
+            "kind": "macro",
+            "scheduled_at": "2026-08-07T21:30:00+09:00",
+        }
+        backfill_ids = collect_event_results.recent_overdue_macro_ids(
+            {"overdue_event_ids": [event["id"]]},
+            {"events": [event]},
+            {"results": [{"event_id": event["id"]}]},
+            datetime.fromisoformat("2026-08-09T14:00:00+09:00"),
+        )
+
+        self.assertEqual(backfill_ids, set())
+
     def test_builds_verified_jobs_result_from_official_series(self):
         event = {
             "id": "macro-us-jobs-2026-07",
