@@ -1,10 +1,6 @@
 name: Stock Signal Check
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/check_signals.yml"
   # 외부 트리거(cron-job.org) 전용. GitHub 내장 cron은 신뢰도 낮아 제거.
   workflow_dispatch:
 
