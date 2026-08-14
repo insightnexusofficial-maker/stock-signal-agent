@@ -13,22 +13,27 @@
     "calendar_status": "stale",
     "monitored_company_count": 23,
     "monitored_macro_count": 6,
-    "due_event_ids": [],
+    "due_event_ids": [
+      "earnings-AMAT-fy2026q3"
+    ],
     "overdue_event_ids": [
       "earnings-META-2026q2",
       "earnings-LRCX-2026june",
       "earnings-AMZN-2026q2",
       "earnings-AMD-2026q2",
       "macro-us-jobs-2026-07",
+      "company-TSM-monthly-revenue-2026-07",
+      "macro-us-cpi-2026-07",
       "earnings-VRT-2026q2",
       "earnings-8035-fy2027q1",
       "earnings-ANET-2026q2",
-      "earnings-VST-2026q2"
+      "earnings-VST-2026q2",
+      "earnings-SMCI-fy2026q4"
     ],
     "unsupported_due_event_ids": [],
-    "scheduled_company_count": 3,
+    "scheduled_company_count": 1,
     "reviewed_company_count": 1,
-    "review_pending_company_count": 8,
+    "review_pending_company_count": 10,
     "awaiting_company_count": 11
   },
   "shock_policy": {
@@ -37,98 +42,6 @@
     "mode": "objective-official-data-only"
   },
   "events": [
-    {
-      "id": "macro-us-jobs-2026-07",
-      "kind": "macro",
-      "ticker": null,
-      "name": "미국 2026년 7월 고용보고서",
-      "scheduled_date": "2026-08-07",
-      "scheduled_at": "2026-08-07T21:30:00+09:00",
-      "monitor_after": "2026-08-07T21:35:00+09:00",
-      "schedule_timezone": "America/New_York",
-      "schedule_status": "confirmed",
-      "time_note": "08:30 미국 동부시간",
-      "schedule_source_name": "U.S. Bureau of Labor Statistics",
-      "schedule_source_url": "https://www.bls.gov/schedule/news_release/empsit.htm",
-      "segments": [],
-      "sync_status": "overdue",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "earnings-VST-2026q2",
-      "kind": "earnings",
-      "ticker": "VST",
-      "name": "Vistra 2026 Q2 실적",
-      "scheduled_date": "2026-08-07",
-      "scheduled_at": "2026-08-07T23:00:00+09:00",
-      "monitor_after": "2026-08-07T23:05:00+09:00",
-      "schedule_timezone": "America/New_York",
-      "schedule_status": "confirmed",
-      "time_note": "10:00 미국 동부시간",
-      "schedule_source_name": "Vistra",
-      "schedule_source_url": "https://investor.vistracorp.com/2026-07-06-Vistra-to-Report-Second-Quarter-Results-on-Aug-7%2C-2026",
-      "segments": [
-        "power_infrastructure"
-      ],
-      "sync_status": "overdue",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "company-TSM-monthly-revenue-2026-07",
-      "kind": "company_metric",
-      "ticker": "TSM",
-      "name": "TSMC 2026년 7월 월매출",
-      "scheduled_date": "2026-08-10",
-      "scheduled_at": "2026-08-10T14:30:00+09:00",
-      "monitor_after": "2026-08-10T14:35:00+09:00",
-      "schedule_timezone": "Asia/Taipei",
-      "schedule_status": "confirmed",
-      "time_note": "13:30 대만시간",
-      "schedule_source_name": "TSMC",
-      "schedule_source_url": "https://investor.tsmc.com/english/financial-calendar",
-      "segments": [
-        "foundry_logic"
-      ],
-      "sync_status": "scheduled",
-      "result_collection_status": "manual-official-review"
-    },
-    {
-      "id": "earnings-SMCI-fy2026q4",
-      "kind": "earnings",
-      "ticker": "SMCI",
-      "name": "Supermicro FY2026 Q4 실적",
-      "scheduled_date": "2026-08-11",
-      "scheduled_at": "2026-08-12T06:00:00+09:00",
-      "monitor_after": "2026-08-12T06:05:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "14:00 미국 태평양시간",
-      "schedule_source_name": "Supermicro",
-      "schedule_source_url": "https://ir.supermicro.com/events-and-presentations/event-details/2026/Fiscal-4Q-2026-Results-2026-g23ewVabuT/default.aspx",
-      "segments": [
-        "power_infrastructure",
-        "ai_compute_design"
-      ],
-      "sync_status": "scheduled",
-      "result_collection_status": "automated-official"
-    },
-    {
-      "id": "macro-us-cpi-2026-07",
-      "kind": "macro",
-      "ticker": null,
-      "name": "미국 2026년 7월 CPI",
-      "scheduled_date": "2026-08-12",
-      "scheduled_at": "2026-08-12T21:30:00+09:00",
-      "monitor_after": "2026-08-12T21:35:00+09:00",
-      "schedule_timezone": "America/New_York",
-      "schedule_status": "confirmed",
-      "time_note": "08:30 미국 동부시간",
-      "schedule_source_name": "U.S. Bureau of Labor Statistics",
-      "schedule_source_url": "https://www.bls.gov/schedule/news_release/cpi.htm",
-      "segments": [],
-      "sync_status": "scheduled",
-      "result_collection_status": "automated-official"
-    },
     {
       "id": "earnings-AMAT-fy2026q3",
       "kind": "earnings",
@@ -145,7 +58,7 @@
       "segments": [
         "equipment_materials"
       ],
-      "sync_status": "scheduled",
+      "sync_status": "due",
       "result_collection_status": "automated-official"
     },
     {
@@ -386,7 +299,7 @@
         "equipment_materials"
       ],
       "calendar_url": "https://ir.appliedmaterials.com/events/",
-      "tracker_status": "scheduled",
+      "tracker_status": "review_pending",
       "impact_review": null,
       "event": {
         "id": "earnings-AMAT-fy2026q3",
@@ -549,7 +462,7 @@
         "ai_compute_design"
       ],
       "calendar_url": "https://ir.supermicro.com/events-and-presentations/default.aspx",
-      "tracker_status": "scheduled",
+      "tracker_status": "review_pending",
       "impact_review": null,
       "event": {
         "id": "earnings-SMCI-fy2026q4",
@@ -638,175 +551,6 @@
       "facts": [],
       "source_urls": [
         "https://investors.vertiv.com/financials/quarterly-results/default.aspx"
-      ],
-      "revision_of": null,
-      "impact_review": null
-    },
-    {
-      "event_id": "earnings-8035-fy2027q1",
-      "event_name": "Tokyo Electron FY2027 Q1 실적",
-      "kind": "earnings",
-      "ticker": "8035",
-      "status": "partial",
-      "review_status": "pending",
-      "retrieved_at": "2026-07-31T23:38:11+09:00",
-      "source_published_at": null,
-      "reference_period": "Tokyo Electron FY2027 Q1 실적",
-      "summary": "공식 실적 자료 공개 확인 · 추세와 리스크 검토 대기",
-      "facts": [],
-      "source_urls": [
-        "https://www.tel.com/ir/library/report/"
-      ],
-      "revision_of": null,
-      "impact_review": null
-    },
-    {
-      "event_id": "earnings-MSFT-fy2026q4",
-      "event_name": "Microsoft FY2026 Q4 실적",
-      "kind": "earnings",
-      "ticker": "MSFT",
-      "status": "complete",
-      "review_status": "verified",
-      "retrieved_at": "2026-07-31T14:00:00+09:00",
-      "source_published_at": null,
-      "reference_period": "Microsoft FY2026 Q4",
-      "summary": "Microsoft FY2026 Q4 매출은 전년 동기 대비 18% 증가했고, Azure 매출 성장률은 43%였다.",
-      "facts": [
-        {
-          "metric": "revenue_yoy_percent",
-          "value": 18,
-          "unit": "percent",
-          "comparison": "same quarter previous year"
-        },
-        {
-          "metric": "microsoft_cloud_revenue_yoy_percent",
-          "value": 27,
-          "unit": "percent",
-          "comparison": "same quarter previous year"
-        },
-        {
-          "metric": "azure_revenue_yoy_percent",
-          "value": 43,
-          "unit": "percent",
-          "comparison": "same quarter previous year"
-        },
-        {
-          "metric": "commercial_rpo_yoy_percent",
-          "value": 84,
-          "unit": "percent",
-          "comparison": "same quarter previous year"
-        },
-        {
-          "metric": "more_personal_computing_revenue_yoy_percent",
-          "value": -4,
-          "unit": "percent",
-          "comparison": "same quarter previous year"
-        },
-        {
-          "metric": "xbox_content_services_revenue_yoy_percent",
-          "value": -10,
-          "unit": "percent",
-          "comparison": "same quarter previous year"
-        }
-      ],
-      "source_urls": [
-        "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast"
-      ],
-      "revision_of": null,
-      "impact_review": {
-        "trend_change": "strengthening",
-        "risk_level": "medium",
-        "cycle_status_effect": "none_single_source",
-        "summary": "Azure 43%, Microsoft Cloud 27%, 상업 잔여계약 84% 성장으로 AI·클라우드 인프라 수요 추세는 강화됐다.",
-        "risk_summary": "개인용 컴퓨팅 매출은 4%, Xbox 콘텐츠·서비스는 10% 감소했고 Xbox 손상차손도 발생해 전사 수요가 균일하게 강한 것은 아니다.",
-        "supporting_fact_metrics": [
-          "azure_revenue_yoy_percent",
-          "microsoft_cloud_revenue_yoy_percent",
-          "commercial_rpo_yoy_percent"
-        ],
-        "risk_fact_metrics": [
-          "more_personal_computing_revenue_yoy_percent",
-          "xbox_content_services_revenue_yoy_percent"
-        ],
-        "reviewed_at": "2026-07-31T14:00:00+09:00",
-        "review_method": "official-result-rules-audited",
-        "audit_passed": true
-      }
-    },
-    {
-      "event_id": "macro-us-pce-2026-06",
-      "event_name": "미국 2026년 6월 PCE",
-      "kind": "macro",
-      "ticker": null,
-      "status": "complete",
-      "review_status": "verified",
-      "retrieved_at": "2026-07-30T21:53:40+09:00",
-      "source_published_at": "2026-07-30T21:30:00+09:00",
-      "reference_period": "2026-06",
-      "summary": "BEA는 2026년 6월 PCE 물가지수가 전월 대비 0.1% 하락, 전년 동월 대비 3.7% 상승했다고 발표했다.",
-      "facts": [
-        {
-          "metric": "pce_price_index_mom",
-          "value": -0.1,
-          "unit": "percent",
-          "comparison": "previous month"
-        },
-        {
-          "metric": "pce_price_index_yoy",
-          "value": 3.7,
-          "unit": "percent",
-          "comparison": "same month previous year"
-        },
-        {
-          "metric": "core_pce_price_index_mom",
-          "value": 0.1,
-          "unit": "percent",
-          "comparison": "previous month"
-        },
-        {
-          "metric": "core_pce_price_index_yoy",
-          "value": 3.3,
-          "unit": "percent",
-          "comparison": "same month previous year"
-        }
-      ],
-      "source_urls": [
-        "https://www.bea.gov/news/2026/personal-income-and-outlays-june-2026"
-      ],
-      "revision_of": null,
-      "impact_review": null
-    },
-    {
-      "event_id": "macro-fomc-2026-07-29",
-      "event_name": "FOMC 금리결정",
-      "kind": "macro",
-      "ticker": null,
-      "status": "complete",
-      "review_status": "verified",
-      "retrieved_at": "2026-07-30T13:00:48+09:00",
-      "source_published_at": "2026-07-30T03:00:00+09:00",
-      "reference_period": "2026-07-28~29 FOMC meeting",
-      "summary": "연방공개시장위원회는 연방기금금리 목표 범위를 3.50%~3.75%로 유지했다.",
-      "facts": [
-        {
-          "metric": "federal_funds_target_range_lower",
-          "value": 3.5,
-          "unit": "percent"
-        },
-        {
-          "metric": "federal_funds_target_range_upper",
-          "value": 3.75,
-          "unit": "percent"
-        },
-        {
-          "metric": "federal_funds_target_range_change",
-          "value": 0,
-          "unit": "basis_points",
-          "comparison": "previous meeting"
-        }
-      ],
-      "source_urls": [
-        "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm"
       ],
       "revision_of": null,
       "impact_review": null
