@@ -1920,6 +1920,19 @@ def apply_configured_etf_distribution_target(etf, result, now=None):
             result[field] = etf[field]
     result["distribution_update_due"] = distribution_update_due(etf, now=now)
 
+    # 운용사 공식 이력에서 이번 달 실제 분배금은 확인됐지만 분배율은 확인되지
+    # 않은 경우, 이전 수집 snapshot의 오래된 실제 분배율을 이번 달 값처럼 쓰지 않는다.
+    if (
+        etf.get("distribution_actual_checked_month")
+        and "distribution_recent_yield_monthly" not in etf
+    ):
+        result.pop("distribution_recent_yield_monthly", None)
+        if result.get("expected_dividend_source") == "recent_monthly_distribution_yield":
+            result.pop("distribution_yield_monthly", None)
+            result.pop("expected_dividend_5m", None)
+            result.pop("expected_monthly_dividend_5m", None)
+            result.pop("expected_dividend_source", None)
+
     recent_monthly_yield = _to_float(etf.get("distribution_recent_yield_monthly"))
     if recent_monthly_yield is not None and recent_monthly_yield > 0:
         recent_monthly_yield = round(recent_monthly_yield, 2)

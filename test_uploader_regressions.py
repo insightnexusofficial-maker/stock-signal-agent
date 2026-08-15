@@ -621,6 +621,34 @@ class UploaderRegressionTests(unittest.TestCase):
         self.assertEqual(actual["expected_monthly_dividend_5m"], 85000)
         self.assertEqual(actual["expected_dividend_source"], "recent_monthly_distribution_yield")
 
+    def test_officially_unverified_recent_yield_does_not_reuse_snapshot(self):
+        result = {
+            "distribution_recent_yield_monthly": 1.5,
+            "distribution_yield_monthly": 1.5,
+            "expected_monthly_dividend_5m": 75000,
+            "expected_dividend_5m": 900000,
+            "expected_dividend_source": "recent_monthly_distribution_yield",
+        }
+        etf = {
+            "distribution_recent_amount": 151,
+            "distribution_record_date": "2026-08-14",
+            "distribution_payment_date": "2026-08-19",
+            "distribution_actual_checked_month": "2026-08",
+            "distribution_schedule": "monthly_15",
+        }
+
+        actual = uploader.apply_configured_etf_distribution_target(
+            etf,
+            result,
+            now=datetime(2026, 8, 15, tzinfo=uploader.KST),
+        )
+
+        self.assertEqual(actual["distribution_recent_amount"], 151)
+        self.assertFalse(actual["distribution_update_due"])
+        self.assertNotIn("distribution_recent_yield_monthly", actual)
+        self.assertNotIn("distribution_yield_monthly", actual)
+        self.assertNotIn("expected_dividend_source", actual)
+
     def test_distribution_update_is_due_only_after_product_record_day(self):
         midmonth = {
             "distribution_schedule": "monthly_15",
