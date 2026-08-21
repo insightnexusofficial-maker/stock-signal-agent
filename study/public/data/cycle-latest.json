@@ -2,10 +2,10 @@
   "schema_version": "1.2",
   "logic_version": "cycle-engine-v5-2026-07-31",
   "methodology_version": "semiconductor-cycle-ai-roles-2026-07-18",
-  "evidence_sha256": "6f72c78e8f50bf020fd5476673827fca47b75030e7114f7148521fd324f5170d",
-  "report_id": "semiconductor-cycle-2026-08-15-0711-weekly",
-  "generated_at": "2026-08-15T07:11:46+09:00",
-  "expires_at": "2026-08-23T07:11:46+09:00",
+  "evidence_sha256": "6a79ad05738c00983c81e444f1146b7762c70a4bdf661009c5c6b7c7bc532685",
+  "report_id": "semiconductor-cycle-2026-08-22-0712-weekly",
+  "generated_at": "2026-08-22T07:12:36+09:00",
+  "expires_at": "2026-08-30T07:12:36+09:00",
   "fallback_status": "pending-neutral",
   "update_context": {
     "type": "weekly",
@@ -17,7 +17,7 @@
   "quality_gate": {
     "status": "passed",
     "mode": "verified-only",
-    "evidence_count": 12,
+    "evidence_count": 11,
     "message": "검증된 공식 근거만 사이클 상태에 반영합니다."
   },
   "segments": [
@@ -79,12 +79,10 @@
       "id": "foundry_logic",
       "label": "파운드리·로직",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 25,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [
-        "tsmc-q2-results-20260716"
-      ],
+      "supporting_evidence_ids": [],
       "contrary_evidence_ids": []
     },
     {
@@ -146,7 +144,7 @@
       "name": "삼성전자",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 30,
+      "confidence": 25,
       "primary_segment": "memory_hbm_dram",
       "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -256,7 +254,7 @@
       "name": "AMD",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 36,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -275,7 +273,7 @@
       "name": "TSMC",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "foundry_logic",
       "reason": "주요 영역인 파운드리·로직의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -290,7 +288,7 @@
       "name": "인텔",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 29,
       "primary_segment": "foundry_logic",
       "reason": "주요 영역인 파운드리·로직의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -797,24 +795,6 @@
       "reviewed_by": "official-event-impact-review",
       "audited_by": "deterministic-generalization-guard",
       "origin_event_id": "earnings-MSFT-fy2026q4"
-    },
-    {
-      "id": "tsmc-q2-results-20260716",
-      "source_id": "tsmc_monthly",
-      "segment": "foundry_logic",
-      "pillar": "earnings",
-      "direction": "positive",
-      "fact": "TSMC의 2분기 매출은 402억 달러였고 3분기 매출 가이던스는 446억~458억 달러로 제시됐다.",
-      "source_url": "https://investor.tsmc.com/english/quarterly-results/2026/q2",
-      "published_at": "2026-07-16",
-      "max_age_days": 45,
-      "source_family": "foundry_tsmc_ir",
-      "confidence": "direct",
-      "review_status": "verified",
-      "audit_passed": true,
-      "contrary": false,
-      "reviewed_by": "codex-primary-source-review",
-      "audited_by": "codex-contrary-review"
     }
   ]
 }
