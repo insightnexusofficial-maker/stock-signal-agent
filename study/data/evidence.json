@@ -2,6 +2,25 @@
   "version": "1.2",
   "evidence": [
     {
+      "id": "4ba904e06c95ce3cf10706bf-foundry_logic",
+      "source_id": "tsmc_monthly",
+      "segment": "foundry_logic",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "TSMC의 2026년 7월 연결 순매출은 4,675.8억 TWD로 전년 동월 대비 44.7% 증가했다. 해당 연도 월별 수치는 미감사 수치다.",
+      "source_url": "https://investor.tsmc.com/english/monthly-revenue/2026",
+      "published_at": "2026-08-10",
+      "max_age_days": 45,
+      "source_family": "foundry_tsmc_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": true,
+      "reviewed_by": "codex-terra-low",
+      "audited_by": "codex-sol-high",
+      "audit_reason": "TSMC의 7월 매출 증가는 기존 우호 상태의 수요 보조 근거로 포함 가능하다. 다만 미감사 단일기업 자료이므로 업계 전반으로 일반화하거나 독립적인 상태 변경 근거로 사용할 수 없다."
+    },
+    {
       "id": "92882f5400021aebe36aca5d-ai_compute_design",
       "source_id": "amd_ir",
       "segment": "ai_compute_design",
