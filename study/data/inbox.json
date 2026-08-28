@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T07:11:41+09:00",
+  "generated_at": "2026-08-22T07:12:31+09:00",
   "candidates": [
     {
       "id": "ded603c65f481b55ec50d9c9",
@@ -15,7 +15,7 @@
       "candidate_pillar": "demand",
       "direction": "unverified",
       "review_status": "pending",
-      "collected_at": "2026-08-15T07:11:41+09:00",
+      "collected_at": "2026-08-22T07:12:31+09:00",
       "content_excerpt": "",
       "content_hash": "37943411b13d47ba96f72e90d8764ef29bb003501165ddcacf0b01cd64eb7e9c"
     },
@@ -33,7 +33,7 @@
       "candidate_pillar": "demand",
       "direction": "unverified",
       "review_status": "pending",
-      "collected_at": "2026-08-15T07:11:41+09:00",
+      "collected_at": "2026-08-22T07:12:31+09:00",
       "content_excerpt": "",
       "content_hash": "befcd9f50c90587edb5ef00f57815358c6bd1d431c68b71cbd4f34d2ab4c9940"
     },
@@ -51,9 +51,409 @@
       "candidate_pillar": "demand",
       "direction": "unverified",
       "review_status": "pending",
-      "collected_at": "2026-08-15T07:11:41+09:00",
+      "collected_at": "2026-08-22T07:12:31+09:00",
       "content_excerpt": "",
       "content_hash": "2d8eedb32baee3d68dcbe72c6bafd49c00a38f925e9619f999429de70f27337e"
+    },
+    {
+      "id": "585b13a56895196731375aa5",
+      "source_id": "wsts_news",
+      "title": "Recent News Release",
+      "source_url": "https://www.wsts.org/76/Recent-News-Release",
+      "published_at": null,
+      "published_at_quality": "unknown",
+      "source_family": "industry_association_wsts",
+      "candidate_segments": [
+        "memory_hbm_dram",
+        "memory_nand",
+        "foundry_logic",
+        "analog_auto_industrial"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_hash": "64433b40b4128fc7d5a2620459debabf3ca60d17802c4045f0e61e9a7412e992",
+      "collected_at": "2026-08-22T07:12:31+09:00",
+      "content_excerpt": "Recent News Release Toggle navigation Meta Navigation Disclosure Contact Home Main Navigation GENERAL SERVICE ORGANIZATION PRESS MEMBERS ONLY Search SEARCH PRESS Global Semiconductor Market records exceptional growth in Q2 2026 Recent News Release PRESS ARCHIVE Global Semiconductor Market Surges Beyond $1.5T 2026 The World Semiconductor Trade Statistics (WSTS) organization has released its Spring 2026 semiconductor market forecast, significantly raising the industry outlook for both 2026 and 2027. 2026: Semiconductor Market Surpasses USD 1.5 Trillion Driven by Extraordinary Memory Expansion Following exceptionally strong results in late 2025 and early 2026, the global semiconductor market is now projected to grow 90 percent in 2026, reaching USD 1.51 trillion. The sharp upward acceleration is overwhelmingly driven by the Memory segment, which is forecast to surge by around 250 percent year over year, reaching more than USD 800 billion in 2026. Continued strong demand for AI infrastructure, high-bandwidth memory (HBM), and accelerated computing platforms remains the primary growth catalyst for the semiconductor industry. Logic is expected to remain another major contributor, growing 37 percent in 2026. Other product categories are forecast to expand at more moderate rates, reflecting a broader industry growth: Microprocessors 20 percent, Analog 10 percent, Discrete Semiconductors 8 percent, Sensors and Optoelectronics with 3 percent. Regionally, all major markets are projected to show strong growth. The Americas are expected to more than double in 2026 with 112 percent growth, driven by the concentration of AI-related semiconductor demand and cloud infrastructure investments. Asia Pacific is forecast to grow 87 percent, while Europe and Japan are projected to grow 58 percent and 28 percent respectively. 2027 Outlook: Growth Continues Above Historical Industry Trends For 2027, WSTS forecasts the global semiconductor market to grow a further 27 percent, reaching approximately USD 1.9 trillion. Memory is again expected to lead market expansion with projected growth of 32 percent, while Logic is forecast to increase by 27 percent. Continued deployment of AI systems, advanced computing infrastructure, and expanding semiconductor content across end markets are expected to support ongoing industry momentum. All geographic regions are projected to continue growing in 2027, led by the Americas and Asia Pacific. WSTS Forecast Summary Note: Numbers in the table are rounded to whole millions of dollars, which may cause totals by region and totals by product group to differ slightly. About WSTS : World Semiconductor Trade Statistics (WSTS) was founded in 1986 as a non-profit organization of semiconductor product companies and is the industry’s only source for monthly industry shipment statistics. For more information, please visit the WSTS web site at www.wsts.org or contact the WSTS Administrator and CEO – Tobias Pröttel (tp@wsts.org). Downloads: WSTS Spring 2026 FC - Global Semiconductor Market Surges Beyond $1.5T 2026 ( PDF | 256,45 kB ) print page WSTS News Releases The most recent News Release appears in the center column of this page. Previous News Releases may be found in \"Press Archive\" (click link above). Copyright Notice All WSTS Publications, including this Web Site, are copyrighted by WSTS Inc. All rights reserved. Reproduction in any electronic or physical form, in whole or in part, without written permission from WSTS is prohibited by law. © Copyright 1998-2024 by World Semiconductor Trade Statistics Inc. LOGIN USER NAME PASSWORD About WSTS WSTS is an independent non-profit organization representing the vast majority of the world semiconductor industry (Internet address: www.wsts.org). These forecasts will be released twice a year, in May and November. Press Release Notification If you like to be notified about future WSTS news releases by email please register here: Register for news Copyright © 2005-2026 WSTS GmbH. All rights reserved. Development by Kaindl Informatics"
+    },
+    {
+      "id": "775c60647a722f6fcd2575a1",
+      "source_id": "nvidia_news_rss",
+      "title": "Ilya Sutskever’s Safe Superintelligence Inc. and NVIDIA Announce Long-Term Strategic Partnership",
+      "source_url": "https://nvidianews.nvidia.com/news/ilya-sutskevers-safe-superintelligence-inc-and-nvidia-announce-long-term-strategic-partnership",
+      "published_at": "2026-07-27",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "Safe Superintelligence Inc. (SSI) and NVIDIA today announced a long-term partnership to rapidly accelerate SSI’s strategic growth...",
+      "content_hash": "98591452161c1028f2f23f5cca2ca0582e2de2b53cce9bd3adaab6ce11da19be",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "5fa7ac0f0d8668520a81de57",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Expands NVIDIA Agent Toolkit With NVIDIA PhysicsNeMo and CUDA-X Libraries to Transform How the World Engineers, Designs and Builds",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-expands-nvidia-agent-toolkit-with-nvidia-physicsnemo-and-cuda-x-libraries-to-transform-how-the-world-engineers-designs-and-builds",
+      "published_at": "2026-07-27",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced an expansion of NVIDIA Agent Toolkit for engineering, now adding NVIDIA PhysicsNeMo™ and CUDA-X™ libraries as agent-ready tools and skills built to transform how the world designs and develops products.",
+      "content_hash": "3b4370de708f207bd4c7d3f1f460df93396fe505cec246197f511aa45f3f788c",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "11101a7f5566719988299f16",
+      "source_id": "nvidia_news_rss",
+      "title": "SK Group and NVIDIA Expand Strategic Partnership Across AI Factories and Next-Generation Memory",
+      "source_url": "https://nvidianews.nvidia.com/news/sk-group-and-nvidia-expand-strategic-partnership-across-ai-factories-and-next-generation-memory",
+      "published_at": "2026-07-25",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "SK Group and NVIDIA today announced plans for a $500-billion-plus comprehensive partnership to establish AI infrastructure serving the surging demand for global compute. The two sides signed letters of intent to formalize the agreement, which spans from AI factory construction to AI memory supply.",
+      "content_hash": "e15569e81cc3b30a04bd3d0ea2aed81d8f76ae04e88c413e519ea31de73db6ed",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "31494e22d2359437b7f88461",
+      "source_id": "nvidia_news_rss",
+      "title": "NAVER, NVIDIA and Brookfield to Expand Korea’s National AI Factory Infrastructure Buildout",
+      "source_url": "https://nvidianews.nvidia.com/news/naver-nvidia-and-brookfield-to-expand-koreas-national-ai-factory-infrastructure-buildout",
+      "published_at": "2026-07-25",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NAVER, NVIDIA and Brookfield today announced a proposed expansion of Korea's sovereign AI factory infrastructure, with planned investments that will grow the initial NVIDIA® DSX™ AI factory deployment to 200 megawatts — more than tripling the 55-megawatt buildout announced last month. NAVER intends to expand its deployment of NVIDIA AI infrastructure to 1 gigawatt.",
+      "content_hash": "ac64fefe0e3a93cf622970395cab3b9b8f660e5035fb0e0ba61bc11a50d940b3",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "812436ce8e6c4e56f4ad6475",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA and KAIST Launch Joint AI Research Lab to Accelerate AI Innovation in Korea",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-and-kaist-launch-joint-ai-research-lab-to-accelerate-ai-innovation-in-korea",
+      "published_at": "2026-07-23",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA and the Korea Advanced Institute of Science and Technology (KAIST) today announced the launch of a joint AI research laboratory at the KAIST Kim Jaechul Graduate School of AI in Seoul, dedicated to advancing agentic AI for South Korea.",
+      "content_hash": "543fcf1d3f8322c743ca47ea312fa3d67c09625dd19dd085304034c93fcd0cac",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "9c79be3d94281e69690ed647",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Agent Toolkit Expands With New Omniverse Libraries, Putting AI Agents to Work Building Simulation-Ready Worlds",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-agent-toolkit-expands-with-new-omniverse-libraries-putting-ai-agents-to-work-building-simulation-ready-worlds",
+      "published_at": "2026-07-20",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced that NVIDIA Agent Toolkit now includes NVIDIA Omniverse™ libraries — a collection of software components that give AI agents tools and skills to add physical AI capabilities to existing applications and prepare 3D content for simulation.",
+      "content_hash": "7225a42f8f9d58fb8b54abc4b89e514a6e9dc9334b2cf06921b928c7dcbb34e2",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "8edfc653963e690f3a54f392",
+      "source_id": "nvidia_news_rss",
+      "title": "Japan Government, Industrial Leaders and NVIDIA Launch the World’s First National AI Infrastructure",
+      "source_url": "https://nvidianews.nvidia.com/news/japan-government-industrial-leaders-and-nvidia-launch-the-worlds-first-national-ai-infrastructure",
+      "published_at": "2026-07-16",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced it is working with Noetra Corp. to launch an NVIDIA Vera Rubin AI factory with 13,750 NVIDIA Vera CPUs and 27,500 NVIDIA Rubin GPUs for national physical AI.",
+      "content_hash": "cb6ece18317044bd6510e1ce3f1e1e2e87728021dc6232b1a86e134ceca98e1a",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "40ec927908287d428db1e383",
+      "source_id": "nvidia_news_rss",
+      "title": "Japan’s Robotics and Manufacturing Leaders Build on NVIDIA Cosmos to Advance Physical AI Frontier",
+      "source_url": "https://nvidianews.nvidia.com/news/japans-robotics-and-manufacturing-leaders-build-on-nvidia-cosmos-to-advance-physical-ai-frontier",
+      "published_at": "2026-07-16",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced that Japan’s physical AI leaders are building on the NVIDIA Cosmos™, NVIDIA Isaac™, NVIDIA Metropolis and NVIDIA Jetson™ platforms to accelerate the deployment of intelligent machines across manufacturing, mobility, infrastructure and robotics.",
+      "content_hash": "113180418bf7f88ff32ba34fd11f8d6a6b5c3fbf4f33afd85bda0ae6763a4c0f",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "53a2e58378117d2898631ff3",
+      "source_id": "nvidia_news_rss",
+      "title": "Japan’s Enterprises and Startups Build Industry-Specialized AI With NVIDIA Nemotron Open Models",
+      "source_url": "https://nvidianews.nvidia.com/news/japans-enterprises-and-startups-build-industry-specialized-ai-with-nvidia-nemotron-open-models",
+      "published_at": "2026-07-15",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced that leading Japanese enterprises, startups and research institutions are building industry-specialized AI models and applications with NVIDIA Nemotron™ open models, data and libraries, accelerating the development of AI tailored to Japan’s language, industries and workforce.",
+      "content_hash": "00f7eaad395d86617f3bba455634388673a7204e68d707db3a759cb2f219e956",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "ab94c519cc32ad1c73b3485d",
+      "source_id": "amd_ir",
+      "title": "AAI 2026: AMD Delivers Full-Stack Compute for the Agentic AI Era",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1294/aai-2026-amd-delivers-full-stack-compute-for-the-agentic-ai-era",
+      "published_at": "2026-07-23",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "84049d1a4d267ac1f50602a579f1bb1cac788df36709b783e92bd7dae037b0f3",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "e1b6c868d30ad2e101bb804f",
+      "source_id": "amd_ir",
+      "title": "AMD and Cerebras Announce Industry-Leading Ultra-Low-Latency and High Throughput AI Inference Solution",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1293/amd-and-cerebras-announce-industry-leading-ultra-low-latency-and-high-throughput-ai-inference-solution",
+      "published_at": "2026-07-23",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "f88083ebf0c4c501ead5d61133e5a2b5bb6418fd540045fdce04cb57aef4f11f",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "4adc257175d4ddc92a862830",
+      "source_id": "amd_ir",
+      "title": "AMD and Anthropic Announce Strategic Partnership to Deploy Up to 2 Gigawatts of AMD Instinct MI450 Series GPUs",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1292/amd-and-anthropic-announce-strategic-partnership-to-deploy-up-to-2-gigawatts-of-amd-instinct-mi450-series-gpus",
+      "published_at": "2026-07-22",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "2a76b99f4ca5d5a73a2d709a46c41328dff5a9263d2b3881784cea16f294dbe4",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "37630e02aae2c73646902d25",
+      "source_id": "amd_ir",
+      "title": "Microsoft to Deploy Next-Gen AMD Instinct and AMD EPYC Processors as the Companies Expand Their Long-Term Strategic Partnership",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1291/microsoft-to-deploy-next-gen-amd-instinct-and-amd-epyc-processors-as-the-companies-expand-their-long-term-strategic-partnership",
+      "published_at": "2026-07-20",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "a7db128b6f8e27542df3cc07f16ff87adf56594ad3911ca27ec2a38ac9e4e220",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "3cbe1f1bc7b1b5a2809cef17",
+      "source_id": "asml_results",
+      "title": "Financial results | ASML - Supplying the semiconductor industry · 2026-07-15",
+      "source_url": "https://www.asml.com/en/investors/financial-results",
+      "published_at": "2026-07-15",
+      "published_at_quality": "direct",
+      "source_family": "equipment_asml_ir",
+      "candidate_segments": [
+        "equipment_materials"
+      ],
+      "candidate_pillar": "earnings",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "s To ensure our continued commitment to full transparency and accountability with our investors and the general public, we release complete financial results each quarter as well as a full annual report at the end of the year. Q2 2026 financial results Our latest quarterly results were published on July 15, 2026. View quarterly results 2025 Annual Report Take a tour of the highlights to find out more about our performance and achievements, or download the full report. Go to 2025 Annual Report Financial overview See five-year overview of financial results Quarterly results 2025 Q4 and full-year 2025 January 28, 2026 Q3 2025 October 15, 2025 Q2 2025 July 16, 2025 Q1 2025 April 16, 2025 Quarterly results 2024 Q4 and full-year 2024 January 29, 2025 Q3 2024 October 15, 2024 Q2 2024 July 17, 2024 Q1 2024 April 17, 2024 Quarterly results 2023 Q4 and full-year 2023 January 24, 2024 Q3 2023 October 18, 2023 Q2 2023 July 19, 2023 Q1 2023 April 19, 2023 Quarterly results 2022 Q4 and full-year 2022 January 25, 2023 Q3 2022 October 19, 2022 Q2 2022 July 20, 2022 Q1 2022 April 20, 2022 Quarterly results 2021 Q4 and full-year 2021 January 19, 2022 Q3 2021 October 20, 2021 Q2 2021 July 21, 2021 Q1 2021 April 21, 2021 Related content Annual reports Read all our annual reports, explore our financial results and highlights Shareholder meetings Learn about the Annual General Meeting of Shareholders at ASML, including when the meeting convenes and historical shareholder information. Financial calendar Join ASML at one of our many financial events throughout the year, learning more about our place in the industry and how we're growing in it. Home Investors / Financial results / Learn History Products Technology Sustainability News Work At ASML Job search Careers Organization Locations Invest Why invest in ASML Annual report Financial results Investor days Shares Get in touch Contact information Contact Media Relations Contact Investor Relations CustomerNet SupplierNet Social Media Manage cookie settings Copyright © 2019-2026 (ASML) All Rights Reserved Terms of use Privacy Cookies Terms & conditions Accessibility",
+      "content_hash": "d74e706383fc6089823f95ca79a4891bb1d3bd8f1ac670a0ed31b108191fdb2c",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "18fcc21e7e1645548e2a548a",
+      "source_id": "microsoft_ir",
+      "title": "Microsoft Fiscal Year 2026 Third Quarter Earnings Conference Call · 2026-04-29",
+      "source_url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3",
+      "published_at": "2026-04-29",
+      "published_at_quality": "direct",
+      "source_family": "hyperscaler_microsoft_ir",
+      "candidate_segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "candidate_pillar": "earnings",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "sing Unlocked stories View Sitemap Microsoft Fiscal Year 2026 Third Quarter Earnings Conference Call Wednesday, April 29, 2026 Satya Nadella, Chairman and CEO and Amy Hood, EVP & CFO Transcript Microsoft FY26 Third Quarter Earnings Conference Call Jonathan Neilson, Satya Nadella, Amy Hood Wednesday April 29, 2026 JONATHAN NEILSON: Good afternoon and thank you for joining us today. On the call with me are Satya Nadella, chairman and chief executive officer, Amy Hood, chief financial officer, Alice Jolla, chief accounting officer, and Brian DeFoe, deputy general counsel and corporate secretary. On the Microsoft Investor Relations website, you can find our earnings press release and financial summary slide deck, which is intended to supplement our prepared remarks during today’s call and provides the reconciliation of differences between GAAP and non-GAAP financial measures. More detailed outlook slides will be available on the Microsoft Investor Relations website when we provide outlook commentary on today’s call. On this call we will discuss certain non-GAAP items. The non-GAAP financial measures provided should not be considered as a substitute for or superior to the measures of financial performance prepared in accordance with GAAP. They are included as additional clarifying items to aid investors in further understanding the company's third quarter performance in addition to the impact these items and events have on the financial results. All growth comparisons we make on the call today relate to the corresponding period of last year unless otherwise noted. We will also provide growth rates in constant currency, when available, as a framework for assessing how our underlying businesses performed, excluding the effect of foreign currency rate fluctuations. Where growth rates are the same in constant currency, we will refer to the growth rate only. We will post our prepared remarks to our website immediately following the call until the complete transcript is available. Today's call is being webcast live and recorded. If you ask a question, it will be included in our live transmission, in the transcript, and in any future use of the recording. You can replay the call and view the transcript on the Microsoft Investor Relations website. During this call, we will be making forward-looking statements which are predictions, projections, or other statements about future events. These statements are based on current expectations and assumptions that are subject to risks and uncertainties. Actual results could materially differ because of factors discussed in today's earnings press release, in the comments made during this conference call, and in the risk factor section of our Form 10-K, Forms 10-Q, and other reports and filings with the Securities and Exchange Commission. We do not undertake any duty to update any forward-looking statement. And with that, I’ll turn the call over to Satya. SATYA NADELLA: Thank you very much, Jonathan. It was a record third quarter, powered by the continued strength of the Microsoft Cloud, which exceeded $54 billion in revenue, up 29% year-over-year. Our AI business surpassed $37 billion ARR, up 123%. We are at the beginning of one of the most consequential platform shifts that will change the entire tech stack as agents proliferate and become the dominant workload. This will drive TAM expansion and change the value creation equation across the entire economy. To capture this opportunity, we are executing against two priorities: First, we are building the world’s leading cloud & AI infrastructure for the agentic computing era. Second, we are building high-value agentic systems across core domains, such as productivity, coding, and security. These two layers reinforce each other. And we are focused on driving competitive value and differentiation for customers across each so they can eval-max their outcomes. Today, I will focus my remarks on both priorities, starting with infrastructure. We are optimizi",
+      "content_hash": "8cc4250d9a3c283a7cd2b7d1097a5872c8ee1fff41ed7c861f87d6db35bdbbb0",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "5e97de8f3879a8e54d5c66db",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Sets Conference Call for Second-Quarter Financial Results",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-sets-conference-call-for-second-quarter-financial-results-6927195",
+      "published_at": "2026-07-29",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA will host a conference call on Wednesday, August 26, at 2 p.m. PT (5 p.m. ET) to discuss its financial results for the second quarter of fiscal year 2027, which ended July 26, 2026.",
+      "content_hash": "76738252c71e28e25b76e58ab79f008a00a16f7cfaed8e6f59efe410bd0a8b6e",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "1f2363d9374e46ec7dc66ed9",
+      "source_id": "amd_ir",
+      "title": "AMD Acquires Taalas to Advance Compute Solutions for Rapidly Growing AI Inference Market",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1296/amd-acquires-taalas-to-advance-compute-solutions-for-rapidly-growing-ai-inference-market",
+      "published_at": "2026-08-06",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "848cccc99a7039f3e139e066ebdc739394818e00585f875c06e23ce665ce50d6",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "92882f5400021aebe36aca5d",
+      "source_id": "amd_ir",
+      "title": "AMD Reports Second Quarter 2026 Financial Results",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1295/amd-reports-second-quarter-2026-financial-results",
+      "published_at": "2026-08-04",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "c2e80a7ec2c13bb5abec20b6e22bac30c911b763098c71e75326391b0a0a08a2",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "19bec7e3f6030b88c94c714d",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Partners With Apollo, BlackRock, Blackstone, Brookfield, Goldman Sachs and KKR to Establish AI Compute Infrastructure Financing Platforms to Mobilize Over $500 Billion of Third-Party Capital",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital",
+      "published_at": "2026-08-10",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced strategic partnerships to establish independent compute financing platforms with Apollo, BlackRock, Blackstone, Brookfield, Goldman Sachs and KKR to mobilize over $500 ...",
+      "content_hash": "d55b1b6a82430ac7cee4d820c35cc03f3f9a425a787b6b5b87a8b8ab7960fe47",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "5ebe2e84151210e7e4846058",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Guarantees SB Energy’s PORTS-Pike Technology Campus in Ohio to Exclusively Host NVIDIA AI Compute",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-guarantees-sb-energy-s-ports-pike-technology-campus-in-ohio-to-exclusively-host-nvidia-ai-compute",
+      "published_at": "2026-08-17",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA announced that it has secured land, power and shell (LPS) capacity through a partnership with SB Energy at the PORTS-Pike Technology Campus in Pike County, Ohio, to host NVIDIA compute...",
+      "content_hash": "2ce24619f080578df60dd274ab0b35b45e802f213a7f8320526e6cc979d00ce9",
+      "collected_at": "2026-08-22T07:12:31+09:00"
+    },
+    {
+      "id": "abb36124d7845267c70d1a7f",
+      "source_id": "amd_ir",
+      "title": "AMD Appoints Tim Ryan to Board of Directors",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1297/amd-appoints-tim-ryan-to-board-of-directors",
+      "published_at": "2026-08-19",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "521d8305834223e0d0e63a72acbeb24f9e90c8320ec9530b700a06b63bb47e30",
+      "collected_at": "2026-08-22T07:12:31+09:00"
     },
     {
       "id": "88af2e645436e1f9e4ab8c7b",
@@ -74,189 +474,6 @@
       "content_hash": "f3c82e07968a50bcd17b14a524e0e10db548eebface4b847387f072f1a252ba5"
     },
     {
-      "id": "585b13a56895196731375aa5",
-      "source_id": "wsts_news",
-      "title": "Recent News Release",
-      "source_url": "https://www.wsts.org/76/Recent-News-Release",
-      "published_at": null,
-      "published_at_quality": "unknown",
-      "source_family": "industry_association_wsts",
-      "candidate_segments": [
-        "memory_hbm_dram",
-        "memory_nand",
-        "foundry_logic",
-        "analog_auto_industrial"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_hash": "bcaaf89311f5ef6500efbbe4f042dc313da67c35166f5214b9a732a3cf71ee89",
-      "collected_at": "2026-08-15T07:11:41+09:00",
-      "content_excerpt": "Recent News Release Toggle navigation Meta Navigation Disclosure Contact Home Main Navigation GENERAL SERVICE ORGANIZATION PRESS MEMBERS ONLY Search SEARCH PRESS Global Semiconductor Market records exceptional growth in Q2 2026 Recent News Release PRESS ARCHIVE Global Semiconductor Market Surges Beyond $1.5T 2026 The World Semiconductor Trade Statistics (WSTS) organization has released its Spring 2026 semiconductor market forecast, significantly raising the industry outlook for both 2026 and 2027. 2026: Semiconductor Market Surpasses USD 1.5 Trillion Driven by Extraordinary Memory Expansion Following exceptionally strong results in late 2025 and early 2026, the global semiconductor market is now projected to grow 90 percent in 2026, reaching USD 1.51 trillion. The sharp upward acceleration is overwhelmingly driven by the Memory segment, which is forecast to surge by around 250 percent year over year, reaching more than USD 800 billion in 2026. Continued strong demand for AI infrastructure, high-bandwidth memory (HBM), and accelerated computing platforms remains the primary growth catalyst for the semiconductor industry. Logic is expected to remain another major contributor, growing 37 percent in 2026. Other product categories are forecast to expand at more moderate rates, reflecting a broader industry growth: Microprocessors 20 percent, Analog 10 percent, Discrete Semiconductors 8 percent, Sensors and Optoelectronics with 3 percent. Regionally, all major markets are projected to show strong growth. The Americas are expected to more than double in 2026 with 112 percent growth, driven by the concentration of AI-related semiconductor demand and cloud infrastructure investments. Asia Pacific is forecast to grow 87 percent, while Europe and Japan are projected to grow 58 percent and 28 percent respectively. 2027 Outlook: Growth Continues Above Historical Industry Trends For 2027, WSTS forecasts the global semiconductor market to grow a further 27 percent, reaching approximately USD 1.9 trillion. Memory is again expected to lead market expansion with projected growth of 32 percent, while Logic is forecast to increase by 27 percent. Continued deployment of AI systems, advanced computing infrastructure, and expanding semiconductor content across end markets are expected to support ongoing industry momentum. All geographic regions are projected to continue growing in 2027, led by the Americas and Asia Pacific. WSTS Forecast Summary Note: Numbers in the table are rounded to whole millions of dollars, which may cause totals by region and totals by product group to differ slightly. About WSTS : World Semiconductor Trade Statistics (WSTS) was founded in 1986 as a non-profit organization of semiconductor product companies and is the industry’s only source for monthly industry shipment statistics. For more information, please visit the WSTS web site at www.wsts.org or contact the WSTS Administrator and CEO – Tobias Pröttel (tp@wsts.org). Downloads: WSTS Spring 2026 FC - Global Semiconductor Market Surges Beyond $1.5T 2026 ( PDF | 256,45 kB ) print page WSTS News Releases The most recent News Release appears in the center column of this page. Previous News Releases may be found in \"Press Archive\" (click link above). Copyright Notice All WSTS Publications, including this Web Site, are copyrighted by WSTS Inc. All rights reserved. Reproduction in any electronic or physical form, in whole or in part, without written permission from WSTS is prohibited by law. © Copyright 1998-2024 by World Semiconductor Trade Statistics Inc. LOGIN USER NAME PASSWORD About WSTS WSTS is an independent non-profit organization representing the vast majority of the world semiconductor industry (Internet address: www.wsts.org). These forecasts will be released twice a year, in May and November. Press Release Notification If you like to be notified about future WSTS news releases by email please register here: Register for news Copyright © 2005-2026 WSTS GmbH. All rights reserved. Development by Kaindl Informatics"
-    },
-    {
-      "id": "775c60647a722f6fcd2575a1",
-      "source_id": "nvidia_news_rss",
-      "title": "Ilya Sutskever’s Safe Superintelligence Inc. and NVIDIA Announce Long-Term Strategic Partnership",
-      "source_url": "https://nvidianews.nvidia.com/news/ilya-sutskevers-safe-superintelligence-inc-and-nvidia-announce-long-term-strategic-partnership",
-      "published_at": "2026-07-27",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "Safe Superintelligence Inc. (SSI) and NVIDIA today announced a long-term partnership to rapidly accelerate SSI’s strategic growth...",
-      "content_hash": "98591452161c1028f2f23f5cca2ca0582e2de2b53cce9bd3adaab6ce11da19be",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "5fa7ac0f0d8668520a81de57",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA Expands NVIDIA Agent Toolkit With NVIDIA PhysicsNeMo and CUDA-X Libraries to Transform How the World Engineers, Designs and Builds",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-expands-nvidia-agent-toolkit-with-nvidia-physicsnemo-and-cuda-x-libraries-to-transform-how-the-world-engineers-designs-and-builds",
-      "published_at": "2026-07-27",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced an expansion of NVIDIA Agent Toolkit for engineering, now adding NVIDIA PhysicsNeMo™ and CUDA-X™ libraries as agent-ready tools and skills built to transform how the world designs and develops products.",
-      "content_hash": "3b4370de708f207bd4c7d3f1f460df93396fe505cec246197f511aa45f3f788c",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "11101a7f5566719988299f16",
-      "source_id": "nvidia_news_rss",
-      "title": "SK Group and NVIDIA Expand Strategic Partnership Across AI Factories and Next-Generation Memory",
-      "source_url": "https://nvidianews.nvidia.com/news/sk-group-and-nvidia-expand-strategic-partnership-across-ai-factories-and-next-generation-memory",
-      "published_at": "2026-07-25",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "SK Group and NVIDIA today announced plans for a $500-billion-plus comprehensive partnership to establish AI infrastructure serving the surging demand for global compute. The two sides signed letters of intent to formalize the agreement, which spans from AI factory construction to AI memory supply.",
-      "content_hash": "e15569e81cc3b30a04bd3d0ea2aed81d8f76ae04e88c413e519ea31de73db6ed",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "31494e22d2359437b7f88461",
-      "source_id": "nvidia_news_rss",
-      "title": "NAVER, NVIDIA and Brookfield to Expand Korea’s National AI Factory Infrastructure Buildout",
-      "source_url": "https://nvidianews.nvidia.com/news/naver-nvidia-and-brookfield-to-expand-koreas-national-ai-factory-infrastructure-buildout",
-      "published_at": "2026-07-25",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NAVER, NVIDIA and Brookfield today announced a proposed expansion of Korea's sovereign AI factory infrastructure, with planned investments that will grow the initial NVIDIA® DSX™ AI factory deployment to 200 megawatts — more than tripling the 55-megawatt buildout announced last month. NAVER intends to expand its deployment of NVIDIA AI infrastructure to 1 gigawatt.",
-      "content_hash": "ac64fefe0e3a93cf622970395cab3b9b8f660e5035fb0e0ba61bc11a50d940b3",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "812436ce8e6c4e56f4ad6475",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA and KAIST Launch Joint AI Research Lab to Accelerate AI Innovation in Korea",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-and-kaist-launch-joint-ai-research-lab-to-accelerate-ai-innovation-in-korea",
-      "published_at": "2026-07-23",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA and the Korea Advanced Institute of Science and Technology (KAIST) today announced the launch of a joint AI research laboratory at the KAIST Kim Jaechul Graduate School of AI in Seoul, dedicated to advancing agentic AI for South Korea.",
-      "content_hash": "543fcf1d3f8322c743ca47ea312fa3d67c09625dd19dd085304034c93fcd0cac",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "9c79be3d94281e69690ed647",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA Agent Toolkit Expands With New Omniverse Libraries, Putting AI Agents to Work Building Simulation-Ready Worlds",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-agent-toolkit-expands-with-new-omniverse-libraries-putting-ai-agents-to-work-building-simulation-ready-worlds",
-      "published_at": "2026-07-20",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced that NVIDIA Agent Toolkit now includes NVIDIA Omniverse™ libraries — a collection of software components that give AI agents tools and skills to add physical AI capabilities to existing applications and prepare 3D content for simulation.",
-      "content_hash": "7225a42f8f9d58fb8b54abc4b89e514a6e9dc9334b2cf06921b928c7dcbb34e2",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "8edfc653963e690f3a54f392",
-      "source_id": "nvidia_news_rss",
-      "title": "Japan Government, Industrial Leaders and NVIDIA Launch the World’s First National AI Infrastructure",
-      "source_url": "https://nvidianews.nvidia.com/news/japan-government-industrial-leaders-and-nvidia-launch-the-worlds-first-national-ai-infrastructure",
-      "published_at": "2026-07-16",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced it is working with Noetra Corp. to launch an NVIDIA Vera Rubin AI factory with 13,750 NVIDIA Vera CPUs and 27,500 NVIDIA Rubin GPUs for national physical AI.",
-      "content_hash": "cb6ece18317044bd6510e1ce3f1e1e2e87728021dc6232b1a86e134ceca98e1a",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "40ec927908287d428db1e383",
-      "source_id": "nvidia_news_rss",
-      "title": "Japan’s Robotics and Manufacturing Leaders Build on NVIDIA Cosmos to Advance Physical AI Frontier",
-      "source_url": "https://nvidianews.nvidia.com/news/japans-robotics-and-manufacturing-leaders-build-on-nvidia-cosmos-to-advance-physical-ai-frontier",
-      "published_at": "2026-07-16",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced that Japan’s physical AI leaders are building on the NVIDIA Cosmos™, NVIDIA Isaac™, NVIDIA Metropolis and NVIDIA Jetson™ platforms to accelerate the deployment of intelligent machines across manufacturing, mobility, infrastructure and robotics.",
-      "content_hash": "113180418bf7f88ff32ba34fd11f8d6a6b5c3fbf4f33afd85bda0ae6763a4c0f",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "53a2e58378117d2898631ff3",
-      "source_id": "nvidia_news_rss",
-      "title": "Japan’s Enterprises and Startups Build Industry-Specialized AI With NVIDIA Nemotron Open Models",
-      "source_url": "https://nvidianews.nvidia.com/news/japans-enterprises-and-startups-build-industry-specialized-ai-with-nvidia-nemotron-open-models",
-      "published_at": "2026-07-15",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced that leading Japanese enterprises, startups and research institutions are building industry-specialized AI models and applications with NVIDIA Nemotron™ open models, data and libraries, accelerating the development of AI tailored to Japan’s language, industries and workforce.",
-      "content_hash": "00f7eaad395d86617f3bba455634388673a7204e68d707db3a759cb2f219e956",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
       "id": "13f4ba18cbd8ea259651e5f2",
       "source_id": "nvidia_news_rss",
       "title": "NVIDIA Announces BioNeMo Agent Toolkit — Tools for Agents to Accelerate Scientific Discovery",
@@ -272,187 +489,6 @@
       "review_status": "pending",
       "content_excerpt": "NVIDIA today announced NVIDIA BioNeMo Agent Toolkit, which provides domain-specific tools and skills for the agentic life sciences era.",
       "content_hash": "de2b2cb114988ff83a93665bd0fad6281183b6377165943bee23bd29b3d71111",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "ab94c519cc32ad1c73b3485d",
-      "source_id": "amd_ir",
-      "title": "AAI 2026: AMD Delivers Full-Stack Compute for the Agentic AI Era",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1294/aai-2026-amd-delivers-full-stack-compute-for-the-agentic-ai-era",
-      "published_at": "2026-07-23",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "84049d1a4d267ac1f50602a579f1bb1cac788df36709b783e92bd7dae037b0f3",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "e1b6c868d30ad2e101bb804f",
-      "source_id": "amd_ir",
-      "title": "AMD and Cerebras Announce Industry-Leading Ultra-Low-Latency and High Throughput AI Inference Solution",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1293/amd-and-cerebras-announce-industry-leading-ultra-low-latency-and-high-throughput-ai-inference-solution",
-      "published_at": "2026-07-23",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "f88083ebf0c4c501ead5d61133e5a2b5bb6418fd540045fdce04cb57aef4f11f",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "4adc257175d4ddc92a862830",
-      "source_id": "amd_ir",
-      "title": "AMD and Anthropic Announce Strategic Partnership to Deploy Up to 2 Gigawatts of AMD Instinct MI450 Series GPUs",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1292/amd-and-anthropic-announce-strategic-partnership-to-deploy-up-to-2-gigawatts-of-amd-instinct-mi450-series-gpus",
-      "published_at": "2026-07-22",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "2a76b99f4ca5d5a73a2d709a46c41328dff5a9263d2b3881784cea16f294dbe4",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "37630e02aae2c73646902d25",
-      "source_id": "amd_ir",
-      "title": "Microsoft to Deploy Next-Gen AMD Instinct and AMD EPYC Processors as the Companies Expand Their Long-Term Strategic Partnership",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1291/microsoft-to-deploy-next-gen-amd-instinct-and-amd-epyc-processors-as-the-companies-expand-their-long-term-strategic-partnership",
-      "published_at": "2026-07-20",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "a7db128b6f8e27542df3cc07f16ff87adf56594ad3911ca27ec2a38ac9e4e220",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "3cbe1f1bc7b1b5a2809cef17",
-      "source_id": "asml_results",
-      "title": "Financial results | ASML - Supplying the semiconductor industry · 2026-07-15",
-      "source_url": "https://www.asml.com/en/investors/financial-results",
-      "published_at": "2026-07-15",
-      "published_at_quality": "direct",
-      "source_family": "equipment_asml_ir",
-      "candidate_segments": [
-        "equipment_materials"
-      ],
-      "candidate_pillar": "earnings",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "s To ensure our continued commitment to full transparency and accountability with our investors and the general public, we release complete financial results each quarter as well as a full annual report at the end of the year. Q2 2026 financial results Our latest quarterly results were published on July 15, 2026. View quarterly results 2025 Annual Report Take a tour of the highlights to find out more about our performance and achievements, or download the full report. Go to 2025 Annual Report Financial overview See five-year overview of financial results Quarterly results 2025 Q4 and full-year 2025 January 28, 2026 Q3 2025 October 15, 2025 Q2 2025 July 16, 2025 Q1 2025 April 16, 2025 Quarterly results 2024 Q4 and full-year 2024 January 29, 2025 Q3 2024 October 15, 2024 Q2 2024 July 17, 2024 Q1 2024 April 17, 2024 Quarterly results 2023 Q4 and full-year 2023 January 24, 2024 Q3 2023 October 18, 2023 Q2 2023 July 19, 2023 Q1 2023 April 19, 2023 Quarterly results 2022 Q4 and full-year 2022 January 25, 2023 Q3 2022 October 19, 2022 Q2 2022 July 20, 2022 Q1 2022 April 20, 2022 Quarterly results 2021 Q4 and full-year 2021 January 19, 2022 Q3 2021 October 20, 2021 Q2 2021 July 21, 2021 Q1 2021 April 21, 2021 Related content Annual reports Read all our annual reports, explore our financial results and highlights Shareholder meetings Learn about the Annual General Meeting of Shareholders at ASML, including when the meeting convenes and historical shareholder information. Financial calendar Join ASML at one of our many financial events throughout the year, learning more about our place in the industry and how we're growing in it. Home Investors / Financial results / Learn History Products Technology Sustainability News Work At ASML Job search Careers Organization Locations Invest Why invest in ASML Annual report Financial results Investor days Shares Get in touch Contact information Contact Media Relations Contact Investor Relations CustomerNet SupplierNet Social Media Manage cookie settings Copyright © 2019-2026 (ASML) All Rights Reserved Terms of use Privacy Cookies Terms & conditions Accessibility",
-      "content_hash": "d74e706383fc6089823f95ca79a4891bb1d3bd8f1ac670a0ed31b108191fdb2c",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "18fcc21e7e1645548e2a548a",
-      "source_id": "microsoft_ir",
-      "title": "Microsoft Fiscal Year 2026 Third Quarter Earnings Conference Call · 2026-04-29",
-      "source_url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3",
-      "published_at": "2026-04-29",
-      "published_at_quality": "direct",
-      "source_family": "hyperscaler_microsoft_ir",
-      "candidate_segments": [
-        "cloud_capex",
-        "ai_services"
-      ],
-      "candidate_pillar": "earnings",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "sing Unlocked stories View Sitemap Microsoft Fiscal Year 2026 Third Quarter Earnings Conference Call Wednesday, April 29, 2026 Satya Nadella, Chairman and CEO and Amy Hood, EVP & CFO Transcript Microsoft FY26 Third Quarter Earnings Conference Call Jonathan Neilson, Satya Nadella, Amy Hood Wednesday April 29, 2026 JONATHAN NEILSON: Good afternoon and thank you for joining us today. On the call with me are Satya Nadella, chairman and chief executive officer, Amy Hood, chief financial officer, Alice Jolla, chief accounting officer, and Brian DeFoe, deputy general counsel and corporate secretary. On the Microsoft Investor Relations website, you can find our earnings press release and financial summary slide deck, which is intended to supplement our prepared remarks during today’s call and provides the reconciliation of differences between GAAP and non-GAAP financial measures. More detailed outlook slides will be available on the Microsoft Investor Relations website when we provide outlook commentary on today’s call. On this call we will discuss certain non-GAAP items. The non-GAAP financial measures provided should not be considered as a substitute for or superior to the measures of financial performance prepared in accordance with GAAP. They are included as additional clarifying items to aid investors in further understanding the company's third quarter performance in addition to the impact these items and events have on the financial results. All growth comparisons we make on the call today relate to the corresponding period of last year unless otherwise noted. We will also provide growth rates in constant currency, when available, as a framework for assessing how our underlying businesses performed, excluding the effect of foreign currency rate fluctuations. Where growth rates are the same in constant currency, we will refer to the growth rate only. We will post our prepared remarks to our website immediately following the call until the complete transcript is available. Today's call is being webcast live and recorded. If you ask a question, it will be included in our live transmission, in the transcript, and in any future use of the recording. You can replay the call and view the transcript on the Microsoft Investor Relations website. During this call, we will be making forward-looking statements which are predictions, projections, or other statements about future events. These statements are based on current expectations and assumptions that are subject to risks and uncertainties. Actual results could materially differ because of factors discussed in today's earnings press release, in the comments made during this conference call, and in the risk factor section of our Form 10-K, Forms 10-Q, and other reports and filings with the Securities and Exchange Commission. We do not undertake any duty to update any forward-looking statement. And with that, I’ll turn the call over to Satya. SATYA NADELLA: Thank you very much, Jonathan. It was a record third quarter, powered by the continued strength of the Microsoft Cloud, which exceeded $54 billion in revenue, up 29% year-over-year. Our AI business surpassed $37 billion ARR, up 123%. We are at the beginning of one of the most consequential platform shifts that will change the entire tech stack as agents proliferate and become the dominant workload. This will drive TAM expansion and change the value creation equation across the entire economy. To capture this opportunity, we are executing against two priorities: First, we are building the world’s leading cloud & AI infrastructure for the agentic computing era. Second, we are building high-value agentic systems across core domains, such as productivity, coding, and security. These two layers reinforce each other. And we are focused on driving competitive value and differentiation for customers across each so they can eval-max their outcomes. Today, I will focus my remarks on both priorities, starting with infrastructure. We are optimizi",
-      "content_hash": "8cc4250d9a3c283a7cd2b7d1097a5872c8ee1fff41ed7c861f87d6db35bdbbb0",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "5e97de8f3879a8e54d5c66db",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA Sets Conference Call for Second-Quarter Financial Results",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-sets-conference-call-for-second-quarter-financial-results-6927195",
-      "published_at": "2026-07-29",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA will host a conference call on Wednesday, August 26, at 2 p.m. PT (5 p.m. ET) to discuss its financial results for the second quarter of fiscal year 2027, which ended July 26, 2026.",
-      "content_hash": "76738252c71e28e25b76e58ab79f008a00a16f7cfaed8e6f59efe410bd0a8b6e",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "1f2363d9374e46ec7dc66ed9",
-      "source_id": "amd_ir",
-      "title": "AMD Acquires Taalas to Advance Compute Solutions for Rapidly Growing AI Inference Market",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1296/amd-acquires-taalas-to-advance-compute-solutions-for-rapidly-growing-ai-inference-market",
-      "published_at": "2026-08-06",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "848cccc99a7039f3e139e066ebdc739394818e00585f875c06e23ce665ce50d6",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "92882f5400021aebe36aca5d",
-      "source_id": "amd_ir",
-      "title": "AMD Reports Second Quarter 2026 Financial Results",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1295/amd-reports-second-quarter-2026-financial-results",
-      "published_at": "2026-08-04",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "c2e80a7ec2c13bb5abec20b6e22bac30c911b763098c71e75326391b0a0a08a2",
-      "collected_at": "2026-08-15T07:11:41+09:00"
-    },
-    {
-      "id": "19bec7e3f6030b88c94c714d",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA Partners With Apollo, BlackRock, Blackstone, Brookfield, Goldman Sachs and KKR to Establish AI Compute Infrastructure Financing Platforms to Mobilize Over $500 Billion of Third-Party Capital",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital",
-      "published_at": "2026-08-10",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced strategic partnerships to establish independent compute financing platforms with Apollo, BlackRock, Blackstone, Brookfield, Goldman Sachs and KKR to mobilize over $500 ...",
-      "content_hash": "d55b1b6a82430ac7cee4d820c35cc03f3f9a425a787b6b5b87a8b8ab7960fe47",
       "collected_at": "2026-08-15T07:11:41+09:00"
     },
     {
