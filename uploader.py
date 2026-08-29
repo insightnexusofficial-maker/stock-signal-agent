@@ -54,6 +54,10 @@ EVENT_FEED_URL = os.getenv(
     "SAYO_EVENT_FEED_URL",
     "https://stock-sayo-study.web.app/data/event-latest.json",
 )
+MACRO_POLICY_URL = os.getenv(
+    "SAYO_MACRO_POLICY_URL",
+    "https://stock-sayo-study.web.app/data/macro-policy-latest.json",
+)
 CYCLE_COVERED_SECTORS = {"semiconductor", "ai_bigtech", "industrial"}
 
 
@@ -364,6 +368,76 @@ def fetch_event_feed(url=None, now=None):
         )
         print(f"   이벤트 feed 직전값 유지 ({_classify_request_error(error)})")
         return None
+
+
+def fetch_macro_policy_signal(url=None, now=None):
+    """Study의 거시정책 신호를 표시용으로만 읽는다. 매수 판정에는 사용하지 않는다."""
+    now = now or datetime.now(KST)
+    fallback = {
+        "schema_version": "1.0",
+        "signal_id": None,
+        "quality_status": "unavailable",
+        "status": "unavailable",
+    }
+    try:
+        response = requests.get(url or MACRO_POLICY_URL, timeout=12)
+        response.raise_for_status()
+        signal = response.json()
+        expires_at = datetime.fromisoformat(str(signal.get("expires_at") or ""))
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=KST)
+        sector = signal.get("sector") or {}
+        evidence = signal.get("evidence") or []
+        evidence_ids = {item.get("id") for item in evidence}
+        if (
+            signal.get("schema_version") != "1.0"
+            or signal.get("quality_gate", {}).get("status") != "passed"
+            or signal.get("quality_gate", {}).get("mode") != "official-speech-plus-market-pricing"
+            or expires_at <= now
+            or not re.fullmatch(r"[0-9a-f]{64}", str(signal.get("content_sha256") or ""))
+            or sector.get("id") != "us_rate_policy"
+            or sector.get("status") not in {"hike_watch", "hike_likely", "hold_watch", "cut_watch", "neutral"}
+            or sector.get("probability_level") not in {"low", "watch", "elevated", "high"}
+            or sector.get("chip_tone") not in {"good", "warn", "bad", "neutral"}
+            or sector.get("review_status") != "verified"
+            or int(sector.get("confidence", -1)) < 0
+            or int(sector.get("confidence", -1)) > 85
+            or len(evidence) < 2
+            or set(sector.get("evidence_ids") or []) - evidence_ids
+        ):
+            raise ValueError("검증 또는 만료 조건을 통과하지 못한 거시정책 신호")
+        probability = sector.get("probability_pct")
+        if probability is not None and not 0 <= float(probability) <= 100:
+            raise ValueError("거시정책 가능성 수치 오류")
+        return {
+            "schema_version": signal.get("schema_version"),
+            "signal_id": signal.get("signal_id"),
+            "generated_at": signal.get("generated_at"),
+            "expires_at": signal.get("expires_at"),
+            "quality_status": signal.get("quality_gate", {}).get("status"),
+            "sector_id": sector.get("id"),
+            "label": sector.get("label"),
+            "status": sector.get("status"),
+            "direction": sector.get("direction"),
+            "probability_level": sector.get("probability_level"),
+            "probability_pct": probability,
+            "confidence": sector.get("confidence"),
+            "display_label": sector.get("display_label"),
+            "chip_tone": sector.get("chip_tone"),
+            "horizon": sector.get("horizon"),
+            "summary": sector.get("summary"),
+            "source_name": sector.get("primary_source_name"),
+            "source_url": sector.get("primary_source_url"),
+            "source_published_at": sector.get("source_published_at"),
+        }
+    except Exception as error:
+        _record_collection_error(
+            "stock_sayo_study",
+            "macro_policy_signal",
+            _classify_request_error(error),
+        )
+        print(f"   거시정책 신호 비활성 ({_classify_request_error(error)})")
+        return fallback
 
 
 def attach_cycle_context(data, cycle_report):
@@ -2529,6 +2603,7 @@ def _run_upload_data(report, started_at):
     macro = get_macro_data()
     cycle_report = fetch_cycle_report()
     event_feed = fetch_event_feed()
+    macro_policy_signal = fetch_macro_policy_signal()
     
     vix_info = macro.get("vix")
     qqq_info = macro.get("qqq")
@@ -2564,6 +2639,11 @@ def _run_upload_data(report, started_at):
             "market_mode_us": mode_us,
             "market_mode_kr": mode_kr,
             "event_calendar": event_feed,
+            "macro_policy_signal": macro_policy_signal,
+            "macro_policy_last_attempt_at": _iso_kst(started_at),
+            "macro_policy_sync_status": (
+                "success" if macro_policy_signal.get("quality_status") == "passed" else "unavailable"
+            ),
             "event_last_attempt_at": _iso_kst(started_at),
             "event_sync_status": "success" if event_feed else "unavailable",
             **({
@@ -2808,6 +2888,11 @@ def _run_upload_data(report, started_at):
             "quality_status": cycle_report.get("quality_gate", {}).get("status"),
         },
         "event_calendar": event_feed,
+        "macro_policy_signal": macro_policy_signal,
+        "macro_policy_last_attempt_at": _iso_kst(started_at),
+        "macro_policy_sync_status": (
+            "success" if macro_policy_signal.get("quality_status") == "passed" else "unavailable"
+        ),
         "event_last_attempt_at": _iso_kst(started_at),
         "event_sync_status": "success" if event_feed else "unavailable",
         **({

@@ -43,25 +43,6 @@
   },
   "events": [
     {
-      "id": "earnings-NVDA-fy2027q2",
-      "kind": "earnings",
-      "ticker": "NVDA",
-      "name": "NVIDIA FY2027 Q2 실적",
-      "scheduled_date": "2026-08-26",
-      "scheduled_at": "2026-08-27T06:00:00+09:00",
-      "monitor_after": "2026-08-27T06:05:00+09:00",
-      "schedule_timezone": "America/Los_Angeles",
-      "schedule_status": "confirmed",
-      "time_note": "14:00 미국 태평양시간",
-      "schedule_source_name": "NVIDIA",
-      "schedule_source_url": "https://investor.nvidia.com/events-and-presentations/events-and-presentations/event-details/2026/NVIDIA-2nd-Quarter-FY27-Financial-Results/default.aspx",
-      "segments": [
-        "ai_compute_design"
-      ],
-      "sync_status": "overdue",
-      "result_collection_status": "automated-official"
-    },
-    {
       "id": "company-TSM-monthly-revenue-2026-08",
       "kind": "company_metric",
       "ticker": "TSM",

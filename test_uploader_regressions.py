@@ -842,6 +842,79 @@ class UploaderRegressionTests(unittest.TestCase):
         self.assertEqual(feed["events"][0]["id"], "earnings-NVDA")
 
     @patch("uploader.requests.get")
+    def test_macro_policy_signal_requires_fresh_verified_contract(self, requests_get):
+        requests_get.return_value = FakeResponse({
+            "schema_version": "1.0",
+            "signal_id": "us-rate-policy-test",
+            "generated_at": "2026-08-29T00:20:00+09:00",
+            "expires_at": "2026-09-17T06:00:00+09:00",
+            "content_sha256": "d" * 64,
+            "quality_gate": {
+                "status": "passed",
+                "mode": "official-speech-plus-market-pricing",
+            },
+            "sector": {
+                "id": "us_rate_policy",
+                "label": "미국 금리정책",
+                "status": "hike_watch",
+                "direction": "hike",
+                "probability_level": "elevated",
+                "probability_pct": 58,
+                "confidence": 72,
+                "display_label": "금리인상 경계",
+                "chip_tone": "warn",
+                "horizon": "2026-09 FOMC",
+                "summary": "표시용 경계 신호",
+                "primary_source_name": "Federal Reserve",
+                "primary_source_url": "https://www.federalreserve.gov/newsevents/speech/warsh20260828a.htm",
+                "source_published_at": "2026-08-28",
+                "review_status": "verified",
+                "evidence_ids": ["fed", "market"],
+            },
+            "evidence": [{"id": "fed"}, {"id": "market"}],
+        })
+
+        signal = uploader.fetch_macro_policy_signal(
+            now=uploader.datetime.fromisoformat("2026-08-29T00:30:00+09:00")
+        )
+
+        self.assertEqual(signal["quality_status"], "passed")
+        self.assertEqual(signal["status"], "hike_watch")
+        self.assertEqual(signal["probability_pct"], 58)
+        self.assertEqual(signal["source_name"], "Federal Reserve")
+
+    @patch("uploader.requests.get")
+    def test_expired_macro_policy_signal_disables_chip(self, requests_get):
+        requests_get.return_value = FakeResponse({
+            "schema_version": "1.0",
+            "signal_id": "us-rate-policy-old",
+            "generated_at": "2026-08-01T00:20:00+09:00",
+            "expires_at": "2026-08-02T06:00:00+09:00",
+            "content_sha256": "e" * 64,
+            "quality_gate": {
+                "status": "passed",
+                "mode": "official-speech-plus-market-pricing",
+            },
+            "sector": {
+                "id": "us_rate_policy",
+                "status": "hike_watch",
+                "probability_level": "elevated",
+                "confidence": 72,
+                "chip_tone": "warn",
+                "review_status": "verified",
+                "evidence_ids": ["fed", "market"],
+            },
+            "evidence": [{"id": "fed"}, {"id": "market"}],
+        })
+
+        signal = uploader.fetch_macro_policy_signal(
+            now=uploader.datetime.fromisoformat("2026-08-29T00:30:00+09:00")
+        )
+
+        self.assertEqual(signal["quality_status"], "unavailable")
+        self.assertEqual(signal["status"], "unavailable")
+
+    @patch("uploader.requests.get")
     def test_confirmed_event_without_exact_kst_time_is_rejected(self, requests_get):
         requests_get.return_value = FakeResponse({
             "schema_version": "1.0",

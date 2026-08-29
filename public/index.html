@@ -282,6 +282,61 @@ button {
 .macro-badge.warn { background: rgba(255, 184, 77, 0.15); color: var(--macro-warn); }
 .macro-badge.bad { background: rgba(255, 84, 84, 0.18); color: var(--macro-bad); }
 
+.macro-policy-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  margin-top: -6px;
+}
+
+.macro-policy-row[hidden] {
+  display: none;
+}
+
+.macro-policy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  background: var(--bg-2);
+  color: var(--fg-2);
+  font-size: 11px;
+  line-height: 1.25;
+  text-decoration: none;
+}
+
+.macro-policy-chip.warn {
+  border-color: rgba(255, 184, 77, 0.38);
+  background: rgba(255, 184, 77, 0.08);
+}
+
+.macro-policy-chip.bad {
+  border-color: rgba(255, 84, 84, 0.35);
+  background: rgba(255, 84, 84, 0.08);
+}
+
+.macro-policy-chip.good {
+  border-color: rgba(0, 214, 143, 0.35);
+  background: rgba(0, 214, 143, 0.08);
+}
+
+.macro-policy-chip .label {
+  color: var(--fg-1);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.macro-policy-chip .meta {
+  color: var(--fg-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .event-panel {
   margin: 14px 0 18px;
   padding: 16px;
@@ -2076,6 +2131,13 @@ button {
             </div>
             <span class="macro-badge" id="usdkrw-badge">—</span>
           </div>
+
+          <div class="macro-policy-row" id="macro-policy-row" hidden>
+            <a class="macro-policy-chip" id="macro-policy-chip" href="#" target="_blank" rel="noopener">
+              <span class="label" id="macro-policy-label">금리정책</span>
+              <span class="meta" id="macro-policy-meta">—</span>
+            </a>
+          </div>
       
         </section>
 
@@ -2719,11 +2781,47 @@ button {
     // ============================================================
     // 매크로 렌더
     // ============================================================
+    function renderMacroPolicy(signal) {
+      const row = $("#macro-policy-row");
+      const chip = $("#macro-policy-chip");
+      const label = $("#macro-policy-label");
+      const meta = $("#macro-policy-meta");
+      if (!row || !chip || !label || !meta) return;
+
+      const showSignal = signal
+        && signal.quality_status === "passed"
+        && ["hike_watch", "hike_likely"].includes(signal.status)
+        && ["elevated", "high"].includes(signal.probability_level);
+      if (!showSignal) {
+        row.hidden = true;
+        return;
+      }
+
+      const tone = ["good", "warn", "bad", "neutral"].includes(signal.chip_tone)
+        ? signal.chip_tone
+        : "neutral";
+      const probability = Number.isFinite(Number(signal.probability_pct))
+        ? ` · ${Number(signal.probability_pct).toFixed(0)}%`
+        : "";
+      const horizon = signal.horizon ? ` · ${signal.horizon}` : "";
+      const source = signal.source_name ? ` · ${signal.source_name}` : "";
+      label.textContent = signal.display_label || "금리정책 경계";
+      meta.textContent = `${signal.direction === "hike" ? "인상 가능성" : "정책 경계"}${probability}${horizon}${source}`;
+      chip.className = `macro-policy-chip ${tone}`;
+      if (typeof signal.source_url === "string" && signal.source_url.startsWith("https://")) {
+        chip.href = signal.source_url;
+      } else {
+        chip.removeAttribute("href");
+      }
+      row.hidden = false;
+    }
+
     function renderMacro(d) {
       const vix = d.vix || {};
       const qqq = d.qqq || {};
       const kospi = d.kospi || {};
       const usdkrw = d.usdkrw || {};
+      renderMacroPolicy(d.macro_policy_signal);
       
       // VIX
       if (vix.current != null) {

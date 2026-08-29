@@ -94,6 +94,19 @@ class FrontendEntryFlowTests(unittest.TestCase):
         ] if "function check" in self.source else ""
         self.assertNotIn("event_calendar", signal_function)
 
+    def test_macro_policy_signal_is_a_display_only_chip(self):
+        parser = _IdCollector()
+        parser.feed(self.source)
+        self.assertIn("macro-policy-row", parser.ids)
+        self.assertIn("macro-policy-chip", parser.ids)
+        self.assertIn("function renderMacroPolicy(signal)", self.source)
+        self.assertIn("renderMacroPolicy(d.macro_policy_signal);", self.source)
+        self.assertIn('signal.quality_status === "passed"', self.source)
+        signal_function = self.source[
+            self.source.index("function check"):self.source.index("function renderMacro")
+        ] if "function check" in self.source else ""
+        self.assertNotIn("macro_policy_signal", signal_function)
+
     def test_official_event_feed_is_collapsible_below_signal_stocks(self):
         self.assertIn('<details class="event-panel"', self.source)
         self.assertIn('<summary class="event-panel-head">', self.source)

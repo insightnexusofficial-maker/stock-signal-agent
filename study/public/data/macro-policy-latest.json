@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "logic_version": "macro-policy-v1-2026-08-29",
+  "generated_at": "2026-08-29T12:09:56+09:00",
+  "expires_at": "2026-09-17T06:00:00+09:00",
+  "content_sha256": "79769bb24e89da1f0175a9b516c163fea493e48c8c00f84276523bc7ef384fde",
+  "quality_gate": {
+    "status": "passed",
+    "mode": "official-speech-plus-market-pricing",
+    "evidence_count": 2,
+    "message": "공식 발언과 독립 시장 반응 근거가 함께 확인된 거시정책 신호만 표시합니다."
+  },
+  "signal_id": "us-rate-policy-warsh-jackson-hole-2026-08-28",
+  "sector": {
+    "id": "us_rate_policy",
+    "label": "미국 금리정책",
+    "status": "hike_watch",
+    "direction": "hike",
+    "probability_level": "elevated",
+    "probability_pct": 58,
+    "confidence": 72,
+    "display_label": "금리인상 경계",
+    "chip_tone": "warn",
+    "horizon": "2026-09 FOMC",
+    "summary": "Warsh 의장은 물가 안정과 단기금리의 정책 수단성을 강조했고, 연설 뒤 9월 인상 기대가 높아졌다. 다만 명시적 인상 약속은 아니므로 데이터 의존 경계 신호로만 표시한다.",
+    "primary_source_name": "Federal Reserve",
+    "primary_source_url": "https://www.federalreserve.gov/newsevents/speech/warsh20260828a.htm",
+    "source_published_at": "2026-08-28",
+    "review_status": "verified",
+    "evidence_ids": [
+      "warsh-speech-policy-20260828",
+      "warsh-market-pricing-20260828"
+    ]
+  },
+  "evidence": [
+    {
+      "id": "warsh-speech-policy-20260828",
+      "source_family": "fed_speech",
+      "source_name": "Federal Reserve",
+      "source_url": "https://www.federalreserve.gov/newsevents/speech/warsh20260828a.htm",
+      "published_at": "2026-08-28",
+      "fact": "Warsh 의장은 PCE 기준 2% 물가 목표를 고정 목표로 제시하고, 단기금리를 이중책무 달성의 주된 도구로 설명했다."
+    },
+    {
+      "id": "warsh-market-pricing-20260828",
+      "source_family": "market_pricing_newswire",
+      "source_name": "Reuters via Investing.com",
+      "source_url": "https://www.investing.com/news/economy-news/ratehike-expectations-rise-on-warsh-speech-at-jackson-hole-4881579",
+      "published_at": "2026-08-28",
+      "fact": "Reuters는 Warsh 연설 이후 다음 달 금리인상 기대가 높아졌고 단기 국채금리가 상승했다고 보도했다."
+    }
+  ]
+}

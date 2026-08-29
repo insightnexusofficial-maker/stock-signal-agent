@@ -25,6 +25,8 @@ SEGMENT_IDS = {
     "ai_services",
 }
 PILLARS = {"demand", "inventory", "pricing", "supply", "earnings"}
+MACRO_POLICY_STATUSES = {"hike_watch", "hike_likely", "hold_watch", "cut_watch", "neutral"}
+MACRO_POLICY_TONES = {"good", "warn", "bad", "neutral"}
 STRONG_UNSOURCED_PATTERNS = (
     "Stock SAYO",
     "SAYO",
@@ -141,6 +143,7 @@ def validate_json() -> list[str]:
     quant = json.loads((PUBLIC / "data/quant-latest.json").read_text(encoding="utf-8"))
     cycle = json.loads((PUBLIC / "data/cycle-latest.json").read_text(encoding="utf-8"))
     event_feed = json.loads((PUBLIC / "data/event-latest.json").read_text(encoding="utf-8"))
+    macro_policy = json.loads((PUBLIC / "data/macro-policy-latest.json").read_text(encoding="utf-8"))
     event_calendar = json.loads((ROOT / "data/event-calendar.json").read_text(encoding="utf-8"))
     registry = json.loads((ROOT / "data/sources.json").read_text(encoding="utf-8"))
     allowed_domains = {
@@ -152,6 +155,53 @@ def validate_json() -> list[str]:
         errors.append("quant-latest.json 계약 또는 종목 목록 오류")
     if cycle.get("schema_version") not in {"1.0", "1.1", "1.2"} or not cycle.get("segments"):
         errors.append("cycle-latest.json 계약 또는 세그먼트 목록 오류")
+    if macro_policy.get("schema_version") != "1.0":
+        errors.append("macro-policy-latest.json 계약 오류")
+    else:
+        sector = macro_policy.get("sector") or {}
+        quality_gate = macro_policy.get("quality_gate") or {}
+        if (
+            quality_gate.get("status") != "passed"
+            or quality_gate.get("mode") != "official-speech-plus-market-pricing"
+            or not re.fullmatch(r"[0-9a-f]{64}", str(macro_policy.get("content_sha256", "")))
+            or sector.get("id") != "us_rate_policy"
+            or sector.get("status") not in MACRO_POLICY_STATUSES
+            or sector.get("chip_tone") not in MACRO_POLICY_TONES
+            or sector.get("review_status") != "verified"
+        ):
+            errors.append("macro-policy-latest.json 품질 게이트 오류")
+        try:
+            expires_at = datetime.fromisoformat(str(macro_policy["expires_at"]))
+            generated_at = datetime.fromisoformat(str(macro_policy["generated_at"]))
+            if expires_at.tzinfo is None or generated_at.tzinfo is None:
+                errors.append("macro-policy-latest.json 시각 timezone 누락")
+        except (KeyError, ValueError):
+            errors.append("macro-policy-latest.json 시각 형식 오류")
+        confidence = sector.get("confidence")
+        probability = sector.get("probability_pct")
+        if confidence is None or not 0 <= int(confidence) <= 85:
+            errors.append("macro-policy-latest.json 신뢰도 범위 오류")
+        if probability is not None and not 0 <= float(probability) <= 100:
+            errors.append("macro-policy-latest.json 가능성 범위 오류")
+        evidence = macro_policy.get("evidence") or []
+        evidence_ids = {item.get("id") for item in evidence}
+        if len(evidence) < 2 or len({item.get("source_family") for item in evidence}) < 2:
+            errors.append("macro-policy-latest.json 독립 근거 부족")
+        if set(sector.get("evidence_ids") or []) - evidence_ids:
+            errors.append("macro-policy-latest.json 근거 참조 오류")
+        for item in evidence:
+            if urlparse(item.get("source_url", "")).hostname not in {
+                "www.federalreserve.gov",
+                "www.investing.com",
+                "apnews.com",
+                "www.reuters.com",
+                "www.cmegroup.com",
+            }:
+                errors.append(f"macro-policy-latest.json 허용되지 않은 근거 도메인 {item.get('source_url')}")
+            try:
+                datetime.fromisoformat(str(item["published_at"]))
+            except (KeyError, ValueError):
+                errors.append(f"macro-policy-latest.json 근거 발행일 오류 {item.get('id')}")
     expected_event_feed = build_public_feed()
     if event_feed != expected_event_feed:
         errors.append("event-latest.json이 검증된 일정·결과 원본과 일치하지 않음")
