@@ -3,9 +3,9 @@
   "logic_version": "cycle-engine-v5-2026-07-31",
   "methodology_version": "semiconductor-cycle-ai-roles-2026-07-18",
   "evidence_sha256": "fd7d3cdb50e5dde8b6ccb3665592ca69769aee29ebef576e01bbd10c6e842c34",
-  "report_id": "semiconductor-cycle-2026-08-28-2348-weekly",
-  "generated_at": "2026-08-28T23:48:06+09:00",
-  "expires_at": "2026-09-05T23:48:06+09:00",
+  "report_id": "semiconductor-cycle-2026-08-29-1224-weekly",
+  "generated_at": "2026-08-29T12:24:53+09:00",
+  "expires_at": "2026-09-06T12:24:53+09:00",
   "fallback_status": "pending-neutral",
   "update_context": {
     "type": "weekly",
