@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "logic_version": "macro-policy-v1-2026-08-29",
-  "generated_at": "2026-08-29T12:09:56+09:00",
+  "generated_at": "2026-09-05T16:10:05+09:00",
   "expires_at": "2026-09-17T06:00:00+09:00",
   "content_sha256": "79769bb24e89da1f0175a9b516c163fea493e48c8c00f84276523bc7ef384fde",
   "quality_gate": {

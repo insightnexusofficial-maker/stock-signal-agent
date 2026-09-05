@@ -2,6 +2,25 @@
   "version": "1.2",
   "evidence": [
     {
+      "id": "36965f93f9608b9bca8a349a-ai_compute_design",
+      "source_id": "amd_ir",
+      "segment": "ai_compute_design",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "AMD는 HUMAIN이 AMD Instinct MI355X GPU와 AMD EPYC CPU로 구동되는 생산 AI 컴퓨트를 사우디아라비아에서 현재 제공하고 있으며, 해당 인프라가 HUMAIN 고객에게 서비스를 제공한다고 밝혔다.",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1298/amd-cisco-and-humain-expand-saudi-arabias-ai-infrastructure-as-amd-instinct-systems-go-live",
+      "published_at": "2026-08-31",
+      "max_age_days": 120,
+      "source_family": "fabless_amd_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": true,
+      "reviewed_by": "codex-primary-source-review",
+      "audited_by": null,
+      "audit_reason": "공식 AMD 원문에 직접 발행일과 가동 중인 배포 사실이 명시돼 있다. 다만 단일 기업·단일 수요 축의 근거이며, 2027년 이후 증설 계획은 미래예측이므로 이 사실에 포함하거나 세그먼트 전체 상태로 일반화하지 않는다."
+    },
+    {
       "id": "4ba904e06c95ce3cf10706bf-foundry_logic",
       "source_id": "tsmc_monthly",
       "segment": "foundry_logic",

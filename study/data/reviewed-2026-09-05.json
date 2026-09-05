@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-09-05T09:18:36+09:00",
+  "status": "reviewed",
+  "reviews": [
+    {
+      "candidate_id": "36965f93f9608b9bca8a349a",
+      "segment": "ai_compute_design",
+      "pillar": "demand",
+      "direction": "positive",
+      "review_status": "verified",
+      "confidence": "direct",
+      "published_at": "2026-08-31",
+      "fact": "AMD는 HUMAIN이 AMD Instinct MI355X GPU와 AMD EPYC CPU로 구동되는 생산 AI 컴퓨트를 사우디아라비아에서 현재 제공하고 있으며, 해당 인프라가 HUMAIN 고객에게 서비스를 제공한다고 밝혔다.",
+      "contrary": true,
+      "audit_passed": true,
+      "reviewed_by": "codex-primary-source-review",
+      "audit_reason": "공식 AMD 원문에 직접 발행일과 가동 중인 배포 사실이 명시돼 있다. 다만 단일 기업·단일 수요 축의 근거이며, 2027년 이후 증설 계획은 미래예측이므로 이 사실에 포함하거나 세그먼트 전체 상태로 일반화하지 않는다."
+    }
+  ]
+}
