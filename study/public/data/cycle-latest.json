@@ -37,7 +37,7 @@
       "id": "ai_compute_design",
       "label": "AI 연산·칩 설계",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 25,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [
@@ -189,7 +189,7 @@
       "name": "엔비디아",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -242,7 +242,7 @@
       "name": "AMD",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 28,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -276,7 +276,7 @@
       "name": "인텔",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 35,
       "primary_segment": "foundry_logic",
       "reason": "주요 영역인 파운드리·로직의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -484,7 +484,7 @@
       "name": "슈퍼마이크로",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 30,
+      "confidence": 25,
       "primary_segment": "power_infrastructure",
       "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
       "exposures": [
