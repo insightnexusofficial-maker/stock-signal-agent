@@ -21,6 +21,7 @@
       "earnings-AMD-2026q2",
       "macro-us-jobs-2026-07",
       "company-TSM-monthly-revenue-2026-07",
+      "company-TSM-monthly-revenue-2026-08",
       "macro-us-cpi-2026-07",
       "earnings-VRT-2026q2",
       "earnings-8035-fy2027q1",
@@ -58,7 +59,7 @@
       "segments": [
         "foundry_logic"
       ],
-      "sync_status": "scheduled",
+      "sync_status": "overdue",
       "result_collection_status": "manual-official-review"
     }
   ],

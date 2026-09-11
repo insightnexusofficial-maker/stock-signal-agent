@@ -2,10 +2,10 @@
   "schema_version": "1.2",
   "logic_version": "cycle-engine-v5-2026-07-31",
   "methodology_version": "semiconductor-cycle-ai-roles-2026-07-18",
-  "evidence_sha256": "ddb1662ff66e3772d20de820d8c74e0be947440aeec9a8ea2ef75e3a8dec1312",
-  "report_id": "semiconductor-cycle-2026-09-05-1609-weekly",
-  "generated_at": "2026-09-05T16:09:40+09:00",
-  "expires_at": "2026-09-13T16:09:40+09:00",
+  "evidence_sha256": "ccb8beda45b6901fc2da9c8acbfe282c7b38915d8380a2884a8ac426a8369fe7",
+  "report_id": "semiconductor-cycle-2026-09-12-0841-weekly",
+  "generated_at": "2026-09-12T08:41:31+09:00",
+  "expires_at": "2026-09-20T08:41:31+09:00",
   "fallback_status": "pending-neutral",
   "update_context": {
     "type": "weekly",
@@ -17,7 +17,7 @@
   "quality_gate": {
     "status": "passed",
     "mode": "verified-only",
-    "evidence_count": 2,
+    "evidence_count": 1,
     "message": "검증된 공식 근거만 사이클 상태에 반영합니다."
   },
   "segments": [
@@ -37,7 +37,7 @@
       "id": "ai_compute_design",
       "label": "AI 연산·칩 설계",
       "status": "neutral",
-      "confidence": 25,
+      "confidence": 39,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [
@@ -72,12 +72,10 @@
       "id": "foundry_logic",
       "label": "파운드리·로직",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 25,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
-      "supporting_evidence_ids": [
-        "4ba904e06c95ce3cf10706bf-foundry_logic"
-      ],
+      "supporting_evidence_ids": [],
       "contrary_evidence_ids": []
     },
     {
@@ -132,7 +130,7 @@
       "name": "삼성전자",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 30,
+      "confidence": 25,
       "primary_segment": "memory_hbm_dram",
       "reason": "주요 영역인 HBM·DRAM의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -189,7 +187,7 @@
       "name": "엔비디아",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 39,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -242,7 +240,7 @@
       "name": "AMD",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 28,
+      "confidence": 36,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -261,7 +259,7 @@
       "name": "TSMC",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 25,
       "primary_segment": "foundry_logic",
       "reason": "주요 영역인 파운드리·로직의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -276,7 +274,7 @@
       "name": "인텔",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 35,
+      "confidence": 29,
       "primary_segment": "foundry_logic",
       "reason": "주요 영역인 파운드리·로직의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -484,7 +482,7 @@
       "name": "슈퍼마이크로",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 25,
+      "confidence": 30,
       "primary_segment": "power_infrastructure",
       "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -593,25 +591,6 @@
       "reviewed_by": "codex-primary-source-review",
       "audited_by": null,
       "audit_reason": "공식 AMD 원문에 직접 발행일과 가동 중인 배포 사실이 명시돼 있다. 다만 단일 기업·단일 수요 축의 근거이며, 2027년 이후 증설 계획은 미래예측이므로 이 사실에 포함하거나 세그먼트 전체 상태로 일반화하지 않는다."
-    },
-    {
-      "id": "4ba904e06c95ce3cf10706bf-foundry_logic",
-      "source_id": "tsmc_monthly",
-      "segment": "foundry_logic",
-      "pillar": "demand",
-      "direction": "positive",
-      "fact": "TSMC의 2026년 7월 연결 순매출은 4,675.8억 TWD로 전년 동월 대비 44.7% 증가했다. 해당 연도 월별 수치는 미감사 수치다.",
-      "source_url": "https://investor.tsmc.com/english/monthly-revenue/2026",
-      "published_at": "2026-08-10",
-      "max_age_days": 45,
-      "source_family": "foundry_tsmc_ir",
-      "confidence": "direct",
-      "review_status": "verified",
-      "audit_passed": true,
-      "contrary": true,
-      "reviewed_by": "codex-terra-low",
-      "audited_by": "codex-sol-high",
-      "audit_reason": "TSMC의 7월 매출 증가는 기존 우호 상태의 수요 보조 근거로 포함 가능하다. 다만 미감사 단일기업 자료이므로 업계 전반으로 일반화하거나 독립적인 상태 변경 근거로 사용할 수 없다."
     }
   ]
 }
