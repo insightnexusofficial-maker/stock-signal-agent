@@ -178,6 +178,29 @@ class EventShockClaimTests(unittest.TestCase):
             {"KR-ETF": 31, "US-STOCK": 41},
         )
 
+    def test_post_us_close_morning_run_defers_us_state(self):
+        database = FakeDatabase(
+            {
+                "collection_finished_at": "2026-08-04T07:06:00+09:00",
+                "us_stock": [{"code": "US-STOCK", "rsi": 41}],
+            },
+            rsi_state={"US-STOCK": 40},
+        )
+
+        with (
+            patch.object(self.notifier, "db", database),
+            patch.object(self.notifier, "_claim_buy_alert", return_value=None) as claim,
+        ):
+            self.notifier.check_and_notify(
+                now=self.notifier.datetime.fromisoformat("2026-08-04T07:06:00+09:00")
+            )
+
+        self.assertEqual(claim.call_count, 0)
+        self.assertEqual(
+            database.documents[("state", "rsi")].state,
+            {"US-STOCK": 40},
+        )
+
     def test_regular_kr_session_evaluates_kr_etf(self):
         database = FakeDatabase(
             {

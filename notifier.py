@@ -16,6 +16,7 @@ from notification_policy import (
     build_buy_notification,
     evaluate_buy_alert,
     is_kr_buy_alert_session,
+    is_us_buy_alert_session,
 )
 
 try:
@@ -299,7 +300,9 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None, now=None):
     new_rsi_map = {}
     sent_count = 0
     suppressed_kr_count = 0
+    suppressed_us_count = 0
     kr_alert_session = is_kr_buy_alert_session(now)
+    us_alert_session = is_us_buy_alert_session(now)
     
     # === 종목별 시그널 처리 ===
     for stock, instrument_type, market in all_stocks:
@@ -313,6 +316,11 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None, now=None):
             if code in prev_rsi_map:
                 new_rsi_map[code] = prev_rsi_map[code]
             suppressed_kr_count += 1
+            continue
+        if market == "us" and not us_alert_session:
+            if code in prev_rsi_map:
+                new_rsi_map[code] = prev_rsi_map[code]
+            suppressed_us_count += 1
             continue
         
         rsi = stock.get("rsi")
@@ -370,6 +378,8 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None, now=None):
 
     if suppressed_kr_count:
         print(f"   🌙 한국 장외 매수 알림 평가 보류: {suppressed_kr_count}개")
+    if suppressed_us_count:
+        print(f"   🌙 미국 정규장 밖 매수 알림 평가 보류: {suppressed_us_count}개")
     
     # === 결과 ===
     if sent_count == 0:

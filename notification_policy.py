@@ -1,13 +1,17 @@
 """매수 푸시 정책을 Firebase 입출력과 분리한 순수 로직."""
 
 from datetime import datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 
 BUY_ALERT_STATE_VERSION = 2
 DEFAULT_RSI_ZONE_OFFSET = 10
 KST = timezone(timedelta(hours=9))
+US_MARKET_TZ = ZoneInfo("America/New_York")
 KR_MARKET_OPEN = time(9, 0)
 KR_MARKET_CLOSE = time(15, 30)
+US_MARKET_OPEN = time(9, 30)
+US_MARKET_CLOSE = time(16, 0)
 
 
 def is_kr_buy_alert_session(now=None):
@@ -20,6 +24,18 @@ def is_kr_buy_alert_session(now=None):
     return (
         now.weekday() < 5
         and KR_MARKET_OPEN <= now.time().replace(tzinfo=None) < KR_MARKET_CLOSE
+    )
+
+
+def is_us_buy_alert_session(now=None):
+    """미국 주식 매수 푸시를 평가해도 되는 미국 정규장 시간인지 확인한다."""
+    now = now or datetime.now(US_MARKET_TZ)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=KST)
+    now = now.astimezone(US_MARKET_TZ)
+    return (
+        now.weekday() < 5
+        and US_MARKET_OPEN <= now.time().replace(tzinfo=None) < US_MARKET_CLOSE
     )
 
 

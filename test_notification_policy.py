@@ -5,6 +5,7 @@ from notification_policy import (
     build_buy_notification,
     evaluate_buy_alert,
     is_kr_buy_alert_session,
+    is_us_buy_alert_session,
 )
 
 
@@ -30,6 +31,16 @@ class NotificationPolicyTests(unittest.TestCase):
     def test_kr_buy_alert_session_rejects_night_and_weekend(self):
         self.assertFalse(is_kr_buy_alert_session(datetime.fromisoformat("2026-08-04T01:06:00+09:00")))
         self.assertFalse(is_kr_buy_alert_session(datetime.fromisoformat("2026-08-08T10:00:00+09:00")))
+
+    def test_us_buy_alert_session_uses_new_york_regular_hours(self):
+        self.assertFalse(is_us_buy_alert_session(datetime.fromisoformat("2026-08-04T07:06:00+09:00")))
+        self.assertTrue(is_us_buy_alert_session(datetime.fromisoformat("2026-08-04T01:06:00+09:00")))
+        self.assertFalse(is_us_buy_alert_session(datetime.fromisoformat("2026-08-09T01:06:00+09:00")))
+
+    def test_us_buy_alert_session_respects_dst_and_standard_time(self):
+        self.assertTrue(is_us_buy_alert_session(datetime.fromisoformat("2026-08-04T22:30:00+09:00")))
+        self.assertTrue(is_us_buy_alert_session(datetime.fromisoformat("2026-01-06T23:30:00+09:00")))
+        self.assertFalse(is_us_buy_alert_session(datetime.fromisoformat("2026-01-06T22:30:00+09:00")))
 
     def test_candidate_never_creates_push(self):
         stock = {

@@ -2,10 +2,10 @@
   "schema_version": "1.2",
   "logic_version": "cycle-engine-v5-2026-07-31",
   "methodology_version": "semiconductor-cycle-ai-roles-2026-07-18",
-  "evidence_sha256": "ccb8beda45b6901fc2da9c8acbfe282c7b38915d8380a2884a8ac426a8369fe7",
-  "report_id": "semiconductor-cycle-2026-09-12-0841-weekly",
-  "generated_at": "2026-09-12T08:41:31+09:00",
-  "expires_at": "2026-09-20T08:41:31+09:00",
+  "evidence_sha256": "3e0ff0138fe163c0ffabe2735654ab2cbae8a16e3692ef55d4d3fc74ae6be578",
+  "report_id": "semiconductor-cycle-2026-09-16-2115-weekly",
+  "generated_at": "2026-09-16T21:15:53+09:00",
+  "expires_at": "2026-09-24T21:15:53+09:00",
   "fallback_status": "pending-neutral",
   "update_context": {
     "type": "weekly",
@@ -17,7 +17,7 @@
   "quality_gate": {
     "status": "passed",
     "mode": "verified-only",
-    "evidence_count": 1,
+    "evidence_count": 2,
     "message": "검증된 공식 근거만 사이클 상태에 반영합니다."
   },
   "segments": [
@@ -37,11 +37,12 @@
       "id": "ai_compute_design",
       "label": "AI 연산·칩 설계",
       "status": "neutral",
-      "confidence": 39,
+      "confidence": 47,
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [
-        "36965f93f9608b9bca8a349a-ai_compute_design"
+        "36965f93f9608b9bca8a349a-ai_compute_design",
+        "6c252f70daa772da177f170f-ai_compute_design"
       ],
       "contrary_evidence_ids": []
     },
@@ -187,7 +188,7 @@
       "name": "엔비디아",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 39,
+      "confidence": 47,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -202,7 +203,7 @@
       "name": "브로드컴",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 36,
+      "confidence": 42,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -240,7 +241,7 @@
       "name": "AMD",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 36,
+      "confidence": 43,
       "primary_segment": "ai_compute_design",
       "reason": "주요 영역인 AI 연산·칩 설계의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -274,7 +275,7 @@
       "name": "인텔",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 29,
+      "confidence": 32,
       "primary_segment": "foundry_logic",
       "reason": "주요 영역인 파운드리·로직의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -482,7 +483,7 @@
       "name": "슈퍼마이크로",
       "status": "neutral",
       "label": "사이클 중립",
-      "confidence": 30,
+      "confidence": 33,
       "primary_segment": "power_infrastructure",
       "reason": "주요 영역인 전력·데이터센터 인프라의 근거가 부족하거나 상충합니다.",
       "exposures": [
@@ -591,6 +592,25 @@
       "reviewed_by": "codex-primary-source-review",
       "audited_by": null,
       "audit_reason": "공식 AMD 원문에 직접 발행일과 가동 중인 배포 사실이 명시돼 있다. 다만 단일 기업·단일 수요 축의 근거이며, 2027년 이후 증설 계획은 미래예측이므로 이 사실에 포함하거나 세그먼트 전체 상태로 일반화하지 않는다."
+    },
+    {
+      "id": "6c252f70daa772da177f170f-ai_compute_design",
+      "source_id": "nvidia_news_rss",
+      "segment": "ai_compute_design",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "NVIDIA는 호주 파트너들과 2027년까지 최대 2GW 규모의 AI 공장 수용 용량 확대 협력을 발표했다.",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-expands-ai-infrastructure-capacity-in-partnership-with-australias-data-center-ecosystem",
+      "published_at": "2026-09-10",
+      "max_age_days": 120,
+      "source_family": "fabless_nvidia_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": false,
+      "contrary": false,
+      "reviewed_by": "codex-terra-low",
+      "audited_by": null,
+      "audit_reason": "향후 계획인 단일 기업 발표로 세그먼트 상태 변경 근거가 아님"
     }
   ]
 }

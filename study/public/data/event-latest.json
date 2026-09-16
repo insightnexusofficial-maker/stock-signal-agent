@@ -42,27 +42,7 @@
     "notification_time_kst": "07:00",
     "mode": "objective-official-data-only"
   },
-  "events": [
-    {
-      "id": "company-TSM-monthly-revenue-2026-08",
-      "kind": "company_metric",
-      "ticker": "TSM",
-      "name": "TSMC 2026년 8월 월매출",
-      "scheduled_date": "2026-09-10",
-      "scheduled_at": "2026-09-10T14:30:00+09:00",
-      "monitor_after": "2026-09-10T14:35:00+09:00",
-      "schedule_timezone": "Asia/Taipei",
-      "schedule_status": "confirmed",
-      "time_note": "13:30 대만시간",
-      "schedule_source_name": "TSMC",
-      "schedule_source_url": "https://investor.tsmc.com/english/financial-calendar",
-      "segments": [
-        "foundry_logic"
-      ],
-      "sync_status": "overdue",
-      "result_collection_status": "manual-official-review"
-    }
-  ],
+  "events": [],
   "company_trackers": [
     {
       "ticker": "AMD",

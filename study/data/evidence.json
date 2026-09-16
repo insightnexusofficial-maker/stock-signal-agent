@@ -40,6 +40,25 @@
       "audit_reason": "TSMC의 7월 매출 증가는 기존 우호 상태의 수요 보조 근거로 포함 가능하다. 다만 미감사 단일기업 자료이므로 업계 전반으로 일반화하거나 독립적인 상태 변경 근거로 사용할 수 없다."
     },
     {
+      "id": "6c252f70daa772da177f170f-ai_compute_design",
+      "source_id": "nvidia_news_rss",
+      "segment": "ai_compute_design",
+      "pillar": "demand",
+      "direction": "positive",
+      "fact": "NVIDIA는 호주 파트너들과 2027년까지 최대 2GW 규모의 AI 공장 수용 용량 확대 협력을 발표했다.",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-expands-ai-infrastructure-capacity-in-partnership-with-australias-data-center-ecosystem",
+      "published_at": "2026-09-10",
+      "max_age_days": 120,
+      "source_family": "fabless_nvidia_ir",
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": false,
+      "contrary": false,
+      "reviewed_by": "codex-terra-low",
+      "audited_by": null,
+      "audit_reason": "향후 계획인 단일 기업 발표로 세그먼트 상태 변경 근거가 아님"
+    },
+    {
       "id": "92882f5400021aebe36aca5d-ai_compute_design",
       "source_id": "amd_ir",
       "segment": "ai_compute_design",

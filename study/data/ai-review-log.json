@@ -8,6 +8,33 @@
       "sol_model": "codex-sol-high",
       "sol_reason": "상태 변경 가능성이 아닌 단일 기업 직접 근거이나, 세그먼트 일반화 방지를 위해 독립 반대 의견 감사를 수행함",
       "audit_passed": true
+    },
+    {
+      "candidate_id": "4ba904e06c95ce3cf10706bf",
+      "content_hash": "b60d1dea5e5815ca819fc0ebd4af7525f8463ab2855e6492b03da264f08b7106",
+      "reviewed_at": "2026-08-15T09:43:07+09:00",
+      "terra_model": "codex-terra-low",
+      "sol_model": "codex-sol-high",
+      "sol_reason": "빌드에서 기존 우호 상태가 중립으로 내려가는 후보가 생겨, 보조 근거의 일반화·상태 게이트 영향을 감사",
+      "audit_passed": true
+    },
+    {
+      "candidate_id": "76e9f5c7ffd8705e53fb6cd2",
+      "content_hash": "3b2a544e0e083a50d7382b051ab4a70e5b31a55829f6d1e668cece0519cdb3e8",
+      "reviewed_at": "2026-09-12T09:45:00+09:00",
+      "terra_model": "codex-terra-low",
+      "sol_model": null,
+      "sol_reason": "no_publish",
+      "audit_passed": false
+    },
+    {
+      "candidate_id": "6c252f70daa772da177f170f",
+      "content_hash": "61d07b9eca6857c8644b5256327a6e04da4d305c64292c4339e32a260ec5ec43",
+      "reviewed_at": "2026-09-12T09:45:00+09:00",
+      "terra_model": "codex-terra-low",
+      "sol_model": null,
+      "sol_reason": "terra_only",
+      "audit_passed": false
     }
   ]
 }
