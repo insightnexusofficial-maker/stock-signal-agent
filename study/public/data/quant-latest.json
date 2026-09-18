@@ -3,10 +3,10 @@
   "logic_version": "stock-sayo-v4-2026-07-18",
   "rating_logic_version": "study-company-assessment-v3-2026-07-31",
   "criteria_sha256": "3577fcdc76fc80ee49afd5845f8f94ad7c9166fb210a1a334d2b6ddf815f4c53",
-  "generated_at": "2026-09-16T21:13:09+09:00",
-  "expires_at": "2026-09-24T21:13:09+09:00",
+  "generated_at": "2026-09-19T08:44:17+09:00",
+  "expires_at": "2026-09-27T08:44:17+09:00",
   "source": "Stock SAYO public Firestore snapshot",
-  "source_updated_at": "09월 16일 15:38",
+  "source_updated_at": "09월 19일 06:39",
   "alignment": {
     "mode": "reproduce-and-verify-step1",
     "aligned": 29,
