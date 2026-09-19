@@ -42,6 +42,10 @@ class NotificationPolicyTests(unittest.TestCase):
         self.assertTrue(is_us_buy_alert_session(datetime.fromisoformat("2026-01-06T23:30:00+09:00")))
         self.assertFalse(is_us_buy_alert_session(datetime.fromisoformat("2026-01-06T22:30:00+09:00")))
 
+    def test_us_buy_alert_session_suppresses_kst_morning_quiet_hours(self):
+        self.assertFalse(is_us_buy_alert_session(datetime.fromisoformat("2026-01-07T05:30:00+09:00")))
+        self.assertTrue(is_us_buy_alert_session(datetime.fromisoformat("2026-01-06T23:30:00+09:00")))
+
     def test_candidate_never_creates_push(self):
         stock = {
             "code": "TEST",

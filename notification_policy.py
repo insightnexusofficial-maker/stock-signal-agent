@@ -12,6 +12,8 @@ KR_MARKET_OPEN = time(9, 0)
 KR_MARKET_CLOSE = time(15, 30)
 US_MARKET_OPEN = time(9, 30)
 US_MARKET_CLOSE = time(16, 0)
+US_BUY_ALERT_QUIET_START_KST = time(5, 0)
+US_BUY_ALERT_QUIET_END_KST = time(9, 0)
 
 
 def is_kr_buy_alert_session(now=None):
@@ -28,10 +30,17 @@ def is_kr_buy_alert_session(now=None):
 
 
 def is_us_buy_alert_session(now=None):
-    """미국 주식 매수 푸시를 평가해도 되는 미국 정규장 시간인지 확인한다."""
-    now = now or datetime.now(US_MARKET_TZ)
+    """미국 주식 매수 푸시를 평가해도 되는 시간인지 확인한다."""
+    now = now or datetime.now(timezone.utc)
     if now.tzinfo is None:
         now = now.replace(tzinfo=KST)
+    kst_now = now.astimezone(KST)
+    if (
+        US_BUY_ALERT_QUIET_START_KST
+        <= kst_now.time().replace(tzinfo=None)
+        < US_BUY_ALERT_QUIET_END_KST
+    ):
+        return False
     now = now.astimezone(US_MARKET_TZ)
     return (
         now.weekday() < 5
