@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-10T10:23:29+09:00",
+  "generated_at": "2026-10-17T09:02:19+09:00",
   "candidates": [
     {
       "id": "585b13a56895196731375aa5",
@@ -18,8 +18,8 @@
       "candidate_pillar": "demand",
       "direction": "unverified",
       "review_status": "pending",
-      "content_hash": "a44a7f7ab59f8f1f48c93dfbb6aa1dfc6a55040cef0218aaf8911b00abe763ff",
-      "collected_at": "2026-10-10T10:23:29+09:00",
+      "content_hash": "cf78834a4d4e4979a595df288422487084398008b864439b9ff8c83ddd953906",
+      "collected_at": "2026-10-17T09:02:19+09:00",
       "content_excerpt": "Recent News Release Toggle navigation Meta Navigation Disclosure Contact Home Main Navigation GENERAL SERVICE ORGANIZATION PRESS MEMBERS ONLY Search SEARCH PRESS Global Semiconductor Market records exceptional growth in Q2 2026 Recent News Release PRESS ARCHIVE Global Semiconductor Market Surges Beyond $1.5T 2026 The World Semiconductor Trade Statistics (WSTS) organization has released its Spring 2026 semiconductor market forecast, significantly raising the industry outlook for both 2026 and 2027. 2026: Semiconductor Market Surpasses USD 1.5 Trillion Driven by Extraordinary Memory Expansion Following exceptionally strong results in late 2025 and early 2026, the global semiconductor market is now projected to grow 90 percent in 2026, reaching USD 1.51 trillion. The sharp upward acceleration is overwhelmingly driven by the Memory segment, which is forecast to surge by around 250 percent year over year, reaching more than USD 800 billion in 2026. Continued strong demand for AI infrastructure, high-bandwidth memory (HBM), and accelerated computing platforms remains the primary growth catalyst for the semiconductor industry. Logic is expected to remain another major contributor, growing 37 percent in 2026. Other product categories are forecast to expand at more moderate rates, reflecting a broader industry growth: Microprocessors 20 percent, Analog 10 percent, Discrete Semiconductors 8 percent, Sensors and Optoelectronics with 3 percent. Regionally, all major markets are projected to show strong growth. The Americas are expected to more than double in 2026 with 112 percent growth, driven by the concentration of AI-related semiconductor demand and cloud infrastructure investments. Asia Pacific is forecast to grow 87 percent, while Europe and Japan are projected to grow 58 percent and 28 percent respectively. 2027 Outlook: Growth Continues Above Historical Industry Trends For 2027, WSTS forecasts the global semiconductor market to grow a further 27 percent, reaching approximately USD 1.9 trillion. Memory is again expected to lead market expansion with projected growth of 32 percent, while Logic is forecast to increase by 27 percent. Continued deployment of AI systems, advanced computing infrastructure, and expanding semiconductor content across end markets are expected to support ongoing industry momentum. All geographic regions are projected to continue growing in 2027, led by the Americas and Asia Pacific. WSTS Forecast Summary Note: Numbers in the table are rounded to whole millions of dollars, which may cause totals by region and totals by product group to differ slightly. About WSTS : World Semiconductor Trade Statistics (WSTS) was founded in 1986 as a non-profit organization of semiconductor product companies and is the industry’s only source for monthly industry shipment statistics. For more information, please visit the WSTS web site at www.wsts.org or contact the WSTS Administrator and CEO – Tobias Pröttel (tp@wsts.org). Downloads: WSTS Spring 2026 FC - Global Semiconductor Market Surges Beyond $1.5T 2026 ( PDF | 256,45 kB ) print page WSTS News Releases The most recent News Release appears in the center column of this page. Previous News Releases may be found in \"Press Archive\" (click link above). Copyright Notice All WSTS Publications, including this Web Site, are copyrighted by WSTS Inc. All rights reserved. Reproduction in any electronic or physical form, in whole or in part, without written permission from WSTS is prohibited by law. © Copyright 1998-2024 by World Semiconductor Trade Statistics Inc. LOGIN USER NAME PASSWORD About WSTS WSTS is an independent non-profit organization representing the vast majority of the world semiconductor industry (Internet address: www.wsts.org). These forecasts will be released twice a year, in May and November. Press Release Notification If you like to be notified about future WSTS news releases by email please register here: Register for news Copyright © 2005-2026 WSTS GmbH. All rights reserved. Development by Kaindl Informatics"
     },
     {
@@ -38,7 +38,7 @@
       "review_status": "pending",
       "content_excerpt": "",
       "content_hash": "84049d1a4d267ac1f50602a579f1bb1cac788df36709b783e92bd7dae037b0f3",
-      "collected_at": "2026-10-10T10:23:29+09:00"
+      "collected_at": "2026-10-17T09:02:19+09:00"
     },
     {
       "id": "e1b6c868d30ad2e101bb804f",
@@ -56,7 +56,7 @@
       "review_status": "pending",
       "content_excerpt": "",
       "content_hash": "f88083ebf0c4c501ead5d61133e5a2b5bb6418fd540045fdce04cb57aef4f11f",
-      "collected_at": "2026-10-10T10:23:29+09:00"
+      "collected_at": "2026-10-17T09:02:19+09:00"
     },
     {
       "id": "4adc257175d4ddc92a862830",
@@ -74,25 +74,7 @@
       "review_status": "pending",
       "content_excerpt": "",
       "content_hash": "2a76b99f4ca5d5a73a2d709a46c41328dff5a9263d2b3881784cea16f294dbe4",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
-      "id": "37630e02aae2c73646902d25",
-      "source_id": "amd_ir",
-      "title": "Microsoft to Deploy Next-Gen AMD Instinct and AMD EPYC Processors as the Companies Expand Their Long-Term Strategic Partnership",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1291/microsoft-to-deploy-next-gen-amd-instinct-and-amd-epyc-processors-as-the-companies-expand-their-long-term-strategic-partnership",
-      "published_at": "2026-07-20",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "a7db128b6f8e27542df3cc07f16ff87adf56594ad3911ca27ec2a38ac9e4e220",
-      "collected_at": "2026-10-10T10:23:29+09:00"
+      "collected_at": "2026-10-17T09:02:19+09:00"
     },
     {
       "id": "18fcc21e7e1645548e2a548a",
@@ -111,7 +93,7 @@
       "review_status": "pending",
       "content_excerpt": "sing Unlocked stories View Sitemap Microsoft Fiscal Year 2026 Third Quarter Earnings Conference Call Wednesday, April 29, 2026 Satya Nadella, Chairman and CEO and Amy Hood, EVP & CFO Transcript Microsoft FY26 Third Quarter Earnings Conference Call Jonathan Neilson, Satya Nadella, Amy Hood Wednesday April 29, 2026 JONATHAN NEILSON: Good afternoon and thank you for joining us today. On the call with me are Satya Nadella, chairman and chief executive officer, Amy Hood, chief financial officer, Alice Jolla, chief accounting officer, and Brian DeFoe, deputy general counsel and corporate secretary. On the Microsoft Investor Relations website, you can find our earnings press release and financial summary slide deck, which is intended to supplement our prepared remarks during today’s call and provides the reconciliation of differences between GAAP and non-GAAP financial measures. More detailed outlook slides will be available on the Microsoft Investor Relations website when we provide outlook commentary on today’s call. On this call we will discuss certain non-GAAP items. The non-GAAP financial measures provided should not be considered as a substitute for or superior to the measures of financial performance prepared in accordance with GAAP. They are included as additional clarifying items to aid investors in further understanding the company's third quarter performance in addition to the impact these items and events have on the financial results. All growth comparisons we make on the call today relate to the corresponding period of last year unless otherwise noted. We will also provide growth rates in constant currency, when available, as a framework for assessing how our underlying businesses performed, excluding the effect of foreign currency rate fluctuations. Where growth rates are the same in constant currency, we will refer to the growth rate only. We will post our prepared remarks to our website immediately following the call until the complete transcript is available. Today's call is being webcast live and recorded. If you ask a question, it will be included in our live transmission, in the transcript, and in any future use of the recording. You can replay the call and view the transcript on the Microsoft Investor Relations website. During this call, we will be making forward-looking statements which are predictions, projections, or other statements about future events. These statements are based on current expectations and assumptions that are subject to risks and uncertainties. Actual results could materially differ because of factors discussed in today's earnings press release, in the comments made during this conference call, and in the risk factor section of our Form 10-K, Forms 10-Q, and other reports and filings with the Securities and Exchange Commission. We do not undertake any duty to update any forward-looking statement. And with that, I’ll turn the call over to Satya. SATYA NADELLA: Thank you very much, Jonathan. It was a record third quarter, powered by the continued strength of the Microsoft Cloud, which exceeded $54 billion in revenue, up 29% year-over-year. Our AI business surpassed $37 billion ARR, up 123%. We are at the beginning of one of the most consequential platform shifts that will change the entire tech stack as agents proliferate and become the dominant workload. This will drive TAM expansion and change the value creation equation across the entire economy. To capture this opportunity, we are executing against two priorities: First, we are building the world’s leading cloud & AI infrastructure for the agentic computing era. Second, we are building high-value agentic systems across core domains, such as productivity, coding, and security. These two layers reinforce each other. And we are focused on driving competitive value and differentiation for customers across each so they can eval-max their outcomes. Today, I will focus my remarks on both priorities, starting with infrastructure. We are optimizi",
       "content_hash": "8cc4250d9a3c283a7cd2b7d1097a5872c8ee1fff41ed7c861f87d6db35bdbbb0",
-      "collected_at": "2026-10-10T10:23:29+09:00"
+      "collected_at": "2026-10-17T09:02:19+09:00"
     },
     {
       "id": "1f2363d9374e46ec7dc66ed9",
@@ -129,7 +111,7 @@
       "review_status": "pending",
       "content_excerpt": "",
       "content_hash": "848cccc99a7039f3e139e066ebdc739394818e00585f875c06e23ce665ce50d6",
-      "collected_at": "2026-10-10T10:23:29+09:00"
+      "collected_at": "2026-10-17T09:02:19+09:00"
     },
     {
       "id": "92882f5400021aebe36aca5d",
@@ -147,7 +129,7 @@
       "review_status": "pending",
       "content_excerpt": "",
       "content_hash": "c2e80a7ec2c13bb5abec20b6e22bac30c911b763098c71e75326391b0a0a08a2",
-      "collected_at": "2026-10-10T10:23:29+09:00"
+      "collected_at": "2026-10-17T09:02:19+09:00"
     },
     {
       "id": "abb36124d7845267c70d1a7f",
@@ -165,6 +147,312 @@
       "review_status": "pending",
       "content_excerpt": "",
       "content_hash": "521d8305834223e0d0e63a72acbeb24f9e90c8320ec9530b700a06b63bb47e30",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "36965f93f9608b9bca8a349a",
+      "source_id": "amd_ir",
+      "title": "AMD, Cisco and HUMAIN Expand Saudi Arabia’s AI Infrastructure as AMD Instinct Systems Go Live",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1298/amd-cisco-and-humain-expand-saudi-arabias-ai-infrastructure-as-amd-instinct-systems-go-live",
+      "published_at": "2026-08-31",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "2f2334d736a9fe63b60f4ba58cfe28e9e02100ffa0a390c4b8f5b0e1b609b930",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "76e9f5c7ffd8705e53fb6cd2",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA and Palantir Bring Sovereign Intelligence to Critical Supply Chains",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-and-palantir-bring-sovereign-intelligence-to-critical-supply-chains",
+      "published_at": "2026-09-10",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "Palantir Technologies Inc. (NASDAQ: PLTR) and NVIDIA (NASDAQ: NVDA) today announced a collaboration to bring sovereign AI to critical supply chains, starting with NVIDIA’s own operations.",
+      "content_hash": "3b2a544e0e083a50d7382b051ab4a70e5b31a55829f6d1e668cece0519cdb3e8",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "ae2fa97611825142516598ac",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Expands Open Source CUDA-Q Platform for Fault-Tolerant Quantum Computing",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-expands-open-source-cuda-q-platform-for-fault-tolerant-quantum-computing",
+      "published_at": "2026-09-14",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced an expansion of the NVIDIA CUDA-Q™ open source platform with CUDA-Q Logical, an orchestration layer that provides a programmable, verifiable approach to developing useful applications for fault-tolerant quantum computers.",
+      "content_hash": "c7f9767f376b46421a2be89ba98a1fbf73e58e0473eb748447a1ff26ef94c8a1",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "371c9a324685c94d13d4bdae",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-a-150-billion-share-repurchase-authorization-increase",
+      "published_at": "2026-09-28",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced that its Board of Directors has authorized an additional $150 billion under the company’s existing share repurchase program, increasing the total remaining amount authorized to $235 billion.",
+      "content_hash": "32697c9fe60372441732819564261bcfad53954b9405bbc44f3948b20954e996",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "dc2d3ab098e5240da80b413b",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Launches Open Agent Safety Platform to Secure Agents From Testing to Deployment",
+      "source_url": "https://nvidianews.nvidia.com/news/open-agent-safety-platform",
+      "published_at": "2026-09-28",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced NVIDIA Open Agent Safety Platform, an open software platform and reference system design to strengthen AI security from agent testing to deployment, with full-stack governance and control across software and the hardware, compute and robotics systems that run agents.",
+      "content_hash": "26008010f1bb5e4ec403934108f377b8f19a1b055f8f7117f95d68bcbeccbfda",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "2fd3dfded904a56fa744dfd3",
+      "source_id": "amd_ir",
+      "title": "AMD to Acquire World Labs to Advance the Future of AI Compute",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1299/amd-to-acquire-world-labs-to-advance-the-future-of-ai-compute",
+      "published_at": "2026-09-28",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "30c77ec6a9d4aa5b549e2b3aa9098852ae11d961061f041afa95c5cf348ea230",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "8aaca2a779c6bf469870197d",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Commits $1 Billion to Advance US Science Over the Next Five Years",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-commits-1-billion-to-advance-us-science-over-the-next-five-years",
+      "published_at": "2026-10-08",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced commitments valued at $1 billion to build out the United States’ capacity for super intelligence research and development in fields critical for U.S. leadership, including quantum computing, healthcare and energy security.",
+      "content_hash": "bd4ffb667d3e52ab48ad34edeef2f0d6796e91af0d18e8e644c58c65bc2af4ff",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "3d449eb5b1dca37597adeda7",
+      "source_id": "amd_ir",
+      "title": "AMD to Report Fiscal Third Quarter 2026 Financial Results",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1300/amd-to-report-fiscal-third-quarter-2026-financial-results",
+      "published_at": "2026-10-06",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "30ee9c1da7c1ffd762cbf47527a8ad25db9d528f6afd4b0880ac991abca7a2ce",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "596cb4dd9b4b156133b07c4f",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA RTX Spark PCs Available Today — A New Beginning for Windows PCs",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-rtx-spark-pcs-available-today-a-new-beginning-for-windows-pcs",
+      "published_at": "2026-10-16",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced the availability of NVIDIA RTX Spark™ laptops, bringing together RTX graphics and NVIDIA’s full-stack AI platform in slim, premium Windows PCs for accelerated creation, immersive gaming and powerful local AI — rolling out from ASUS, Dell, HP, Lenovo, Microsoft and MSI.",
+      "content_hash": "9243c1f2c9e4a07af52a7c3c4d1b825f809b67dcb377f6f08baff3ea76ff07b5",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "ada049ebd0b2a464d086c2b4",
+      "source_id": "nvidia_news_rss",
+      "title": "Mercedes-Benz and NVIDIA Expand Strategic Partnership to Advance Safe Highly Automated Driving in the Next Decade",
+      "source_url": "https://nvidianews.nvidia.com/news/mercedes-benz-and-nvidia-expand-strategic-partnership-to-advance-safe-highly-automated-driving-in-the-next-decade",
+      "published_at": "2026-10-16",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "Mercedes-Benz and NVIDIA today announced that they will extend their strategic partnership to advance the next generation of automated driving systems.",
+      "content_hash": "597d5a805f718cc76107135db8a1e5fe6063097970a1ba1cb50ac1863b54e309",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "80bbcfe4279a7c24b784d953",
+      "source_id": "nvidia_news_rss",
+      "title": "Volvo Cars and NVIDIA Expand Partnership to Advance Safe Automated Driving",
+      "source_url": "https://nvidianews.nvidia.com/news/volvo-cars-and-nvidia-expand-partnership-to-advance-safe-automated-driving",
+      "published_at": "2026-10-15",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "Volvo Cars today announced it is expanding its partnership with NVIDIA to unlock new levels of safety in automated driving technology in future cars from Volvo, building on the companies’ decade-long collaboration.",
+      "content_hash": "fb1eb870b48122af3ebf1a036eb2e64117ed4c887102a77585b1384cf4402fbd",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "5423eb486d02c88eac61f23a",
+      "source_id": "nvidia_news_rss",
+      "title": "Adobe and NVIDIA Expand Collaboration to Speed Agentic Creation",
+      "source_url": "https://nvidianews.nvidia.com/news/adobe-and-nvidia-expand-collaboration-to-speed-agentic-creation",
+      "published_at": "2026-10-15",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "Adobe (Nasdaq: ADBE), the global technology leader that unleashes creativity, productivity and customer experiences through innovative tools and platforms, and NVIDIA today announced an expansion of their partnership to optimize Adobe’s flagship tools including Adobe Photoshop, Premiere, Substance 3D, Frame.io and Brand Concierge, delivering faster AI-powered creation, production and personalization.",
+      "content_hash": "b5a8702b919efd27ad270d77135afdca1fc6dcb442b34cb90a4dab816c3e3076",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "f2d23271a51106974791e913",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA and Semiconductor Leaders Advance AI Across Chip Design and Manufacturing for AI-Defined Fabs",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-and-semiconductor-leaders-advance-ai-across-chip-design-and-manufacturing-for-ai-defined-labs",
+      "published_at": "2026-10-14",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced semiconductor leaders are adopting NVIDIA CUDA-X™ libraries — including the new NVIDIA cuPotential library, which developers can use to build AI agents that simulate how atoms and molecules interact — to advance AI-defined fabs.",
+      "content_hash": "bd44e959d15d09b0e411d5a57d05da19dfff3f136bc3150ca7871746b2f4930c",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "b6ce0da1384f20404e7c4805",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA Commits $250 Million to Advance UK Agentic Safety and Security Research Over the Next Five Years",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-commits-250-million-to-advance-uk-agentic-safety-and-security-research-over-the-next-five-years",
+      "published_at": "2026-10-14",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA today announced a five-year compute donation valued at $250 million to strengthen the United Kingdom’s agentic safety and security research capability.",
+      "content_hash": "36753dc79e2a23a7075319989560e1fca1f8a357ae9c1d655a8aa50416d2bbb7",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "b3ca96649e21a924bea001e5",
+      "source_id": "nvidia_news_rss",
+      "title": "NVIDIA and Cisco Introduce New Pluggable Optics Form Factor to Scale AI Factories",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-and-cisco-introduce-new-pluggable-optics-form-factor-to-scale-ai-factories",
+      "published_at": "2026-10-12",
+      "published_at_quality": "direct",
+      "source_family": "fabless_nvidia_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "NVIDIA and Cisco today announced plans for Ultra-Dense Small Form Factor Pluggable (USFP), a new high-density 400Gb/s-per-lane optical module designed to equip the hardware ecosystem for the next generation of AI factories using pluggable transceivers.",
+      "content_hash": "dd7c4f336829d43b2362cd61bf4c5ec99baa0935583934c3dc0eb3bbfe3d8a78",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "451bd793a2150fc4ec37aa3f",
+      "source_id": "amd_ir",
+      "title": "Introducing AMD Helion, Agentic AI Compute at Rack Scale",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1301/introducing-amd-helion-agentic-ai-compute-at-rack-scale",
+      "published_at": "2026-10-12",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "d3a180ff572804aa17e0c7b8866d3f430b36894e28fa55ea1ad12c59fd137982",
+      "collected_at": "2026-10-17T09:02:19+09:00"
+    },
+    {
+      "id": "37630e02aae2c73646902d25",
+      "source_id": "amd_ir",
+      "title": "Microsoft to Deploy Next-Gen AMD Instinct and AMD EPYC Processors as the Companies Expand Their Long-Term Strategic Partnership",
+      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1291/microsoft-to-deploy-next-gen-amd-instinct-and-amd-epyc-processors-as-the-companies-expand-their-long-term-strategic-partnership",
+      "published_at": "2026-07-20",
+      "published_at_quality": "direct",
+      "source_family": "fabless_amd_ir",
+      "candidate_segments": [
+        "ai_compute_design"
+      ],
+      "candidate_pillar": "demand",
+      "direction": "unverified",
+      "review_status": "pending",
+      "content_excerpt": "",
+      "content_hash": "a7db128b6f8e27542df3cc07f16ff87adf56594ad3911ca27ec2a38ac9e4e220",
       "collected_at": "2026-10-10T10:23:29+09:00"
     },
     {
@@ -276,42 +564,6 @@
       "collected_at": "2026-10-10T10:23:29+09:00"
     },
     {
-      "id": "36965f93f9608b9bca8a349a",
-      "source_id": "amd_ir",
-      "title": "AMD, Cisco and HUMAIN Expand Saudi Arabia’s AI Infrastructure as AMD Instinct Systems Go Live",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1298/amd-cisco-and-humain-expand-saudi-arabias-ai-infrastructure-as-amd-instinct-systems-go-live",
-      "published_at": "2026-08-31",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "2f2334d736a9fe63b60f4ba58cfe28e9e02100ffa0a390c4b8f5b0e1b609b930",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
-      "id": "76e9f5c7ffd8705e53fb6cd2",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA and Palantir Bring Sovereign Intelligence to Critical Supply Chains",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-and-palantir-bring-sovereign-intelligence-to-critical-supply-chains",
-      "published_at": "2026-09-10",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "Palantir Technologies Inc. (NASDAQ: PLTR) and NVIDIA (NASDAQ: NVDA) today announced a collaboration to bring sovereign AI to critical supply chains, starting with NVIDIA’s own operations.",
-      "content_hash": "3b2a544e0e083a50d7382b051ab4a70e5b31a55829f6d1e668cece0519cdb3e8",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
       "id": "6c252f70daa772da177f170f",
       "source_id": "nvidia_news_rss",
       "title": "NVIDIA Expands AI Infrastructure Capacity in Partnership With Australia’s Data Center Ecosystem",
@@ -327,114 +579,6 @@
       "review_status": "pending",
       "content_excerpt": "NVIDIA today announced that it is collaborating with a growing ecosystem of Australian NVIDIA Cloud Partners (NCPs) and AI infrastructure partners to expand land, power and shell capacity designed to host multiple generations of NVIDIA DSX™ AI factories, supporting the nation’s growing demand for AI compute — with up to a 2-gigawatt buildout by 2027.",
       "content_hash": "61d07b9eca6857c8644b5256327a6e04da4d305c64292c4339e32a260ec5ec43",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
-      "id": "ae2fa97611825142516598ac",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA Expands Open Source CUDA-Q Platform for Fault-Tolerant Quantum Computing",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-expands-open-source-cuda-q-platform-for-fault-tolerant-quantum-computing",
-      "published_at": "2026-09-14",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced an expansion of the NVIDIA CUDA-Q™ open source platform with CUDA-Q Logical, an orchestration layer that provides a programmable, verifiable approach to developing useful applications for fault-tolerant quantum computers.",
-      "content_hash": "c7f9767f376b46421a2be89ba98a1fbf73e58e0473eb748447a1ff26ef94c8a1",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
-      "id": "371c9a324685c94d13d4bdae",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-a-150-billion-share-repurchase-authorization-increase",
-      "published_at": "2026-09-28",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced that its Board of Directors has authorized an additional $150 billion under the company’s existing share repurchase program, increasing the total remaining amount authorized to $235 billion.",
-      "content_hash": "32697c9fe60372441732819564261bcfad53954b9405bbc44f3948b20954e996",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
-      "id": "dc2d3ab098e5240da80b413b",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA Launches Open Agent Safety Platform to Secure Agents From Testing to Deployment",
-      "source_url": "https://nvidianews.nvidia.com/news/open-agent-safety-platform",
-      "published_at": "2026-09-28",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced NVIDIA Open Agent Safety Platform, an open software platform and reference system design to strengthen AI security from agent testing to deployment, with full-stack governance and control across software and the hardware, compute and robotics systems that run agents.",
-      "content_hash": "26008010f1bb5e4ec403934108f377b8f19a1b055f8f7117f95d68bcbeccbfda",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
-      "id": "2fd3dfded904a56fa744dfd3",
-      "source_id": "amd_ir",
-      "title": "AMD to Acquire World Labs to Advance the Future of AI Compute",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1299/amd-to-acquire-world-labs-to-advance-the-future-of-ai-compute",
-      "published_at": "2026-09-28",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "30c77ec6a9d4aa5b549e2b3aa9098852ae11d961061f041afa95c5cf348ea230",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
-      "id": "8aaca2a779c6bf469870197d",
-      "source_id": "nvidia_news_rss",
-      "title": "NVIDIA Commits $1 Billion to Advance US Science Over the Next Five Years",
-      "source_url": "https://nvidianews.nvidia.com/news/nvidia-commits-1-billion-to-advance-us-science-over-the-next-five-years",
-      "published_at": "2026-10-08",
-      "published_at_quality": "direct",
-      "source_family": "fabless_nvidia_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "NVIDIA today announced commitments valued at $1 billion to build out the United States’ capacity for super intelligence research and development in fields critical for U.S. leadership, including quantum computing, healthcare and energy security.",
-      "content_hash": "bd4ffb667d3e52ab48ad34edeef2f0d6796e91af0d18e8e644c58c65bc2af4ff",
-      "collected_at": "2026-10-10T10:23:29+09:00"
-    },
-    {
-      "id": "3d449eb5b1dca37597adeda7",
-      "source_id": "amd_ir",
-      "title": "AMD to Report Fiscal Third Quarter 2026 Financial Results",
-      "source_url": "https://ir.amd.com/news-events/press-releases/detail/1300/amd-to-report-fiscal-third-quarter-2026-financial-results",
-      "published_at": "2026-10-06",
-      "published_at_quality": "direct",
-      "source_family": "fabless_amd_ir",
-      "candidate_segments": [
-        "ai_compute_design"
-      ],
-      "candidate_pillar": "demand",
-      "direction": "unverified",
-      "review_status": "pending",
-      "content_excerpt": "",
-      "content_hash": "30ee9c1da7c1ffd762cbf47527a8ad25db9d528f6afd4b0880ac991abca7a2ce",
       "collected_at": "2026-10-10T10:23:29+09:00"
     },
     {
