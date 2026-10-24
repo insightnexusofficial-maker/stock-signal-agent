@@ -121,6 +121,10 @@ def evaluate_buy_alert(stock, previous_state=None, fallback_prev_rsi=None, sampl
     돌파(지금 매수)만 만든다. 동일 회차에 둘이 겹치면 지금 매수를 우선한다.
     """
     previous_state = previous_state or {}
+    # 거시 자료 결측은 매수 상태가 끝난 관측이 아니다. 복구 회차가 마지막
+    # 유효 신호·RSI를 기준으로 전이를 판단하도록 sample_id까지 보존한다.
+    if stock.get("timing_status") == "pending_macro" or stock.get("market_mode") == "unknown":
+        return None, dict(previous_state)
     previous_rsi = _number(previous_state.get("prev_rsi"))
     if previous_rsi is None:
         previous_rsi = _number(fallback_prev_rsi)

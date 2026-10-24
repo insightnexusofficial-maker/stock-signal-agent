@@ -21,6 +21,7 @@
 }
 html,body,button,input,select,textarea,dialog,svg text,.mono { font-family: var(--font-sans); }
 body { font-weight: 400; }
+strong,b { font-weight: 600; }
 button,input { font: inherit; }
 .app { max-width: 1120px; }
 .app-header { margin-bottom: 18px; padding-bottom: 16px; align-items:center; }

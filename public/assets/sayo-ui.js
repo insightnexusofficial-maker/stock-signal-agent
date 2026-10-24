@@ -63,8 +63,8 @@ export function preferenceStorage() {
 }
 export function studyReportMeta(data) {
   const report=data?.cycle_report || {};
-  const status=report.data_status || data?.cycle_sync_status || data?.cycle_quality_status;
   const quality=report.quality_status;
+  const status=report.data_status || data?.cycle_sync_status || data?.cycle_quality_status || (["unavailable","expired","stale"].includes(quality)?quality:null);
   return {status,quality,summary:status?`${labels[status] || "확인 필요"}${quality?` · ${labels[quality] || "검토 상태 확인"}`:""}`:"종목별 사이클과 근거를 펼쳐 확인하세요.",generated_at:report.generated_at || data?.cycle_generated_at,expires_at:report.expires_at};
 }
 export function cycleLabel(stock) {
@@ -109,9 +109,9 @@ export function createSayoUI({getPushState,setPushEnabled,storage=preferenceStor
   themeToggle.addEventListener("change",()=>applyTheme(themeToggle.checked?"dark":"light"));
   async function refreshPush() {
     const state=await getPushState?.() || {registered:false,supported:false,enabled:false};
-    pushToggle.checked=state.enabled===true && state.permission==="granted";
+    pushToggle.checked=state.enabled===true;
     pushToggle.disabled=!state.registered || !state.supported;
-    pushDescription.textContent=!state.supported?"이 환경은 웹 푸시를 지원하지 않습니다.":!state.registered?"알림 등록과 승인을 마치면 설정할 수 있습니다.":state.permission!=="granted"?"브라우저 알림 권한이 꺼져 있습니다. 켜려면 브라우저 설정에서 허용해 주세요.":"이 기기의 알림 수신을 설정합니다. 화면 접근 승인은 유지됩니다.";
+    pushDescription.textContent=!state.supported?"이 환경은 웹 푸시를 지원하지 않습니다.":!state.registered?"알림 등록과 승인을 마치면 설정할 수 있습니다.":state.permission!=="granted"?"브라우저 알림 권한이 꺼져 있어 알림이 표시되지 않습니다. 이 스위치를 끄면 서버 수신 설정도 해제합니다.":"이 기기의 알림 수신을 설정합니다. 화면 접근 승인은 유지됩니다.";
     return state;
   }
   pushToggle.addEventListener("change",async()=>{
@@ -152,8 +152,10 @@ export function createSayoUI({getPushState,setPushEnabled,storage=preferenceStor
       note.textContent=`${labels[state] || labels.unknown} · ${observationText(metric)}`;card.dataset.dataStatus=state;
       if(!["fresh","market_closed"].includes(state)){const badge=card.querySelector(".macro-badge");if(badge){badge.textContent=labels[state] || labels.unknown;badge.className="macro-badge data-state";}}
     }
-    notice.hidden=pending===0;notice.textContent=`시장 지표 ${pending}개는 최신 관측 여부를 확인해야 합니다. 각 카드를 눌러 기준 시각을 확인하세요.`;
-    const detect=document.querySelector("#detect-status");if(detect){detect.textContent=pending?"일부 자료 확인 필요":"시장 자료 확인 완료";detect.classList.toggle("needs-review",pending>0);}
+    const collectionState={running:"수집 중 · 종목 결과는 직전 완료본입니다.",partial:"일부 수집 실패 · 직전값과 원천 시각을 확인하세요.",failed:"최근 수집 실패 · 직전 완료본을 표시합니다."}[data.collection_status];
+    notice.hidden=pending===0&&!collectionState;
+    notice.textContent=[collectionState,pending?`시장 지표 ${pending}개는 최신 관측 여부를 확인해야 합니다. 각 카드를 눌러 기준 시각을 확인하세요.`:""].filter(Boolean).join(" ");
+    const detect=document.querySelector("#detect-status");if(detect){detect.textContent=collectionState?({running:"수집 진행 중",partial:"일부 수집 확인 필요",failed:"최근 수집 실패"}[data.collection_status]):pending?"일부 자료 확인 필요":"시장 자료 확인 완료";detect.classList.toggle("needs-review",pending>0||!!collectionState);}
     const label=document.querySelector(".updated-label");if(label)label.textContent="마지막 수집";
     const env=data.market_environment || {},series=env.series || {},axes=Array.isArray(env.axes)?env.axes:[];
     const cycleReport=studyReportMeta(data);

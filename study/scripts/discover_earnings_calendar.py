@@ -16,6 +16,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 from event_feed import KST, validate_calendar
+from calendar_diagnostics import safe_error
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -176,11 +177,16 @@ def discover(now: datetime | None = None, fetcher=_fetch) -> tuple[int, int, int
         try:
             html = fetcher(monitor["calendar_url"])
             checked += 1
-        except Exception:
+        except Exception as error:
             failed += 1
-            source_checks.append({"ticker": ticker, "status": "failed", "checked_at": now.isoformat(timespec="seconds")})
+            source_checks.append({"ticker": ticker, "status": "failed", "checked_at": now.isoformat(timespec="seconds"), **safe_error(error, "fetch")})
             continue
-        candidate = discover_official_earnings_date(html, today)
+        try:
+            candidate = discover_official_earnings_date(html, today)
+        except Exception as error:
+            failed += 1
+            source_checks.append({"ticker": ticker, "status": "failed", "checked_at": now.isoformat(timespec="seconds"), **safe_error(error, "parse")})
+            continue
         source_checks.append({"ticker": ticker, "status": "confirmed" if candidate else "awaiting_official_date", "checked_at": now.isoformat(timespec="seconds")})
         if not candidate:
             continue

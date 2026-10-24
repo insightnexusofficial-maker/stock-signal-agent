@@ -362,6 +362,27 @@ class UploaderRegressionTests(unittest.TestCase):
         data_document.set.assert_called_once()
         last_good_document.set.assert_called_once()
 
+    @patch("uploader.db")
+    def test_collection_attempt_replaces_nested_maps_without_deleting_other_fields(self, firestore_db):
+        from google.cloud.firestore_v1 import _helpers
+        document = Mock()
+        firestore_db.collection.return_value.document.return_value = document
+        uploader.publish_payload_patch({
+            "collection_summary": {"error_count": 1, "errors_by_provider": {"study": 1}},
+            "vix": {"current": 19, "data_status": "market_closed"},
+        }, update_last_good=True)
+        for call in document.set.call_args_list:
+            payload, = call.args
+            mask = call.kwargs["merge"]
+            self.assertCountEqual(mask, ["collection_summary", "vix"])
+            # Inspect the actual SDK write mask, without a client or credentials.
+            writes = _helpers.pbs_for_set_with_merge(
+                "projects/demo-sayo/databases/(default)/documents/stocks/data", payload, mask,
+            )
+            self.assertCountEqual(list(writes[0].update_mask.field_paths), mask)
+            self.assertNotIn("collection_summary.errors_by_provider.study", writes[0].update_mask.field_paths)
+            self.assertNotIn("kr_stock", writes[0].update_mask.field_paths)
+
     def test_partial_collection_does_not_advance_updated(self):
         started = datetime.fromisoformat("2026-07-20T09:00:00+09:00")
         finished = datetime.fromisoformat("2026-07-20T09:08:00+09:00")

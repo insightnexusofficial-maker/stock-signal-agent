@@ -17,6 +17,7 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 from event_feed import KST, validate_calendar
+from calendar_diagnostics import safe_error
 
 ROOT = Path(__file__).resolve().parents[1]
 CALENDAR_PATH = ROOT / "data/event-calendar.json"
@@ -155,9 +156,14 @@ def discover(now=None, fetcher=fetch_official):
             checks.append({"monitor_id": monitor["id"], "status": "manual_official_confirmation_required", "checked_at": None})
             continue
         try:
-            events = parse_official_calendar(fetcher(monitor["calendar_url"]), monitor, now)
+            html = fetcher(monitor["calendar_url"])
         except Exception as error:
-            checks.append({"monitor_id": monitor["id"], "status": "failed", "error_type": type(error).__name__, "checked_at": now.isoformat(timespec="seconds")})
+            checks.append({"monitor_id": monitor["id"], "status": "failed", "checked_at": now.isoformat(timespec="seconds"), **safe_error(error, "fetch")})
+            continue
+        try:
+            events = parse_official_calendar(html, monitor, now)
+        except Exception as error:
+            checks.append({"monitor_id": monitor["id"], "status": "failed", "checked_at": now.isoformat(timespec="seconds"), **safe_error(error, "parse")})
             continue
         checks.append({"monitor_id": monitor["id"], "status": "confirmed" if events else "no_parseable_future_release", "event_count": len(events), "checked_at": now.isoformat(timespec="seconds")})
         for event in events:

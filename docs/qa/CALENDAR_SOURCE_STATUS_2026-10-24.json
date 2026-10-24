@@ -1,0 +1,264 @@
+{
+  "observed_at": "2026-10-24T22:40:01+09:00",
+  "scope": "local-curl-single-attempt-public-official-IR-status-and-parser",
+  "count": 23,
+  "results": [
+    {
+      "source": "earnings-005930",
+      "url": "https://news.samsung.com/global/tag/earnings-release",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 404,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.68
+    },
+    {
+      "source": "earnings-000660",
+      "url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 404,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.13
+    },
+    {
+      "source": "earnings-MU",
+      "url": "https://investors.micron.com/events-and-presentations",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.16
+    },
+    {
+      "source": "earnings-TSM",
+      "url": "https://investor.tsmc.com/english/financial-calendar",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.12
+    },
+    {
+      "source": "earnings-NVDA",
+      "url": "https://investor.nvidia.com/events-and-presentations/default.aspx",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.12
+    },
+    {
+      "source": "earnings-AMD",
+      "url": "https://ir.amd.com/news-events/ir-calendar",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 200,
+      "access_status": "ok",
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null,
+      "elapsed_seconds": 0.38
+    },
+    {
+      "source": "earnings-AVGO",
+      "url": "https://investor.broadcom.com/",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 200,
+      "access_status": "ok",
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null,
+      "elapsed_seconds": 0.76
+    },
+    {
+      "source": "earnings-ASML",
+      "url": "https://www.asml.com/en/investors/financial-calendar",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.65
+    },
+    {
+      "source": "earnings-LRCX",
+      "url": "https://investor.lamresearch.com/events",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 200,
+      "access_status": "ok",
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null,
+      "elapsed_seconds": 0.16
+    },
+    {
+      "source": "earnings-MSFT",
+      "url": "https://www.microsoft.com/en-us/Investor/earnings",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 200,
+      "access_status": "ok",
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null,
+      "elapsed_seconds": 0.38
+    },
+    {
+      "source": "earnings-META",
+      "url": "https://investor.atmeta.com/investor-events/default.aspx",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.18
+    },
+    {
+      "source": "earnings-AMZN",
+      "url": "https://ir.aboutamazon.com/events/default.aspx",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.1
+    },
+    {
+      "source": "earnings-GOOGL",
+      "url": "https://abc.xyz/investor/",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.1
+    },
+    {
+      "source": "earnings-ORCL",
+      "url": "https://investor.oracle.com/events-and-presentations/default.aspx",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.11
+    },
+    {
+      "source": "earnings-INTC",
+      "url": "https://www.intc.com/news-events/ir-calendar",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 200,
+      "access_status": "ok",
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null,
+      "elapsed_seconds": 0.36
+    },
+    {
+      "source": "earnings-AMAT",
+      "url": "https://ir.appliedmaterials.com/events/",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.11
+    },
+    {
+      "source": "earnings-8035",
+      "url": "https://www.tel.com/ir/calendar/",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 200,
+      "access_status": "ok",
+      "parse_status": "date_confirmed",
+      "parsed_date": "2026-10-30",
+      "elapsed_seconds": 0.34
+    },
+    {
+      "source": "earnings-042700",
+      "url": "https://www.hanmisemi.com/eng/ir/ir.php",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 404,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.15
+    },
+    {
+      "source": "earnings-VRT",
+      "url": "https://investors.vertiv.com/events-presentations/events-presentations/default.aspx",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.13
+    },
+    {
+      "source": "earnings-ANET",
+      "url": "https://investors.arista.com/Communications/Press-Releases-and-Events/default.aspx",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.12
+    },
+    {
+      "source": "earnings-SMCI",
+      "url": "https://ir.supermicro.com/events-and-presentations/default.aspx",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 403,
+      "access_status": "failed",
+      "error_type": "http_error",
+      "phase": "fetch",
+      "elapsed_seconds": 0.26
+    },
+    {
+      "source": "earnings-VST",
+      "url": "https://investor.vistracorp.com/events-and-presentations/default.aspx",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 200,
+      "access_status": "ok",
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null,
+      "elapsed_seconds": 0.52
+    },
+    {
+      "source": "earnings-PLTR",
+      "url": "https://investors.palantir.com/events",
+      "observed_at": "2026-10-24T22:40:01+09:00",
+      "http_status": 200,
+      "access_status": "ok",
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null,
+      "elapsed_seconds": 0.66
+    }
+  ],
+  "replacement_checks": [
+    {
+      "url": "https://www.samsung.com/global/ir/ir-events-presentations/events/",
+      "http_status": 200,
+      "parse_status": "date_confirmed",
+      "parsed_date": "2026-10-29"
+    },
+    {
+      "url": "https://www.samsung.com/global/ir/financial-information/earnings-release/",
+      "http_status": 200,
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null
+    },
+    {
+      "url": "https://www.skhynix.com/ir/UI-FR-IR01/",
+      "http_status": 200,
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null
+    },
+    {
+      "url": "https://www.hanmisemi.com/",
+      "http_status": 200,
+      "parse_status": "no_official_future_date_found",
+      "parsed_date": null,
+      "official_link_urls": []
+    }
+  ]
+}

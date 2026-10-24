@@ -1,7 +1,7 @@
 {
   "schema_version": "1.2",
-  "feed_id": "market-events-ffb32051cfa7e6c3",
-  "content_sha256": "ffb32051cfa7e6c3d6b8dccd1a59841e268c596fdbf4bceee4d367eb94684e0a",
+  "feed_id": "market-events-5a10d3c1c05b2c92",
+  "content_sha256": "5a10d3c1c05b2c92c28c5fac436932dbcb816eec20605bdaef7d8979d6f4596a",
   "generated_at": "2026-08-01T08:14:35+09:00",
   "expires_at": "2026-08-08T12:00:00+09:00",
   "quality_gate": {
@@ -357,7 +357,7 @@
         "memory_hbm_dram",
         "memory_nand"
       ],
-      "calendar_url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
+      "calendar_url": "https://www.skhynix.com/ir/UI-FR-IR01/",
       "tracker_status": "awaiting_official_date",
       "impact_review": null,
       "event": null
@@ -383,7 +383,7 @@
         "memory_nand",
         "foundry_logic"
       ],
-      "calendar_url": "https://news.samsung.com/global/tag/earnings-release",
+      "calendar_url": "https://www.samsung.com/global/ir/ir-events-presentations/events/",
       "tracker_status": "awaiting_official_date",
       "impact_review": null,
       "event": null

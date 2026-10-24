@@ -28,3 +28,13 @@ class PublicationHealthTests(unittest.TestCase):
         p=official_policy_context({'results':[r]}, {},NOW)
         self.assertEqual(p['sector']['direction'],'cut');self.assertIsNone(p['sector']['probability_pct'])
         self.assertIsNone(official_policy_context({'results':[r]}, {},datetime.fromisoformat('2027-01-01T12:00:00+09:00')))
+
+    def test_event_publication_cannot_deploy_checked_out_old_quant(self):
+        base={'generated_at':NOW.isoformat(),'expires_at':'2026-10-30T12:00:00+09:00','quality_gate':{'status':'passed'}}
+        documents={'cycle-latest.json':{**base,'evidence':[{'id':'reviewed'}]},'event-latest.json':dict(base),'quant-latest.json':{**base,'source_collection_finished_at':'2026-10-15T12:00:00+09:00','source_collection_status':'success'}}
+        errors=validate_artifacts(documents,NOW,selected_names=list(documents))
+        self.assertEqual(errors,['quant-latest.json: market-source-old-or-unverified'])
+
+    def test_fresh_event_with_failed_source_check_is_not_complete(self):
+        event={'generated_at':NOW.isoformat(),'expires_at':'2026-10-30T12:00:00+09:00','quality_gate':{'status':'passed'},'event_sync':{'calendar_checks':{'earnings':[{'ticker':'NVDA','status':'failed','phase':'fetch','error_type':'http_error','http_status':403}],'macro':[]}}}
+        self.assertEqual(validate_artifacts({'event-latest.json':event},NOW,selected_names=['event-latest.json']),['event-latest.json: calendar-source-check-failed'])

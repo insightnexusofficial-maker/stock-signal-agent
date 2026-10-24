@@ -82,6 +82,14 @@ class DiscoverEarningsCalendarTests(unittest.TestCase):
             self.assertEqual(event["schedule_status"], "date_confirmed")
             self.assertIsNone(event["scheduled_at"])
 
+    def test_verified_official_calendar_paths_replace_retired_korean_urls(self):
+        document=json.loads((ROOT/'data/event-calendar.json').read_text())
+        monitors={row['id']:row for row in document['monitors']}
+        self.assertEqual(monitors['earnings-005930']['calendar_url'],'https://www.samsung.com/global/ir/ir-events-presentations/events/')
+        self.assertEqual(monitors['earnings-000660']['calendar_url'],'https://www.skhynix.com/ir/UI-FR-IR01/')
+        candidate=discover_earnings_calendar.discover_official_earnings_date('<h2>3Q26 Earnings Conference Call</h2><p>October 29, 2026</p>',date(2026,10,24))
+        self.assertEqual(candidate,date(2026,10,29))
+
 
 if __name__ == "__main__":
     unittest.main()

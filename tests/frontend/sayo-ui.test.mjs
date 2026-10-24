@@ -34,6 +34,7 @@ assert(!renderCycleContext({...fixture.stock,cycle_evidence:[{fact:"<script>aler
 assert.equal(observationText(fixture.market_environment.series.core_pce),"2026-09 기준월");
 assert.equal(metricState(fixture.market_environment.series.core_pce),"latest_available");
 assert.deepEqual(studyReportMeta(fixture),{status:"fresh",quality:"insufficient",summary:"최신 관측 · 근거 부족",generated_at:"2026-10-24T08:00:00+09:00",expires_at:"2026-10-31T08:00:00+09:00"});
+assert.match(studyReportMeta({cycle_report:{quality_status:"unavailable"}}).summary,/확인 불가/);
 Object.defineProperty(globalThis,"localStorage",{configurable:true,get(){throw new Error("blocked");}});
 assert.equal(preferenceStorage(),null);
 delete globalThis.localStorage;

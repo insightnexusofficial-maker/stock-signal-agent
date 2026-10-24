@@ -185,10 +185,10 @@
     {
       "id": "issuer_005930",
       "label": "삼성전자 Official IR",
-      "url": "https://news.samsung.com/global/tag/earnings-release",
+      "url": "https://www.samsung.com/global/ir/financial-information/earnings-release/",
       "type": "dated_html_watch",
       "page_role": "release_index",
-      "allowed_domain": "news.samsung.com",
+      "allowed_domain": "www.samsung.com",
       "source_family": "earnings-005930_ir",
       "publisher_id": "issuer:samsung",
       "frequency": "quarterly",
@@ -203,7 +203,7 @@
     {
       "id": "issuer_000660",
       "label": "SK하이닉스 Official IR",
-      "url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
+      "url": "https://www.skhynix.com/ir/UI-FR-IR01/",
       "type": "dated_html_watch",
       "page_role": "release_index",
       "allowed_domain": "www.skhynix.com",

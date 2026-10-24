@@ -150,3 +150,5 @@ GitHub 시장 예약과 Cloud Scheduler를 동시에 활성화하지 않는다. 
 SAYO 30분 시장 수집은 매일 UTC 매시07·37분 `market-data.yml` 단일 소유이며 Study와 별개다. 이전 `check_signals.yml` 외부 호출 대상은 폐기한다. 새 외부 cron을 추가하거나 두 시장 수집 스케줄러를 동시에 활성화하지 않는다. 예약 플랫폼 지연과 누락은 접수·시작·종료·원천시각으로 감사하며 다음 예약 실측 전에는 안정성을 확정하지 않는다.
 
 Study Hosting은 기존 FIREBASE_TOKEN 경로를 우선하고, 없으면 기존 서비스계정 secret을 임시 runner 파일에만 주입해 표준 ADC로 배포한다. 두 경로 모두 없으면 발행 준비 게이트가 실패한다. 임시 파일은 항상 삭제하며 credential 내용이나 환경값을 보고서·로그로 출력하지 않는다.
+
+이벤트 workflow도 전체 Hosting 파일을 배포하므로 발표 변화와 무관하게 발행 회차마다 공개 시장 quant를 동기화한다. 기업의 실적 기반 평가는 merge 정책으로 보존하되 시장 원천 시각은 현재 문서에서 가져온다. 배포 전 cycle·quant·event·policy 전체 신선도/상태를 검사하고 배포 후 네 산출물 모두 identity를 확인한다. 오래된 checkout quant를 그대로 다시 발행하지 않는다.

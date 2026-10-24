@@ -319,6 +319,13 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None, now=None):
         if not code:
             continue
 
+        # 거시 결측으로 타이밍이 보류된 종목은 신호 종료로 취급하지 않는다.
+        # claim과 RSI 기준값 갱신을 모두 미뤄 복구 시 중복 진입을 막는다.
+        if stock.get("timing_status") == "pending_macro" or stock.get("market_mode") == "unknown":
+            if code in prev_rsi_map:
+                new_rsi_map[code] = prev_rsi_map[code]
+            continue
+
         # 미국장 수집은 야간에도 계속하되, 국내 종목·ETF는 한국 정규장 밖에서
         # 상태 평가 자체를 미룬다. claim 뒤에 막으면 다음 장중 알림이 소실된다.
         if market == "kr" and not kr_alert_session:

@@ -2669,9 +2669,13 @@ def publish_payload_patch(payload, update_last_good=False):
     if not safe_payload:
         return
     sanitized = _sanitize_for_firestore(safe_payload)
-    db.collection("stocks").document("data").set(sanitized, merge=True)
+    # Top-level field masks preserve unrelated fields, but replace maps from this
+    # collection attempt atomically. Recursive merge=True leaves old provider
+    # counters and obsolete freshness fields inside those maps.
+    merge_fields = list(sanitized)
+    db.collection("stocks").document("data").set(sanitized, merge=merge_fields)
     if update_last_good:
-        db.collection("stocks").document("last_good").set(sanitized, merge=True)
+        db.collection("stocks").document("last_good").set(sanitized, merge=merge_fields)
 
 # ============================================================
 # 메인 업로드 함수

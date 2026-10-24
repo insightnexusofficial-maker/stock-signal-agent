@@ -50,10 +50,14 @@ jobs:
         run: pip install --disable-pip-version-check --no-input -r requirements-test.txt
 
       - name: Discover official earnings dates
+        id: discover_earnings
+        continue-on-error: true
         if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' }}
         run: python scripts/discover_earnings_calendar.py
 
       - name: Discover official macro release dates
+        id: discover_macro
+        continue-on-error: true
         if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' }}
         run: python scripts/discover_macro_calendar.py
 
@@ -62,6 +66,7 @@ jobs:
         run: python scripts/check_due_events.py
 
       - name: Detect official earnings result publication
+        continue-on-error: true
         id: earnings
         if: ${{ steps.due.outputs.active == 'true' || (((github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *') && steps.due.outputs.backfill_active == 'true') }}
         env:
@@ -69,6 +74,8 @@ jobs:
         run: python scripts/collect_earnings_results.py
 
       - name: Collect supported official macro results
+        id: macro_results
+        continue-on-error: true
         if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: python scripts/collect_event_results.py --include-recent-overdue
 
@@ -77,9 +84,9 @@ jobs:
         if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: python scripts/apply_event_cycle_impact.py
 
-      - name: Refresh company assessments only after an earnings result
+      - name: Sync current market snapshot before every publication
         id: quant
-        if: ${{ steps.earnings.outputs.changed == 'true' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: python scripts/sync_sayo_quant.py
 
       - name: Build verified event feed
@@ -100,10 +107,25 @@ jobs:
           python scripts/validate_build.py
           python scripts/validate_schema.py
 
-      - name: Require current event publication readiness
+      - name: Require independent collection stages to complete
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        env:
+          EARNINGS_DISCOVERY_OUTCOME: ${{ steps.discover_earnings.outcome }}
+          MACRO_DISCOVERY_OUTCOME: ${{ steps.discover_macro.outcome }}
+          EARNINGS_RESULTS_OUTCOME: ${{ steps.earnings.outcome }}
+          MACRO_RESULTS_OUTCOME: ${{ steps.macro_results.outcome }}
+        run: |
+          for outcome in "$EARNINGS_DISCOVERY_OUTCOME" "$MACRO_DISCOVERY_OUTCOME" "$EARNINGS_RESULTS_OUTCOME" "$MACRO_RESULTS_OUTCOME"; do
+            if [ "$outcome" = "failure" ]; then
+              echo "Publication blocked: an independent collection stage failed; diagnostic results retained."
+              exit 1
+            fi
+          done
+
+      - name: Require current full Hosting publication readiness
         if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: |
-          python scripts/publication_health.py --event-only
+          python scripts/publication_health.py --artifacts cycle-latest.json quant-latest.json event-latest.json macro-policy-latest.json
           python scripts/publication_health.py --preflight --deployment-ready "${{ env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' }}"
 
       - name: Save verified event snapshot
@@ -128,21 +150,9 @@ jobs:
             firebase deploy --only hosting --non-interactive
           fi
 
-      - name: Verify every changed public artifact identity
+      - name: Verify full public Hosting artifact identity
         if: ${{ steps.build.outputs.changed == 'true' || steps.impact.outputs.cycle_changed == 'true' || steps.quant.outputs.changed == 'true' || steps.policy.outputs.changed == 'true' }}
-        working-directory: study
-        env:
-          EVENT_CHANGED: ${{ steps.build.outputs.changed }}
-          CYCLE_CHANGED: ${{ steps.impact.outputs.cycle_changed }}
-          QUANT_CHANGED: ${{ steps.quant.outputs.changed }}
-          POLICY_CHANGED: ${{ steps.policy.outputs.changed }}
-        run: |
-          artifacts=()
-          if [ "$EVENT_CHANGED" = "true" ]; then artifacts+=(event-latest.json); fi
-          if [ "$CYCLE_CHANGED" = "true" ]; then artifacts+=(cycle-latest.json); fi
-          if [ "$QUANT_CHANGED" = "true" ]; then artifacts+=(quant-latest.json); fi
-          if [ "$POLICY_CHANGED" = "true" ]; then artifacts+=(macro-policy-latest.json); fi
-          python scripts/publication_health.py --artifacts "${artifacts[@]}" --verify-public
+        run: python scripts/publication_health.py --artifacts cycle-latest.json quant-latest.json event-latest.json macro-policy-latest.json --verify-public
 
       - name: Install alert dependencies for a critical interrupt
         if: ${{ github.event_name != 'push' && steps.impact.outputs.critical == 'true' && env.ALERT_CREDENTIAL_AVAILABLE == 'true' }}
@@ -162,6 +172,26 @@ jobs:
         if: ${{ github.event_name != 'push' && steps.impact.outputs.critical == 'true' && env.ALERT_CREDENTIAL_AVAILABLE == 'true' }}
         working-directory: .
         run: python send_cycle_interrupt_alerts.py
+
+      - name: Record safe official calendar diagnostics
+        if: always()
+        env:
+          EARNINGS_DISCOVERY_OUTCOME: ${{ steps.discover_earnings.outcome }}
+          MACRO_DISCOVERY_OUTCOME: ${{ steps.discover_macro.outcome }}
+          EARNINGS_RESULTS_OUTCOME: ${{ steps.earnings.outcome }}
+          MACRO_RESULTS_OUTCOME: ${{ steps.macro_results.outcome }}
+        run: |
+          printf 'Independent collection outcomes: earnings-calendar=%s, macro-calendar=%s, earnings-results=%s, macro-results=%s\n' "$EARNINGS_DISCOVERY_OUTCOME" "$MACRO_DISCOVERY_OUTCOME" "$EARNINGS_RESULTS_OUTCOME" "$MACRO_RESULTS_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
+          python scripts/calendar_diagnostics.py --output "$RUNNER_TEMP/study-calendar-diagnostics"
+
+      - name: Preserve public calendar diagnostic artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: official-calendar-checks-${{ github.run_id }}
+          path: ${{ runner.temp }}/study-calendar-diagnostics/
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Remove temporary alert credentials
         if: always()

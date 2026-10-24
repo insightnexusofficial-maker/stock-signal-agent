@@ -38,6 +38,10 @@ def validate_artifacts(documents: dict, now: datetime, event_only: bool = False,
             errors.append(f"{name}: invalid-generated-at")
         if name != "quant-latest.json" and not unavailable_policy and document.get("quality_gate", {}).get("status") != "passed":
             errors.append(f"{name}: evidence-or-calendar-review-incomplete")
+        if name == "event-latest.json":
+            checks = document.get("event_sync", {}).get("calendar_checks", {})
+            if any(row.get("status") == "failed" for rows in checks.values() for row in rows):
+                errors.append(f"{name}: calendar-source-check-failed")
         if name == "cycle-latest.json" and not document.get("evidence"):
             errors.append(f"{name}: no-verified-evidence")
         if name == "quant-latest.json":

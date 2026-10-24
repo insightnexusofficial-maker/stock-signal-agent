@@ -25,6 +25,8 @@ class SyncSayoQuantLifecycleTests(unittest.TestCase):
         }
         refreshed = {
             "generated_at": "2026-07-31T20:00:00+09:00",
+            "source_collection_finished_at": "2026-07-31T19:59:00+09:00",
+            "source_collection_status": "success",
             "stocks": [self.stock("AMD", "20260731", 90)],
         }
 
@@ -36,6 +38,8 @@ class SyncSayoQuantLifecycleTests(unittest.TestCase):
             datetime.fromisoformat("2026-07-31T20:00:00+09:00"),
         )
 
+        self.assertEqual(merged["source_collection_finished_at"], "2026-07-31T19:59:00+09:00")
+        self.assertEqual(merged["source_collection_status"], "success")
         self.assertEqual(merged["stocks"][0]["ratings"]["fundamental"], 70)
         self.assertEqual(merged["stocks"][0]["assessment"]["state"], "held_until_next_earnings")
 
