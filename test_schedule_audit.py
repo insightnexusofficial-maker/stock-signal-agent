@@ -306,6 +306,132 @@ class ScheduleHealthTests(unittest.TestCase):
         self.assertNotIn("notifier.py", workflow)
         self.assertNotIn("--method POST", workflow)
         self.assertNotIn("/dispatches", workflow)
+        self.assertIn("--active-market-hours", workflow)
+
+
+class ActiveMarketHoursTests(unittest.TestCase):
+    activated = "2026-10-23T00:00:00Z"
+
+    def health(self, now, rows=(), holidays=None):
+        report = audit_schedule(list(rows), "2026-10-23T00:00:00Z", now, now,
+                                expected_event="workflow_dispatch", active_market_hours=True,
+                                holidays=holidays)
+        return report, evaluate_overdue(report, self.activated,
+                                       expected_event="workflow_dispatch", active_market_hours=True,
+                                       holidays=holidays)
+
+    def test_saturday_has_no_expected_slots_and_no_overdue_failure(self):
+        slots = expected_slots(START, END, active_market_hours=True)
+        self.assertEqual(slots, [])
+        report, health = self.health("2026-10-24T14:00:00Z")
+        saturday_report = audit_schedule([], START, END, "2026-10-24T14:00:00Z",
+                                         active_market_hours=True, expected_event="workflow_dispatch")
+        self.assertEqual(saturday_report["expected_event_coverage"]["expected_slots"], 0)
+        self.assertEqual(health["status"], "outside_session")
+        self.assertFalse(health["overdue"])
+        self.assertFalse(report["market_expectation"]["collection_expected"])
+
+    def test_weekday_denominator_uses_two_regular_sessions_only(self):
+        slots = expected_slots("2026-10-26T00:00:00Z", "2026-10-27T00:00:00Z",
+                               active_market_hours=True)
+        self.assertEqual(len(slots), 28)
+        self.assertIn(parse_time("2026-10-26T00:00:00Z"), slots)  # KRX 09:00
+        self.assertIn(parse_time("2026-10-26T06:00:00Z"), slots)  # KRX 15:00
+        self.assertIn(parse_time("2026-10-26T06:30:00Z"), slots)  # KRX closing snapshot
+        self.assertIn(parse_time("2026-10-26T13:30:00Z"), slots)  # NYSE 09:30 EDT
+        self.assertIn(parse_time("2026-10-26T20:00:00Z"), slots)  # NYSE closing snapshot
+
+    def test_slot_endpoints_include_closing_snapshot_but_overdue_stops_at_close(self):
+        for before, opens, last, closes in (
+            ("2026-10-26T08:59:59+09:00", "2026-10-26T09:00:00+09:00",
+             "2026-10-26T15:29:59+09:00", "2026-10-26T15:30:00+09:00"),
+            ("2026-10-26T09:29:59-04:00", "2026-10-26T09:30:00-04:00",
+             "2026-10-26T15:59:59-04:00", "2026-10-26T16:00:00-04:00"),
+        ):
+            with self.subTest(opens=opens):
+                self.assertFalse(market_expectation(before, active_market_hours=True)["collection_expected"])
+                self.assertTrue(market_expectation(opens, active_market_hours=True)["collection_expected"])
+                self.assertTrue(market_expectation(last, active_market_hours=True)["collection_expected"])
+                self.assertTrue(market_expectation(closes, active_market_hours=True)["collection_expected"])
+                self.assertFalse(any(market_expectation(closes)[market]["weekday_regular_session"]
+                                     for market in ("kr", "us")))
+                _, close_health = self.health(closes)
+                self.assertEqual(close_health["status"], "outside_session")
+
+    def test_monday_kr_open_ignores_weekend_gap_and_resets_both_graces(self):
+        old = run(1, "2026-10-23T06:00:00Z", event="workflow_dispatch")
+        for now, expected_age in (("2026-10-26T00:00:00Z", 0), ("2026-10-26T01:05:00Z", 65)):
+            _, health = self.health(now, [old])
+            self.assertEqual(health["status"], "session_grace")
+            self.assertFalse(health["overdue"])
+            self.assertEqual(health["minutes_since_latest_expected_event"], expected_age)
+            self.assertEqual(health["minutes_since_latest_process_success"], expected_age)
+            self.assertEqual(health["grace_origin_at"], "2026-10-26T00:00:00Z")
+        _, late = self.health("2026-10-26T01:05:01Z", [old])
+        self.assertEqual(late["reasons"], ["no_expected_event_since_session_open"])
+        _, very_late = self.health("2026-10-26T01:30:01Z", [old])
+        self.assertEqual(very_late["reasons"], ["no_expected_event_since_session_open", "no_process_success_since_session_open"])
+
+    def test_monday_ny_open_does_not_carry_kr_session_or_weekend_gap(self):
+        kr = run(1, "2026-10-26T06:00:00Z", event="workflow_dispatch")
+        _, health = self.health("2026-10-26T13:30:00Z", [kr])
+        self.assertEqual(health["status"], "session_grace")
+        self.assertEqual(health["current_session"]["markets"], ["us"])
+        self.assertEqual(health["grace_origin_at"], "2026-10-26T13:30:00Z")
+        self.assertEqual(health["minutes_since_latest_expected_event"], 0)
+
+    def test_current_session_receipt_and_any_success_have_separate_ages(self):
+        external = run(1, "2026-10-26T00:30:00Z", event="workflow_dispatch")
+        manual = run(2, "2026-10-26T01:30:00Z", event="push")
+        _, health = self.health("2026-10-26T01:40:00Z", [external, manual])
+        self.assertEqual(health["reasons"], ["latest_expected_event_overdue"])
+        self.assertEqual(health["minutes_since_latest_expected_event"], 70)
+        self.assertEqual(health["minutes_since_latest_process_success"], 7)
+
+    def test_us_dst_spring_changes_utc_open_without_changing_local_hours(self):
+        before = market_expectation("2026-03-06T13:30:00Z", active_market_hours=True)
+        winter_open = market_expectation("2026-03-06T14:30:00Z", active_market_hours=True)
+        after = market_expectation("2026-03-09T13:30:00Z", active_market_hours=True)
+        self.assertFalse(before["us"]["weekday_regular_session"])
+        self.assertTrue(winter_open["us"]["weekday_regular_session"])
+        self.assertTrue(after["us"]["weekday_regular_session"])
+        self.assertEqual(winter_open["us"]["opens_at"], "2026-03-06T14:30:00Z")
+        self.assertEqual(after["us"]["opens_at"], "2026-03-09T13:30:00Z")
+
+    def test_us_dst_autumn_changes_utc_open_and_session_grace(self):
+        summer = market_expectation("2026-10-30T13:30:00Z", active_market_hours=True)
+        before_open = market_expectation("2026-11-02T13:30:00Z", active_market_hours=True)
+        winter = market_expectation("2026-11-02T14:30:00Z", active_market_hours=True)
+        self.assertTrue(summer["us"]["weekday_regular_session"])
+        self.assertFalse(before_open["us"]["weekday_regular_session"])
+        self.assertTrue(winter["us"]["weekday_regular_session"])
+        self.assertEqual(winter["us"]["closes_at"], "2026-11-02T21:00:00Z")
+        _, health = self.health("2026-11-02T14:30:00Z")
+        self.assertEqual(health["status"], "session_grace")
+        self.assertEqual(health["minutes_since_latest_expected_event"], 0)
+
+    def test_explicit_holidays_are_excluded_but_calendar_is_not_claimed_complete(self):
+        holidays = {"kr": ["2026-10-26"], "us": ["2026-10-26"]}
+        slots = expected_slots("2026-10-26T00:00:00Z", "2026-10-27T00:00:00Z",
+                               active_market_hours=True, holidays=holidays)
+        self.assertEqual(slots, [])
+        report, health = self.health("2026-10-26T14:00:00Z", holidays=holidays)
+        self.assertEqual(health["status"], "outside_session")
+        self.assertFalse(health["overdue"])
+        self.assertFalse(report["market_expectation"]["holiday_calendar_complete"])
+
+    def test_cli_active_hours_weekend_exits_zero_with_outside_session(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = Path(directory) / "public-runs.json"
+            marker = Path(directory) / "public-marker.json"
+            fixture.write_text(json.dumps({"workflow_runs": []}))
+            marker.write_text(json.dumps({"monitoring_started_at": self.activated}))
+            command = [sys.executable, "-B", "scripts/schedule_audit.py", "--runs", str(fixture),
+                       "--activation-marker", str(marker), "--now", "2026-10-24T14:00:00Z",
+                       "--expected-event", "workflow_dispatch", "--active-market-hours", "--fail-on-overdue"]
+            result = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(json.loads(result.stdout)["schedule_health"]["status"], "outside_session")
 
 
 if __name__ == "__main__":

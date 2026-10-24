@@ -10,6 +10,11 @@ that core collection, supplemental feeds, or all source observations are fresh.
 Health defaults to original schedule receipts: a manual run, marker push, or
 rerun cannot refresh the cron clock. --expected-event workflow_dispatch/any is
 an explicit audit option for a separately approved change in scheduler ownership.
+--active-market-hours limits expectations to either regular exchange session:
+KRX 09:00<=KST<15:30; NYSE 09:30<=New York<16:00 (DST aware). Slot coverage
+also includes the exact closing snapshot; overdue checks stop at the close.
+Supplied holiday dates are exclusions, not a full calendar;
+unsupplied holidays and early closes remain unverified.
 """
 
 import argparse
@@ -47,7 +52,7 @@ def optional_time(value):
         return None
 
 
-def expected_slots(start, end, offset_minutes=0):
+def expected_slots(start, end, offset_minutes=0, active_market_hours=False, holidays=None):
     """30-minute target slots in [start, end); offset is an observation assumption."""
     if not 0 <= offset_minutes < 30:
         raise ValueError("slot offset must be 0..29 minutes")
@@ -59,36 +64,55 @@ def expected_slots(start, end, offset_minutes=0):
         slot += INTERVAL
     slots = []
     while slot < end:
-        slots.append(slot)
+        if not active_market_hours or market_expectation(slot, holidays, True)["collection_expected"]:
+            slots.append(slot)
         slot += INTERVAL
     return slots
 
 
-def market_expectation(at, holidays=None):
+def market_expectation(at, holidays=None, active_market_hours=False):
     """Weekday regular-session expectation, with explicit optional holiday dates.
 
 This is not an exchange calendar: unsupplied holidays/early closes stay unknown.
-Collection is scheduled 24h regardless of whether either exchange is open.
+The caller chooses all-day or regular-session-only target coverage.
 """
     at = parse_time(at)
     holidays = holidays or {}
-    result = {"collection_expected": True, "holiday_calendar_complete": False}
+    result = {"collection_expected": not active_market_hours,
+              "holiday_calendar_complete": False, "closing_snapshot_included": True,
+              "overdue_session_close_included": False}
     for market, zone, opens, closes in (
         ("us", "America/New_York", time(9, 30), time(16)),
         ("kr", "Asia/Seoul", time(9), time(15, 30)),
     ):
         local = at.astimezone(ZoneInfo(zone))
         holiday = local.date().isoformat() in set(holidays.get(market, []))
+        opens_at = datetime.combine(local.date(), opens, ZoneInfo(zone))
+        closes_at = datetime.combine(local.date(), closes, ZoneInfo(zone))
+        active = local.weekday() < 5 and not holiday and opens_at <= local < closes_at
+        closing_snapshot = local.weekday() < 5 and not holiday and local == closes_at
         result[market] = {
             "local_at": local.isoformat(),
-            "weekday_regular_session": (
-                local.weekday() < 5 and not holiday
-                and opens <= local.time().replace(tzinfo=None) < closes
-            ),
+            "weekday_regular_session": active,
+            "closing_snapshot_expected": closing_snapshot,
+            "opens_at": iso(opens_at), "closes_at": iso(closes_at),
             "explicit_holiday": holiday,
             "basis": "weekday_hours_and_supplied_holidays; early_closes_unverified",
         }
+        if active_market_hours and (active or closing_snapshot):
+            result["collection_expected"] = True
     return result
+
+
+def _active_session_window(at, holidays=None):
+    expectation = market_expectation(at, holidays, True)
+    active = [(market, expectation[market]) for market in ("kr", "us")
+              if expectation[market]["weekday_regular_session"]]
+    if not active:
+        return None
+    return {"markets": [market for market, _ in active],
+            "opens_at": min(parse_time(session["opens_at"]) for _, session in active),
+            "closes_at": max(parse_time(session["closes_at"]) for _, session in active)}
 
 
 def _public_runs(payload):
@@ -156,14 +180,15 @@ def _collection_summary(metadata):
 
 
 def audit_schedule(payload, start, end, now=None, grace_minutes=15, match_minutes=25,
-                   collection_metadata=None, holidays=None, expected_event="schedule", slot_offset_minutes=0):
+                   collection_metadata=None, holidays=None, expected_event="schedule", slot_offset_minutes=0,
+                   active_market_hours=False):
     start, end = parse_time(start), parse_time(end)
     now = parse_time(now or end)
     if not 0 <= grace_minutes < 60 or not 0 <= match_minutes < 30:
         raise ValueError("grace must be 0..59; slot match tolerance must be 0..29 minutes")
     if expected_event not in {"schedule", "workflow_dispatch", "any"}:
         raise ValueError("expected_event must be schedule, workflow_dispatch, or any")
-    slots = expected_slots(start, end, slot_offset_minutes)
+    slots = expected_slots(start, end, slot_offset_minutes, active_market_hours, holidays)
     runs, invalid = _public_runs(payload)
     # Keep history returned by API for latest success even if outside coverage window.
     visible = [r for r in runs if r["attempt_at"] <= now]
@@ -204,6 +229,10 @@ def audit_schedule(payload, start, end, now=None, grace_minutes=15, match_minute
         "policy": {"expected_slot_minutes_utc": [slot_offset_minutes, slot_offset_minutes + 30],
                    "slot_basis": "target cadence / supplied observation offset; external scheduler configuration unverified",
                    "expected_event": expected_event, "daily_slots": 48,
+                   "active_market_hours": active_market_hours,
+                   "daily_slots_scope": "maximum before optional regular-session filter",
+                   "closing_snapshot_included": True,
+                   "overdue_session_close_included": False,
                    "job_timeout_minutes": JOB_TIMEOUT_MINUTES,
                    "interval_minutes": 30, "timeout_shorter_than_interval": True,
                    "grace_minutes": grace_minutes, "slot_match_tolerance_minutes": match_minutes},
@@ -229,19 +258,21 @@ def audit_schedule(payload, start, end, now=None, grace_minutes=15, match_minute
             "max_receipt_to_run_start_seconds": max(startup_lags, default=None),
             "invalid_metadata_rows": invalid,
         },
-        "market_expectation": market_expectation(now, holidays),
+        "market_expectation": market_expectation(now, holidays, active_market_hours),
         "limitations": [
             "GitHub schedule can be delayed or dropped; receipt-based missing/duplicate slots are candidates.",
             "API result may be paginated/truncated; all-time latest success and missing history can be unverified.",
             "run_started_at is public run metadata, not a measurement of the first collector instruction.",
             "Workflow success does not prove provider completeness or source freshness.",
             "workflow_dispatch does not identify the caller: manual wrapper runs and external cron cannot be distinguished.",
+            "Market sessions use weekday hours and supplied holidays only; unsupplied holidays and early closes are unverified.",
         ],
     }
 
 
 def evaluate_overdue(report, monitoring_started_at, attempt_minutes=65,
-                     success_minutes=90, warmup_minutes=80, expected_event="schedule"):
+                     success_minutes=90, warmup_minutes=80, expected_event="schedule",
+                     active_market_hours=False, holidays=None):
     """Check scheduler receipt gap and any process success as separate clocks.
 
     Default schedule health excludes manual/marker receipts and uses original
@@ -262,9 +293,15 @@ def evaluate_overdue(report, monitoring_started_at, attempt_minutes=65,
         "reasons": [],
         "platform_independent": False,
         "data_freshness": "separate_audit_required",
+        "active_market_hours": active_market_hours,
+        "holiday_calendar_complete": False,
     }
     if min(attempt_minutes, success_minutes, warmup_minutes) < 0:
         raise ValueError("health thresholds must be nonnegative")
+    session = _active_session_window(now, holidays) if active_market_hours else None
+    if active_market_hours and not session:
+        result.update(status="outside_session", reasons=["outside_regular_market_sessions"])
+        return result
     if not activated or activated > now + timedelta(minutes=5):
         result.update(status="invalid_configuration", overdue=True,
                       reasons=["missing_or_future_monitoring_started_at"])
@@ -274,6 +311,12 @@ def evaluate_overdue(report, monitoring_started_at, attempt_minutes=65,
     if elapsed < warmup_minutes:
         result.update(status="warmup", reasons=["initial_scheduler_warmup"])
         return result
+    baseline = max(activated, session["opens_at"]) if session else activated
+    if session:
+        result["current_session"] = {"markets": session["markets"],
+                                     "opens_at": iso(session["opens_at"]),
+                                     "closes_at": iso(session["closes_at"])}
+        result["grace_origin_at"] = iso(baseline)
     if expected_event == "any":
         latest = report.get("latest_attempt") or {}
     elif expected_event == "schedule":
@@ -284,21 +327,25 @@ def evaluate_overdue(report, monitoring_started_at, attempt_minutes=65,
     attempt_at = optional_time(latest.get("attempt_at" if expected_event == "any" else "received_at"))
     success_at = optional_time(success.get("updated_at"))
     # Runs before this workflow transition do not establish new-path coverage.
-    if attempt_at and attempt_at < activated:
+    if attempt_at and attempt_at < baseline:
         attempt_at = None
-    if success_at and success_at < activated:
+    if success_at and success_at < baseline:
         success_at = None
-    attempt_age = (now - (attempt_at or activated)).total_seconds() / 60
-    success_age = (now - (success_at or activated)).total_seconds() / 60
+    attempt_age = (now - (attempt_at or baseline)).total_seconds() / 60
+    success_age = (now - (success_at or baseline)).total_seconds() / 60
     result.update(minutes_since_latest_expected_event=round(attempt_age, 2),
                   latest_expected_event_received_at=iso(attempt_at),
                   minutes_since_latest_process_success=round(success_age, 2))
     if attempt_age > attempt_minutes:
-        result["reasons"].append("latest_expected_event_overdue" if attempt_at else "no_expected_event_since_activation")
+        result["reasons"].append("latest_expected_event_overdue" if attempt_at else
+                                 "no_expected_event_since_session_open" if session else "no_expected_event_since_activation")
     if success_age > success_minutes:
-        result["reasons"].append("latest_process_success_overdue" if success_at else "no_process_success_since_activation")
+        result["reasons"].append("latest_process_success_overdue" if success_at else
+                                 "no_process_success_since_session_open" if session else "no_process_success_since_activation")
     result["overdue"] = bool(result["reasons"])
     result["status"] = "overdue" if result["overdue"] else "healthy"
+    if session and not result["overdue"] and (not attempt_at or not success_at):
+        result["status"] = "session_grace"
     return result
 
 
@@ -312,6 +359,10 @@ def main():
     parser.add_argument("--grace-minutes", type=int, default=15)
     parser.add_argument("--slot-offset-minutes", type=int, default=0,
                         help="0..29, assumed target cadence offset; not proof of external cron configuration")
+    parser.add_argument("--active-market-hours", action="store_true",
+                        help="KRX/NYSE sessions plus exact closing snapshot; overdue checks stop at close")
+    parser.add_argument("--holiday-calendar", type=Path,
+                        help='optional public JSON {"kr":["YYYY-MM-DD"],"us":["YYYY-MM-DD"]}; early closes remain unverified')
     parser.add_argument("--activation-marker", type=Path,
                         help="read only monitoring_started_at from the public migration marker")
     parser.add_argument("--fail-on-overdue", action="store_true")
@@ -325,14 +376,17 @@ def main():
     end = args.end or now
     start = args.start or end - timedelta(days=1)
     metadata = json.loads(args.collection_metadata.read_text()) if args.collection_metadata else None
+    holidays = json.loads(args.holiday_calendar.read_text()) if args.holiday_calendar else None
     result = audit_schedule(json.loads(args.runs.read_text()), start, end, now,
                             grace_minutes=args.grace_minutes, collection_metadata=metadata,
-                            expected_event=args.expected_event, slot_offset_minutes=args.slot_offset_minutes)
+                            expected_event=args.expected_event, slot_offset_minutes=args.slot_offset_minutes,
+                            active_market_hours=args.active_market_hours, holidays=holidays)
     if args.fail_on_overdue or args.activation_marker:
         marker = json.loads(args.activation_marker.read_text()) if args.activation_marker else {}
         result["schedule_health"] = evaluate_overdue(
             result, marker.get("monitoring_started_at"), args.attempt_limit_minutes,
-            args.success_limit_minutes, args.warmup_minutes, args.expected_event)
+            args.success_limit_minutes, args.warmup_minutes, args.expected_event,
+            args.active_market_hours, holidays)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     if args.fail_on_overdue and result["schedule_health"]["overdue"]:
         return 1

@@ -4,7 +4,7 @@
 
 ## 현재 판정
 
-최종 관측은 `2026-10-24T13:39:25Z`~`13:40:52Z`(KST 22:39~22:40)다. 시장 수집의 최종 44개 종목·거시 4개, FRED 8종, 새 Study ID와 종목별 문맥의 운영 소비를 확인했다. **30분 정규 실행은 달성했다고 판정할 수 없다.** workflow 등록 후 약 5시간 동안 명목 예약 슬롯 11개에 공개 schedule run이 1개뿐이었다. 이벤트 workflow 실패 및 last_good 오류 집계 불일치도 남아 있다. 수집 상태 안내를 추가 수정한 새 JS는 최종 관측 시각에 아직 공개 배포되지 않았다.
+관측을 단계별로 기록한다. 13:39~13:40Z 관측에서 시장 수집의 최종 44개 종목·거시 4개, FRED 8종, 새 Study ID와 종목별 문맥의 운영 소비를 확인했다. **이때의 GitHub 30분 정규 실행은 달성했다고 판정할 수 없었다.** 약 5시간 동안 명목 예약 슬롯 11개에 공개 schedule run이 1개뿐이었다. 이후 13:56~13:57Z 후속 관측에서 오류 집계 불일치와 새 JS/CSS 배포는 실제 해소를 확인했다. 정규 실행 책임자는 기존 외부 wrapper로 복구됐으며, 다음 외부 접수는 추가 관측 대상이다. 이벤트 QA2는 독립 단계·테스트를 통과했지만 최종 수집 완전성 gate 실패를 유지하고 배포를 차단했다.
 
 아래 첫 관측 기록은 수정 없이 당시 사실로 보존하며, 최종 결과는 문서 뒤쪽의 ‘13:39~13:40 최종 관측’에서 구분한다.
 
@@ -166,3 +166,68 @@ root는 수집 진행/부분/실패 안내와 Study unavailable 안내를 추가
 - 이벤트 workflow 실패 후 검증·배포는 실행되지 않았고 data 이벤트/정책 상태도 unavailable이다. 실패 원인은 별도 조사 결과와 구분한다.
 - last_good nested 오류 집계의 불일치가 남아 있다. 수정 후 실제 다음 회차 data/last_good 집계 합계가 일치하는지 확인해야 한다.
 - 추가 수정된 JS의 공개 배포와 중간/부분/실패 상태 안내는 아직 독립 확인 전이다.
+
+## 13:56~13:57 후속 QA2 관측
+
+이 절은 앞선 ‘남은 관측 공백’을 후속 관측으로 갱신한다. 앞선 실패 기록은 당시 사실로 보존한다.
+
+### 최종 집계 수정의 실제 발행 확인
+
+대상: [시장 QA2 run40099571560](https://github.com/insightnexusofficial-maker/stock-signal-agent/actions/runs/40099571560), 공개 data/last_good.
+
+사실: 커밋 `318eb29b82eb6a5130f8e75e0be81a4748ac8bd0`, push 접수13:46:17Z, runner 시작13:46:19Z, 수집 단계13:46:37~13:55:05Z, job 종료13:55:07Z, run updated13:55:08Z, conclusion success다. data updateTime13:55:03.895856Z, last_good13:55:04.795939Z이며 두 문서 모두 수집 종료22:55:03 KST·status success·수집수7/15/22/4다.
+
+두 문서 각각 error_count6, errors_by_provider 합계6, errors_by_stage 합계6, errors_by_category 합계6으로 일치했다. 실제 오류는 FnGuide timeout4와 Study invalid_response2로 구분된다. 이전 KIS/Yahoo 오류 키는 이번 최종 집계에 남아 있지 않았다.
+
+해석: nested 오류 map의 회차 간 잔존 불일치는 실제 운영 최종 두 문서에서 해소됐다. 종목 개수 완성과 공급자별 fallback/부가자료 오류는 여전히 구분해야 한다. Study 이벤트/정책 상태 unavailable은 이번에도 남아 있다.
+
+### 추가 FE 배포 확인
+
+| 자산 | bytes | SHA-256 | 현재 로컬 일치 |
+| --- | --- | --- | --- |
+| JS | 20944 | 7e974b5ee4a8e5a801447c6a88630f0cbf79fb28ec17487cc2df962d60ea65b1 | 예 |
+| CSS | 15282 | 2dfe732141823eba92d54789cf4a77332c11db0c23fa154b6a4e0969625c8fd1 | 예 |
+
+사실: 후속 공개 자산을 새로 읽어 바이트 비교했다. 배포 JS의 순수 studyReportMeta 함수에 quality unavailable·status 없는 기존 계약을 넣으면 ‘확인 불가 · 확인 불가’로 표시된다. 앞선 일반 안내로의 누락은 수정됐다.
+
+한계: 실제 계정 화면·DOM·저장소·푸시 수신은 접근하지 않았다. 수집 상태 안내의 코드 배포는 확인했으나 실제 장애를 주입하여 운영 UI를 변경하지 않았다.
+
+### Study 정량 시각과 사이클
+
+사실: 공개 [quant-latest](https://stock-sayo-study.web.app/data/quant-latest.json)의 generated_at은22:44:46 KST, source_collection_finished_at은22:01:57 KST, source_collection_status success다. 새 수집 QA2의22:55:03 완료보다 앞서 발행된 정량본이다. cycle ID는 data/last_good 모두 `semiconductor-cycle-2026-10-24-1730-weekly`로 유지된다.
+
+해석: 정량 산출물의 생성 시각과 원천 회차 시각은 구분된다.22:44 발행본을22:55 시장 회차를 소비한 것으로 해석하지 않는다. 원천이 완료 상태였다는 계약은 확인된다.
+
+### 이벤트 QA2: 실패를 유지하고 진단만 보존
+
+대상: [이벤트 QA2 run40099571558](https://github.com/insightnexusofficial-maker/stock-signal-agent/actions/runs/40099571558).
+
+사실: 접수13:46:17Z, job 시작13:46:19Z, 종료13:46:58Z, conclusion failure다. 공식 실적 일정 탐색·거시 일정 탐색·거시 결과 단계·이벤트 반영·정량 동기화·feed build·policy build·테스트/정적 검증 단계는 success였다. `Require independent collection stages to complete`가13:46:55Z failure였고 이후 Hosting readiness·snapshot·배포·공개 identity·알림은 skipped였다. 안전 진단 기록과 artifact 보존 단계는 success였다.
+
+공개 artifact 메타데이터는 ID12561839465, 이름 `official-calendar-checks-40099571558`, bytes5369, created13:46:56Z, expired false다. artifact 원문·API 응답 본문은 읽지 않았다.
+
+해석: 모든 독립 단계를 실행한 개선은 확인되지만 각 단계 process success를 자료 완전성으로 위장하지 않는다. 최종 완전성 검증 실패는 유지되며 불완전한 결과의 Hosting 배포를 차단했다. 구체적인 누락 공급자·원문 실패 원인은 이 메타데이터만으로 확정하지 않는다.
+
+### 정규 실행 책임자 복구 상태
+
+사실: [기존 wrapper259588964](https://api.github.com/repos/insightnexusofficial-maker/stock-signal-agent/actions/workflows/259588964)는 path `.github/workflows/check_signals.yml`, state active, updated13:53:10Z다. 현재 저장소의 wrapper는 workflow_dispatch만 제공하고 reusable market-data를 호출한다. market-data의 수집 schedule은 제거됐다. 공개 wrapper 실행 목록의 가장 최근 실행은13:57Z 이전까지 과거06:53 dispatch였다.
+
+해석: 기존 외부 호출 경로의 등록 복구는 확인된다. 외부 scheduler의 실제 설정·404 실패는 이번 감사가 직접 읽지 않았으므로 root/사용자의 제공 증거와 구분한다. wrapper 존재만으로 다음 정규 접수 정상이나 외부 스케줄 변경 완료를 확정하지 않는다. 다음23:00 KST 전후의 공개 workflow_dispatch 접수를 추가 대조한다.
+
+### 23:00 정규 접수 관측 결과
+
+사실: KST23:00:27 및23:01:34(UTC14:00:27/14:01:34)에 wrapper259588964의 공개 최근 실행을 두 차례 조회했다. 두 번째 요청은 no-cache 헤더를 사용했다. 두 번 모두 가장 최근 실행은 이전06:53:11Z의 run40071962826이었으며, 복구 커밋 이후 새 workflow_dispatch는 보이지 않았다.
+
+해석: wrapper active 복구와 실제 정규 접수 복구는 구분된다.23:01:34까지 정상 외부 접수를 실증하지 못했다. 정각 직후1분34초라는 제한된 관측이므로 앞으로 늦게 도착할 가능성을 배제하지 않지만, 운영 정규화 완료라고 보고할 근거는 없다.
+
+한계: 외부 scheduler 로그·설정·인증은 접근하지 않았다. HTTP404, 미접수, 권한, scheduler 지연 중 구체적 원인을 이 공개 run 목록만으로 확정할 수 없다. 감사가 실제 dispatch를 보내거나 재실행하지 않았다.
+
+
+## 사용자 확인으로 보정한 외부 호출 기대 범위
+
+23시경 사용자는 기존 외부 cron의 실패 HTTP상태가404이며, 기존 실행 규칙은 **국장·미장이 열려 있을 때만30분 간격**이라고 확인했다. 이는 도구가 외부 관리 화면을 읽은 관측이 아니라 사용자가 제공한 운영 정보다. 토요일23시 미접수는 해당 규칙상 정상이며 외부 cron 장애로 판정하지 않는다. 앞선 GitHub24시간cron 실험의11개 명목슬롯/실제1회 관측과도 다른 기대 범위다.
+
+기존 wrapper 경로 복구 및 GitHub 증시 schedule 제거는 공개 코드와 active 등록으로 확인했다. 다음 실제 정규장 호출·외부 작업 활성 상태는 이번 시간대에 검증하지 못했다. root는 누락 감시의 기대 범위를 정규장·DST·장시작 유예로 수정한다. 이 보정은 웹/수집/Study의 앞선 직접 관측 결과를 바꾸지 않는다.
+
+
+최종 정규장 감사 코드는 공개 wrapper 이력에 대해 현재 `outside_session`, `overdue=false`, CLI exit0을 반환했다. 공개자료가 새로 수집된 것처럼 시각을 변경하지 않았다. 각 시장의 현지 요일을 사용하며 KST토요일03:00/New York금요일14:00에는 미국장이 열려 있는 것으로 유지한다. 사용자 확인 이후의 현재 토요일 밤 미접수를 누락으로 판정하지 않는다. 공식 휴일 목록 미제공·조기폐장·다음 정규장 실제 접수는 여전히 확인 공백이다.

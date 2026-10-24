@@ -46,7 +46,7 @@ jobs:
           audit_status=0
           python scripts/schedule_audit.py --runs "$metadata_file" \
             --activation-marker .github/refresh-market-data.json \
-            --fail-on-overdue --expected-event workflow_dispatch --slot-offset-minutes 0 --attempt-limit-minutes 65 \
+            --fail-on-overdue --active-market-hours --expected-event workflow_dispatch --slot-offset-minutes 0 --attempt-limit-minutes 65 \
             --success-limit-minutes 90 --warmup-minutes 80 \
             > "$audit_file" || audit_status=$?
           {
@@ -54,6 +54,8 @@ jobs:
             cat "$audit_file"
             printf '\n```\n\n'
             printf '외부 cron 대상 check_signals.yml의 dispatch 접수 65분·해당 경로 프로세스 성공 90분 초과를 별도로 검사합니다. 전환 후 80분은 준비 기간입니다.\n'
+            printf 'KRX 09:00~15:30 KST·NYSE 09:30~16:00 New York 정규장과 마감 정각 종가 snapshot을 slot 분모에 포함합니다. overdue는 마감 정각부터 outside_session이며 개장 시각부터 새 유예 시간을 계산합니다.\n'
+            printf '주말은 제외하며 미제공 휴장일·조기폐장은 별도 공식 거래소 달력 없이는 검증하지 못합니다.\n'
             printf 'market-data.yml 직접 QA·marker push·재실행은 외부 예약 접수 공백을 채우지 못합니다. wrapper 수동 dispatch와 외부 호출은 공개 메타만으로 구별되지 않습니다.\n'
             printf '수집 재실행과 푸시 발송은 하지 않습니다. 자료 신선도는 별도 검증 대상입니다.\n'
             printf '수집과 같은 GitHub 플랫폼이므로 플랫폼 장애에 독립적인 감시는 아닙니다.\n'
