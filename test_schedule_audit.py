@@ -29,13 +29,13 @@ class ScheduleAuditTests(unittest.TestCase):
             start = parse_time(day + "T00:00:00Z")
             slots = expected_slots(start, start + timedelta(days=1))
             self.assertEqual(len(slots), 48)
-            self.assertEqual({slot.minute for slot in slots}, {7, 37})
+            self.assertEqual({slot.minute for slot in slots}, {0, 30})
             self.assertTrue(all(b - a == timedelta(minutes=30) for a, b in zip(slots, slots[1:])))
 
     def test_complete_day_has_no_missing_and_timeout_is_below_interval(self):
         runs = [run(i, slot) for i, slot in enumerate(expected_slots(START, END), 1)]
         result = audit_schedule(runs, START, END, END)
-        coverage = result["scheduled_coverage"]
+        coverage = result["expected_event_coverage"]
         self.assertEqual(coverage["expected_slots"], 48)
         self.assertEqual(coverage["matched_slots"], 48)
         self.assertEqual(coverage["missing_slot_candidates"], [])
@@ -46,18 +46,20 @@ class ScheduleAuditTests(unittest.TestCase):
         runs = [run(i, slot) for i, slot in enumerate(expected_slots(START, END), 1)]
         runs.pop(2)
         runs += [run(99, "2026-10-24T00:08:00Z"), dict(runs[0])]
-        coverage = audit_schedule(runs, START, END)["scheduled_coverage"]
-        self.assertEqual(coverage["missing_slot_candidates"], ["2026-10-24T01:07:00Z"])
+        coverage = audit_schedule(runs, START, END)["expected_event_coverage"]
+        self.assertEqual(coverage["missing_slot_candidates"], ["2026-10-24T01:00:00Z"])
         self.assertEqual(coverage["duplicate_slot_candidates"], [{
-            "slot": "2026-10-24T00:07:00Z", "run_ids": [1, 99]}])
+            "slot": "2026-10-24T00:00:00Z", "run_ids": [1, 99]}])
         self.assertTrue(coverage["matching_is_estimate"])
 
     def test_manual_or_marker_run_does_not_mask_missing_cron(self):
         rows = [run(1, "2026-10-24T00:07:00Z", "workflow_dispatch"),
                 run(2, "2026-10-24T00:37:00Z", "push")]
         result = audit_schedule(rows, START, START + timedelta(hours=1))
-        self.assertEqual(result["scheduled_coverage"]["matched_slots"], 0)
+        self.assertEqual(result["expected_event_coverage"]["matched_slots"], 0)
         self.assertEqual(result["latest_attempt"]["id"], 2)
+        self.assertIsNone(result["latest_scheduled_attempt"])
+        self.assertIsNone(result["minutes_since_latest_scheduled_attempt"])
         self.assertIsNone(result["collection"]["last_collection_success_at"])
 
     def test_attempt_process_success_and_collection_success_have_distinct_times(self):
@@ -85,16 +87,16 @@ class ScheduleAuditTests(unittest.TestCase):
         self.assertEqual(len(result["run_health"]["timed_out"]), 1)
         self.assertEqual(result["latest_attempt"]["run_attempt"], 2)
         self.assertEqual(result["latest_attempt"]["attempt_at"], "2026-10-24T01:10:00Z")
-        self.assertEqual(result["scheduled_coverage"]["duplicate_slot_candidates"], [])
+        self.assertEqual(result["expected_event_coverage"]["duplicate_slot_candidates"], [])
 
     def test_grace_and_delayed_unmatched_receipt_do_not_claim_precise_failure(self):
-        now = parse_time("2026-10-24T00:15:00Z")
+        now = parse_time("2026-10-24T00:14:59Z")
         result = audit_schedule([], START, now, now)
-        self.assertEqual(result["scheduled_coverage"]["due_slots"], 0)
-        delayed = audit_schedule([run(1, "2026-10-24T00:33:00Z")], START,
+        self.assertEqual(result["expected_event_coverage"]["due_slots"], 0)
+        delayed = audit_schedule([run(1, "2026-10-24T00:26:00Z")], START,
                                  START + timedelta(hours=1))
-        self.assertEqual(len(delayed["scheduled_coverage"]["unmatched_scheduled_runs"]), 1)
-        self.assertTrue(delayed["scheduled_coverage"]["matching_is_estimate"])
+        self.assertEqual(len(delayed["expected_event_coverage"]["unmatched_expected_event_runs"]), 1)
+        self.assertTrue(delayed["expected_event_coverage"]["matching_is_estimate"])
 
     def test_utc_schedule_and_us_session_dst_are_independent(self):
         summer = market_expectation("2026-07-06T13:30:00Z")
@@ -128,11 +130,12 @@ class ScheduleAuditTests(unittest.TestCase):
         self.assertNotIn("ignored-private-marker", json.dumps(result))
         self.assertNotIn("ignored-actor", json.dumps(result))
 
-    def test_workflow_contract_has_single_schedule_and_suppressed_marker(self):
+    def test_workflow_contract_has_external_wrapper_and_suppressed_marker(self):
         root = Path(__file__).parent
         workflow = (root / ".github/workflows/market-data.yml").read_text()
-        self.assertFalse((root / ".github/workflows/check_signals.yml").exists())
-        self.assertIn("cron: '7,37 * * * *'", workflow)
+        self.assertTrue((root / ".github/workflows/check_signals.yml").exists())
+        self.assertNotIn("  schedule:", workflow)
+        self.assertIn("  workflow_call:", workflow)
         self.assertIn("timeout-minutes: 25", workflow)
         self.assertIn(".github/refresh-market-data.json", workflow)
         self.assertIn("type: boolean", workflow)
@@ -140,6 +143,29 @@ class ScheduleAuditTests(unittest.TestCase):
         self.assertIn("github.event_name == 'push' || inputs.suppress_push == true", workflow)
         self.assertIn('SAYO_DISABLE_PUSH:', workflow)
         self.assertNotIn("'${{ secrets.", workflow)
+        wrapper = (root / ".github/workflows/check_signals.yml").read_text()
+        self.assertIn("  workflow_dispatch:", wrapper)
+        self.assertIn("uses: ./.github/workflows/market-data.yml", wrapper)
+        self.assertIn("secrets: inherit", wrapper)
+        self.assertNotIn("concurrency:", wrapper)
+        self.assertNotIn("  schedule:", wrapper)
+        self.assertIn("--expected-event workflow_dispatch --slot-offset-minutes 0", workflow)
+
+    def test_external_dispatch_target_slots_are_generic_and_configurable(self):
+        rows = [run(1, "2026-10-24T00:00:00Z", event="workflow_dispatch"),
+                run(2, "2026-10-24T00:30:00Z", event="workflow_dispatch"),
+                run(3, "2026-10-24T00:30:00Z", event="push")]
+        result = audit_schedule(rows, START, START + timedelta(hours=1),
+                                expected_event="workflow_dispatch")
+        self.assertEqual(result["expected_event_coverage"]["matched_slots"], 2)
+        self.assertEqual(result["expected_event_coverage"]["duplicate_slot_candidates"], [])
+        self.assertEqual(result["policy"]["expected_slot_minutes_utc"], [0, 30])
+        self.assertIn("external scheduler configuration unverified", result["policy"]["slot_basis"])
+        self.assertNotIn("cron_utc", result["policy"])
+        offset = expected_slots(START, START + timedelta(hours=1), offset_minutes=7)
+        self.assertEqual([slot.minute for slot in offset], [7, 37])
+        with self.assertRaises(ValueError):
+            expected_slots(START, END, offset_minutes=30)
 
 
 class ScheduleHealthTests(unittest.TestCase):
@@ -151,7 +177,7 @@ class ScheduleHealthTests(unittest.TestCase):
     def test_missing_collector_fails_after_warmup_without_any_collector_run(self):
         health = evaluate_overdue(self.report(), self.activated)
         self.assertEqual(health["status"], "overdue")
-        self.assertEqual(health["reasons"], ["no_attempt_since_activation", "no_process_success_since_activation"])
+        self.assertEqual(health["reasons"], ["no_expected_event_since_activation", "no_process_success_since_activation"])
 
     def test_initial_80_minute_warmup(self):
         report = self.report(now="2026-10-24T01:19:59Z")
@@ -160,15 +186,56 @@ class ScheduleHealthTests(unittest.TestCase):
         self.assertFalse(health["overdue"])
         health = evaluate_overdue(self.report(now="2026-10-24T01:20:00Z"), self.activated)
         self.assertTrue(health["overdue"])
-        self.assertEqual(health["reasons"], ["no_attempt_since_activation"])
+        self.assertEqual(health["reasons"], ["no_expected_event_since_activation"])
 
     def test_one_old_missing_slot_does_not_fail_latest_health(self):
         report = self.report([run(1, "2026-10-24T01:37:00Z")])
-        self.assertTrue(report["scheduled_coverage"]["missing_slot_candidates"])
+        self.assertTrue(report["expected_event_coverage"]["missing_slot_candidates"])
         health = evaluate_overdue(report, self.activated)
         self.assertEqual(health["status"], "healthy")
         self.assertFalse(health["platform_independent"])
         self.assertEqual(health["data_freshness"], "separate_audit_required")
+
+    def test_recent_manual_and_marker_success_cannot_hide_old_schedule_receipt(self):
+        rows = [run(1, "2026-10-24T00:37:00Z"),
+                run(2, "2026-10-24T01:45:00Z", event="workflow_dispatch"),
+                run(3, "2026-10-24T01:50:00Z", event="push")]
+        report = self.report(rows)
+        self.assertEqual(report["latest_attempt"]["id"], 3)
+        self.assertEqual(report["latest_scheduled_attempt"]["id"], 1)
+        self.assertEqual(report["minutes_since_latest_scheduled_attempt"], 83)
+        health = evaluate_overdue(report, self.activated)
+        self.assertEqual(health["expected_event"], "schedule")
+        self.assertEqual(health["reasons"], ["latest_expected_event_overdue"])
+        self.assertEqual(health["minutes_since_latest_expected_event"], 83)
+        self.assertEqual(health["minutes_since_latest_process_success"], 7)
+
+    def test_no_cron_with_recent_manual_success_is_still_scheduler_failure(self):
+        report = self.report([run(1, "2026-10-24T01:50:00Z", event="workflow_dispatch")])
+        health = evaluate_overdue(report, self.activated)
+        self.assertEqual(health["reasons"], ["no_expected_event_since_activation"])
+        self.assertTrue(health["overdue"])
+
+    def test_manual_rerun_of_schedule_cannot_refresh_original_cron_receipt(self):
+        rerun = run(1, "2026-10-24T00:07:00Z", attempt=2)
+        rerun["run_started_at"] = "2026-10-24T01:50:00Z"
+        rerun["updated_at"] = "2026-10-24T01:53:00Z"
+        report = self.report([rerun])
+        self.assertEqual(report["minutes_since_latest_attempt"], 10)
+        self.assertEqual(report["minutes_since_latest_scheduled_attempt"], 113)
+        health = evaluate_overdue(report, self.activated)
+        self.assertEqual(health["minutes_since_latest_expected_event"], 113)
+        self.assertEqual(health["reasons"], ["latest_expected_event_overdue"])
+
+    def test_alternate_expected_event_requires_explicit_choice(self):
+        report = self.report([run(1, "2026-10-24T01:50:00Z", event="workflow_dispatch")])
+        self.assertTrue(evaluate_overdue(report, self.activated)["overdue"])
+        dispatched = evaluate_overdue(report, self.activated, expected_event="workflow_dispatch")
+        self.assertEqual(dispatched["status"], "healthy")
+        any_event = evaluate_overdue(report, self.activated, expected_event="any")
+        self.assertEqual(any_event["status"], "healthy")
+        with self.assertRaises(ValueError):
+            evaluate_overdue(report, self.activated, expected_event="push")
 
     def test_attempt_fresh_but_old_process_success_fails_success_only(self):
         rows = [run(1, "2026-10-24T00:07:00Z"),
@@ -182,7 +249,7 @@ class ScheduleHealthTests(unittest.TestCase):
         health = evaluate_overdue(self.report(rows), self.activated)
         self.assertFalse(health["overdue"])
         later = evaluate_overdue(self.report(rows, now="2026-10-24T02:00:01Z"), self.activated)
-        self.assertEqual(later["reasons"], ["latest_attempt_overdue", "latest_process_success_overdue"])
+        self.assertEqual(later["reasons"], ["latest_expected_event_overdue", "latest_process_success_overdue"])
 
     def test_invalid_activation_is_failure_instead_of_permanent_warmup(self):
         for activated in (None, "invalid", "2026-10-25T00:00:00Z"):
@@ -194,7 +261,7 @@ class ScheduleHealthTests(unittest.TestCase):
     def test_prior_workflow_history_does_not_establish_new_path_coverage(self):
         row = run(1, "2026-10-23T23:37:00Z")
         health = evaluate_overdue(self.report([row]), self.activated)
-        self.assertEqual(health["reasons"], ["no_attempt_since_activation", "no_process_success_since_activation"])
+        self.assertEqual(health["reasons"], ["no_expected_event_since_activation", "no_process_success_since_activation"])
 
     def test_cli_fail_on_overdue_emits_report_then_nonzero_exit(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -210,12 +277,30 @@ class ScheduleHealthTests(unittest.TestCase):
             self.assertEqual(failing.returncode, 1)
             self.assertEqual(json.loads(failing.stdout)["schedule_health"]["status"], "overdue")
 
+    def test_cli_expected_event_is_schedule_by_default_and_dispatch_is_opt_in(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = Path(directory) / "public-runs.json"
+            marker = Path(directory) / "public-marker.json"
+            fixture.write_text(json.dumps({"workflow_runs": [
+                run(1, "2026-10-24T01:50:00Z", event="workflow_dispatch")]}))
+            marker.write_text(json.dumps({"monitoring_started_at": self.activated}))
+            command = [sys.executable, "-B", "scripts/schedule_audit.py", "--runs", str(fixture),
+                       "--activation-marker", str(marker), "--now", "2026-10-24T02:00:00Z", "--fail-on-overdue"]
+            default = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(default.returncode, 1)
+            alternate = subprocess.run(command + ["--expected-event", "workflow_dispatch"],
+                                       capture_output=True, text=True, check=False)
+            self.assertEqual(alternate.returncode, 0)
+            self.assertEqual(json.loads(alternate.stdout)["schedule_health"]["expected_event"], "workflow_dispatch")
+
     def test_monitor_is_read_only_and_cannot_dispatch_a_collector(self):
         workflow = Path(".github/workflows/schedule-health.yml").read_text()
         self.assertIn("cron: '25 * * * *'", workflow)
         self.assertIn("actions: read", workflow)
         self.assertIn("contents: read", workflow)
         self.assertIn("--fail-on-overdue", workflow)
+        self.assertIn("--expected-event workflow_dispatch", workflow)
+        self.assertIn("actions/workflows/check_signals.yml/runs", workflow)
         self.assertNotIn("secrets.", workflow)
         self.assertNotIn("uploader.py", workflow)
         self.assertNotIn("notifier.py", workflow)

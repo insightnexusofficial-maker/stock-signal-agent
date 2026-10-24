@@ -38,7 +38,7 @@ jobs:
             --header 'Accept: application/vnd.github+json' \
             --header "Authorization: Bearer $GH_TOKEN" \
             --header 'X-GitHub-Api-Version: 2022-11-28' \
-            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/market-data.yml/runs?per_page=100" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/check_signals.yml/runs?per_page=100" \
             --output "$metadata_file" 2>/dev/null; then
             printf '예약 감사: 공개 실행 메타데이터 검증 불가.\n' >> "$GITHUB_STEP_SUMMARY"
             exit 1
@@ -46,14 +46,15 @@ jobs:
           audit_status=0
           python scripts/schedule_audit.py --runs "$metadata_file" \
             --activation-marker .github/refresh-market-data.json \
-            --fail-on-overdue --attempt-limit-minutes 65 \
+            --fail-on-overdue --expected-event workflow_dispatch --slot-offset-minutes 0 --attempt-limit-minutes 65 \
             --success-limit-minutes 90 --warmup-minutes 80 \
             > "$audit_file" || audit_status=$?
           {
             printf '## 예약 실행 독립 점검\n\n```json\n'
             cat "$audit_file"
             printf '\n```\n\n'
-            printf '최신 시도 65분·프로세스 성공 90분 초과를 검사합니다. 전환 후 80분은 준비 기간입니다.\n'
+            printf '외부 cron 대상 check_signals.yml의 dispatch 접수 65분·해당 경로 프로세스 성공 90분 초과를 별도로 검사합니다. 전환 후 80분은 준비 기간입니다.\n'
+            printf 'market-data.yml 직접 QA·marker push·재실행은 외부 예약 접수 공백을 채우지 못합니다. wrapper 수동 dispatch와 외부 호출은 공개 메타만으로 구별되지 않습니다.\n'
             printf '수집 재실행과 푸시 발송은 하지 않습니다. 자료 신선도는 별도 검증 대상입니다.\n'
             printf '수집과 같은 GitHub 플랫폼이므로 플랫폼 장애에 독립적인 감시는 아닙니다.\n'
           } >> "$GITHUB_STEP_SUMMARY"

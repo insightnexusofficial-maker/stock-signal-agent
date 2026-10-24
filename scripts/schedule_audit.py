@@ -7,6 +7,9 @@ of scheduler failure. Manual and marker runs cannot fill scheduled coverage.
 Collection metadata is optional: {"data": {...}, "last_good": {...}} containing
 only public stocks/data and stocks/last_good. Process success never implies
 that core collection, supplemental feeds, or all source observations are fresh.
+Health defaults to original schedule receipts: a manual run, marker push, or
+rerun cannot refresh the cron clock. --expected-event workflow_dispatch/any is
+an explicit audit option for a separately approved change in scheduler ownership.
 """
 
 import argparse
@@ -44,12 +47,14 @@ def optional_time(value):
         return None
 
 
-def expected_slots(start, end):
-    """UTC :07/:37 slots in [start, end), including weekends and holidays."""
+def expected_slots(start, end, offset_minutes=0):
+    """30-minute target slots in [start, end); offset is an observation assumption."""
+    if not 0 <= offset_minutes < 30:
+        raise ValueError("slot offset must be 0..29 minutes")
     start, end = parse_time(start), parse_time(end)
     if end < start:
         raise ValueError("end must not precede start")
-    slot = start.replace(minute=7, second=0, microsecond=0)
+    slot = start.replace(minute=offset_minutes, second=0, microsecond=0)
     while slot < start:
         slot += INTERVAL
     slots = []
@@ -151,24 +156,32 @@ def _collection_summary(metadata):
 
 
 def audit_schedule(payload, start, end, now=None, grace_minutes=15, match_minutes=25,
-                   collection_metadata=None, holidays=None):
+                   collection_metadata=None, holidays=None, expected_event="schedule", slot_offset_minutes=0):
     start, end = parse_time(start), parse_time(end)
     now = parse_time(now or end)
     if not 0 <= grace_minutes < 60 or not 0 <= match_minutes < 30:
         raise ValueError("grace must be 0..59; slot match tolerance must be 0..29 minutes")
-    slots = expected_slots(start, end)
+    if expected_event not in {"schedule", "workflow_dispatch", "any"}:
+        raise ValueError("expected_event must be schedule, workflow_dispatch, or any")
+    slots = expected_slots(start, end, slot_offset_minutes)
     runs, invalid = _public_runs(payload)
     # Keep history returned by API for latest success even if outside coverage window.
     visible = [r for r in runs if r["attempt_at"] <= now]
     latest = max(visible, key=lambda r: (r["attempt_at"], r["run_attempt"]), default=None)
+    latest_by_event = {
+        event: max((r for r in visible if r["event"] == event),
+                   key=lambda r: r["created"], default=None)
+        for event in ("schedule", "workflow_dispatch", "push")
+    }
+    latest_scheduled = latest_by_event["schedule"]
     successes = [r for r in visible if r["status"] == "completed" and r["conclusion"] == "success"]
     latest_success = max(successes, key=lambda r: r["updated"] or r["created"], default=None)
     coverage = {slot: [] for slot in slots}
     unmatched = []
     for run in visible:
-        if run["event"] != "schedule" or run["run_attempt"] != 1:
+        if (expected_event != "any" and run["event"] != expected_event) or run["run_attempt"] != 1:
             continue
-        prior_slot = run["created"].replace(minute=7, second=0, microsecond=0)
+        prior_slot = run["created"].replace(minute=slot_offset_minutes, second=0, microsecond=0)
         while prior_slot > run["created"]:
             prior_slot -= INTERVAL
         while prior_slot + INTERVAL <= run["created"]:
@@ -188,19 +201,24 @@ def audit_schedule(payload, start, end, now=None, grace_minutes=15, match_minute
     return {
         "schema_version": "1.0", "observed_at": iso(now),
         "window": {"start": iso(start), "end": iso(end)},
-        "policy": {"cron_utc": "7,37 * * * *", "daily_slots": 48,
+        "policy": {"expected_slot_minutes_utc": [slot_offset_minutes, slot_offset_minutes + 30],
+                   "slot_basis": "target cadence / supplied observation offset; external scheduler configuration unverified",
+                   "expected_event": expected_event, "daily_slots": 48,
                    "job_timeout_minutes": JOB_TIMEOUT_MINUTES,
                    "interval_minutes": 30, "timeout_shorter_than_interval": True,
                    "grace_minutes": grace_minutes, "slot_match_tolerance_minutes": match_minutes},
         "latest_attempt": _brief(latest),
+        "latest_scheduled_attempt": _brief(latest_scheduled),
+        "latest_attempts_by_event": {event: _brief(run) for event, run in latest_by_event.items()},
         "latest_process_success": _brief(latest_success),
         "minutes_since_latest_attempt": round((now - latest["attempt_at"]).total_seconds() / 60, 2) if latest else None,
+        "minutes_since_latest_scheduled_attempt": round((now - latest_scheduled["created"]).total_seconds() / 60, 2) if latest_scheduled else None,
         "collection": _collection_summary(collection_metadata),
-        "scheduled_coverage": {
+        "expected_event_coverage": {
             "expected_slots": len(slots), "due_slots": len(due),
             "matched_slots": sum(bool(coverage[slot]) for slot in due),
             "missing_slot_candidates": missing, "duplicate_slot_candidates": duplicates,
-            "unmatched_scheduled_runs": unmatched,
+            "unmatched_expected_event_runs": unmatched,
             "matching_is_estimate": True,
         },
         "run_health": {
@@ -217,19 +235,28 @@ def audit_schedule(payload, start, end, now=None, grace_minutes=15, match_minute
             "API result may be paginated/truncated; all-time latest success and missing history can be unverified.",
             "run_started_at is public run metadata, not a measurement of the first collector instruction.",
             "Workflow success does not prove provider completeness or source freshness.",
+            "workflow_dispatch does not identify the caller: manual wrapper runs and external cron cannot be distinguished.",
         ],
     }
 
 
 def evaluate_overdue(report, monitoring_started_at, attempt_minutes=65,
-                     success_minutes=90, warmup_minutes=80):
-    """Fail on the newest run gap, never on individual estimated old cron slots."""
+                     success_minutes=90, warmup_minutes=80, expected_event="schedule"):
+    """Check scheduler receipt gap and any process success as separate clocks.
+
+    Default schedule health excludes manual/marker receipts and uses original
+    created_at even for a rerun. Individual estimated old cron slots never fail
+    this check. Alternate expected events do not change any collector schedule.
+    """
+    if expected_event not in {"schedule", "workflow_dispatch", "any"}:
+        raise ValueError("expected_event must be schedule, workflow_dispatch, or any")
     now = parse_time(report["observed_at"])
     activated = optional_time(monitoring_started_at)
     result = {
         "status": "unverified", "overdue": False,
         "monitoring_started_at": iso(activated),
         "attempt_limit_minutes": attempt_minutes,
+        "expected_event": expected_event,
         "process_success_limit_minutes": success_minutes,
         "warmup_minutes": warmup_minutes,
         "reasons": [],
@@ -247,9 +274,14 @@ def evaluate_overdue(report, monitoring_started_at, attempt_minutes=65,
     if elapsed < warmup_minutes:
         result.update(status="warmup", reasons=["initial_scheduler_warmup"])
         return result
-    latest = report.get("latest_attempt") or {}
+    if expected_event == "any":
+        latest = report.get("latest_attempt") or {}
+    elif expected_event == "schedule":
+        latest = report.get("latest_scheduled_attempt") or {}
+    else:
+        latest = (report.get("latest_attempts_by_event") or {}).get(expected_event) or {}
     success = report.get("latest_process_success") or {}
-    attempt_at = optional_time(latest.get("attempt_at"))
+    attempt_at = optional_time(latest.get("attempt_at" if expected_event == "any" else "received_at"))
     success_at = optional_time(success.get("updated_at"))
     # Runs before this workflow transition do not establish new-path coverage.
     if attempt_at and attempt_at < activated:
@@ -258,10 +290,11 @@ def evaluate_overdue(report, monitoring_started_at, attempt_minutes=65,
         success_at = None
     attempt_age = (now - (attempt_at or activated)).total_seconds() / 60
     success_age = (now - (success_at or activated)).total_seconds() / 60
-    result.update(minutes_since_latest_attempt=round(attempt_age, 2),
+    result.update(minutes_since_latest_expected_event=round(attempt_age, 2),
+                  latest_expected_event_received_at=iso(attempt_at),
                   minutes_since_latest_process_success=round(success_age, 2))
     if attempt_age > attempt_minutes:
-        result["reasons"].append("latest_attempt_overdue" if attempt_at else "no_attempt_since_activation")
+        result["reasons"].append("latest_expected_event_overdue" if attempt_at else "no_expected_event_since_activation")
     if success_age > success_minutes:
         result["reasons"].append("latest_process_success_overdue" if success_at else "no_process_success_since_activation")
     result["overdue"] = bool(result["reasons"])
@@ -277,24 +310,29 @@ def main():
     parser.add_argument("--start", type=parse_time)
     parser.add_argument("--end", type=parse_time)
     parser.add_argument("--grace-minutes", type=int, default=15)
+    parser.add_argument("--slot-offset-minutes", type=int, default=0,
+                        help="0..29, assumed target cadence offset; not proof of external cron configuration")
     parser.add_argument("--activation-marker", type=Path,
                         help="read only monitoring_started_at from the public migration marker")
     parser.add_argument("--fail-on-overdue", action="store_true")
     parser.add_argument("--attempt-limit-minutes", type=int, default=65)
     parser.add_argument("--success-limit-minutes", type=int, default=90)
     parser.add_argument("--warmup-minutes", type=int, default=80)
+    parser.add_argument("--expected-event", choices=("schedule", "workflow_dispatch", "any"),
+                        default="schedule", help="scheduler receipt clock; manual/push cannot mask missing cron by default")
     args = parser.parse_args()
     now = args.now or datetime.now(UTC)
     end = args.end or now
     start = args.start or end - timedelta(days=1)
     metadata = json.loads(args.collection_metadata.read_text()) if args.collection_metadata else None
     result = audit_schedule(json.loads(args.runs.read_text()), start, end, now,
-                            grace_minutes=args.grace_minutes, collection_metadata=metadata)
+                            grace_minutes=args.grace_minutes, collection_metadata=metadata,
+                            expected_event=args.expected_event, slot_offset_minutes=args.slot_offset_minutes)
     if args.fail_on_overdue or args.activation_marker:
         marker = json.loads(args.activation_marker.read_text()) if args.activation_marker else {}
         result["schedule_health"] = evaluate_overdue(
             result, marker.get("monitoring_started_at"), args.attempt_limit_minutes,
-            args.success_limit_minutes, args.warmup_minutes)
+            args.success_limit_minutes, args.warmup_minutes, args.expected_event)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     if args.fail_on_overdue and result["schedule_health"]["overdue"]:
         return 1

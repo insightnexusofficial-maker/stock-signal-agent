@@ -1,0 +1,22 @@
+name: Stock Signal Check
+
+on:
+  # 기존 외부 cron의 dispatch URL을 보존한다. GitHub 수집 cron은 활성화하지 않는다.
+  workflow_dispatch:
+    inputs:
+      suppress_push:
+        description: '수집 QA: 실제 푸시와 알림 상태 변경 생략'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  check:
+    uses: ./.github/workflows/market-data.yml
+    with:
+      suppress_push: ${{ inputs.suppress_push }}
+    secrets: inherit

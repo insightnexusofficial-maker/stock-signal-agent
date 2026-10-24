@@ -4,7 +4,7 @@
 
 ## 현재 데이터 흐름
 
-1. 단일 GitHub Actions `market-data.yml`이 매일 UTC 매시 07·37분(목표 30분, 하루 48회)에 시장 수집을 예약한다. 수동 dispatch도 같은 workflow를 사용한다. 이전 외부 cron의 `check_signals.yml` 대상은 폐기한다.
+1. 기존 외부 cron 하나가 30분 목표로 `check_signals.yml`의 `workflow_dispatch`를 호출한다. 이 wrapper가 공통 수집기 `market-data.yml`을 재사용한다. 수집기의 GitHub `schedule`은 제거해 이중 예약을 막는다. 수동·marker QA는 일회 실행이며 별도 예약이 아니다.
 2. GitHub-hosted runner가 `uploader.py`를 실행한다.
 3. 수집기가 외부 시장 데이터 공급자를 조회하고 Firestore의 공개 시장 데이터 문서를 갱신한다.
 4. 웹앱이 Firestore 문서를 직접 구독해 화면을 그린다.
@@ -41,7 +41,7 @@ notifier의 쇼크 확인 단계가 성공해도 실제 전송 대상 토큰이 
 
 - 운영 목표와 웹·로컬 안내는 **30분 단위**다.
 - 2026년 7월 29일 공개 Actions 기록에서는 국장 장중 09:00~15:30 KST에 30분 단위 실행 14회가 관측됐다.
-- 현재 소유자는 GitHub `market-data.yml` 하나다. 과거 외부 cron의 실제 설정·종료 여부는 공개 메타데이터만으로 확인할 수 없으며, 폐기된 이전 workflow를 동시에 활성화하지 않는다.
+- 현재 예약 책임자는 기존 외부 cron 하나다. 10/24 GitHub 예약 전환을 실측했으나 약5시간의 명목11구간에 정규1회만 확인해 채택하지 않았다. 사용자 확인으로 외부 호출의404를 발견하고 기존 `check_signals.yml` 경로를 복구했다. 외부 활성·30분 설정 및 복구 후 접수는 운영 관측으로 따로 확인한다.
 
 실행 간격은 공개 Actions 기록으로 감사한다. 예약 접수와 실제 runner 시작·종료를 분리하고 30분 목표를 정확한 wall-clock 보장으로 표시하지 않는다.
 
@@ -51,7 +51,7 @@ GitHub Actions의 최신 실행을 열고 아래 순서로 확인한다. 워크�
 
 | 관측 결과 | 우선 의심할 영역 | 다음 확인 |
 | --- | --- | --- |
-| 예정 시각에 Run 자체가 없음 | GitHub 예약 비활성·기본 브랜치·플랫폼 지연 | workflow 활성 여부·기본 브랜치 파일·공개 예약 실행 이력 |
+| 예정 시각에 Run 자체가 없음 | 외부 cron 비활성·호출 경로·인증·접수 실패 | 외부 활성/주기, HTTP 상태(404 경로·401/403 인증/권한), 공개 접수 이력 |
 | Run은 있으나 job 시작이 늦음 | GitHub runner 큐 또는 concurrency | Dispatch와 실제 시작 시각 차이 |
 | job이 시작되고 실패함 | 설치, 수집기, Firestore 쓰기 | 실패한 단계명과 비밀이 제거된 오류 분류 |
 | job은 성공했지만 화면 데이터가 오래됨 | 부분 성공, 공급자 실패, fallback | 사용자 표시 시각과 마지막 정상 완료 시각 |
@@ -78,30 +78,22 @@ GitHub Actions의 최신 실행을 열고 아래 순서로 확인한다. 워크�
 - 수집 작업을 분할하거나 중복 실행에 안전하게 만든다.
 - GitHub Actions 대신 예약 실행에 적합한 실행 환경으로 옮긴다.
 
-## GitHub 예약 누락 감사와 경보
+## 외부 호출 누락 감사와 경보
 
-스케줄러가 자기 자신을 감시하게 하면 스케줄러 중단 시 경보도 사라진다. 별도 모니터가 GitHub Actions 공개 실행 메타데이터와 Firestore 시장 데이터의 시각만 확인하도록 한다.
+`check_signals.yml` 공개 실행 메타데이터를 별도 `schedule-health.yml`이 매시25분 목표로 읽는다. 기대 이벤트는 `workflow_dispatch`이며 QA marker/push는 외부 호출 연속성을 채우지 않는다. 기대 접수65분·프로세스 성공90분 초과 시 감시 job을 실패시킨다. wrapper의 수동 dispatch와 외부 호출은 공개 메타데이터만으로 구별할 수 없다. 실제 원천 신선도는 프로세스 성공과 별도로 대조한다.
 
-현재 30분 주기를 유지한다면 장중 기준 권장 경보다.
+감시도 GitHub 플랫폼을 사용하므로 GitHub 자체 예약 장애에 독립적이지 않다. 독립 외부 heartbeat를 구성하기 전에는 누락 즉시 탐지 또는 정확한 경보 시각을 보장하지 않는다. 공백이 의심되면 운영자가 외부 실행 결과와 공개 Actions 접수를 대조한다.
 
-- 40분 동안 새 예약 실행 접수 없음: 예약 누락 경고
-- Dispatch 후 5분 동안 job 미시작: runner 대기 경고
-- Dispatch 후 15분 동안 job 미시작: 심각 경고
-- 마지막 정상 데이터가 45분보다 오래됨: 신선도 경고
-- 마지막 정상 데이터가 60분보다 오래됨: 심각 경고
+운영 기록에는 다음을 남긴다.
 
-목표를 10분으로 확정하면 `새 Dispatch 15분`, `데이터 20분`을 1차 경고 기준으로 다시 정한다. 휴장일과 한국·미국 장 시간, 미국 서머타임을 반드시 반영한다.
-
-운영 기록에는 최소한 다음을 남긴다.
-
-- 단일 예약 파일 `market-data.yml`과 기본 브랜치·활성 상태
-- 매일 UTC 매시07·37분 목표, 예상 slot과 실제 접수 간격
+- 외부 작업 활성·실행 주기·시간대·호출 대상 `check_signals.yml`
+- HTTP 상태, 공개 접수·runner 시작·수집 종료 시각
+- 실제 호출 offset과 접수 간격(감사의00/30분 가정은 외부 설정 확인으로 확정)
 - 한국·미국 장/휴장/DST와 데이터 원천 관측 기한
-- timeout·concurrency 취소·runner 대기와 마지막 완전 성공
-- 이전 외부 `check_signals.yml` 대상 폐기 및 중복 실행 여부
+- timeout·concurrency 취소·runner 대기와 마지막 정상 완료
 - 실패·누락 알림의 담당자와 관측 범위
 
-인증 헤더나 토큰 값은 문서, 실행 요약, 알림에 넣지 않는다.
+인증 헤더나 토큰 값은 문서, 실행 요약, 알림에 넣지 않는다. `market-data.yml`에 GitHub 수집 schedule을 다시 추가하지 않는다.
 
 ## 권장 전환: Cloud Scheduler와 전용 실행 작업
 
@@ -114,13 +106,13 @@ GitHub Actions의 최신 실행을 열고 아래 순서로 확인한다. 워크�
 3. Firestore 쓰기 전용 최소 권한 서비스 계정을 사용한다.
 4. 비운영 프로젝트 또는 쓰기 없는 검증 방식으로 실행 시간과 공급자별 성공률을 확인한다.
 5. 새 Scheduler는 비활성 상태로 구성하고 경보부터 검증한다.
-6. 전환 시각에 현재 `market-data.yml` 예약을 비활성화한 뒤 새 Scheduler 하나만 활성화한다.
+6. 전환 시각에 기존 외부 cron을 비활성화한 뒤 새 Scheduler 하나만 활성화한다.
 7. 첫 실행의 시작, 종료, 데이터 신선도와 중복 쓰기 여부를 확인한다.
-8. 문제가 있으면 새 Scheduler를 끄고 현재 GitHub 예약 하나만 복구한다.
+8. 문제가 있으면 새 Scheduler를 끄고 기존 외부 cron 하나만 복구한다.
 
 GitHub Actions 화면을 계속 운영 창구로 써야 한다면 Cloud Scheduler가 최소 기능의 인증된 중계 서비스를 호출하고, 중계 서비스가 workflow dispatch를 수행할 수 있다. 이 방식은 runner 큐 의존성이 남으므로 직접 Cloud Run Job을 실행하는 방식보다 우선순위가 낮다.
 
-GitHub 시장 예약과 Cloud Scheduler를 동시에 활성화하지 않는다. 중복 호출은 공급자 사용량, 비용, Firestore 쓰기와 알림 중복을 늘릴 수 있다.
+기존 외부 cron, GitHub 시장 예약, Cloud Scheduler를 동시에 활성화하지 않는다. 중복 호출은 공급자 사용량, 비용, Firestore 쓰기와 알림 중복을 늘릴 수 있다.
 
 ## 향후 계측 항목
 
@@ -147,8 +139,10 @@ GitHub 시장 예약과 Cloud Scheduler를 동시에 활성화하지 않는다. 
 
 증거는 원문 발행주기·다음 발표 기한·철회·대체·명시 재검토를 반영한다. 월45일·분기120일 자료도 30일을 넘으면 최근8일 내 재검토가 있어야 한다. 출처 이름 대신 canonical 발행사로 독립성을 계산하며 결정적 수치 검토를 독립 감사로 부르지 않는다. 재고·CAPEX의 양수만으로 우호를 확정하지 않는다. 미감사·상충·부족·만료는 중립 상태의 구체 사유로 공개한다.
 
-SAYO 30분 시장 수집은 매일 UTC 매시07·37분 `market-data.yml` 단일 소유이며 Study와 별개다. 이전 `check_signals.yml` 외부 호출 대상은 폐기한다. 새 외부 cron을 추가하거나 두 시장 수집 스케줄러를 동시에 활성화하지 않는다. 예약 플랫폼 지연과 누락은 접수·시작·종료·원천시각으로 감사하며 다음 예약 실측 전에는 안정성을 확정하지 않는다.
+SAYO 증시 수집은 기존 외부 cron→`check_signals.yml`→공통 `market-data.yml`의 한 경로이며 Study의 주간·일간·발표 창과 별개다. 시장 수집기의 GitHub schedule은 비활성이다. 새 외부 cron을 추가하거나 두 시장 수집 스케줄러를 동시에 활성화하지 않는다. 접수·시작·종료·원천시각을 대조하며 복구 후 연속 실행 관측 전에는30분 정상화를 확정하지 않는다.
 
 Study Hosting은 기존 FIREBASE_TOKEN 경로를 우선하고, 없으면 기존 서비스계정 secret을 임시 runner 파일에만 주입해 표준 ADC로 배포한다. 두 경로 모두 없으면 발행 준비 게이트가 실패한다. 임시 파일은 항상 삭제하며 credential 내용이나 환경값을 보고서·로그로 출력하지 않는다.
 
 이벤트 workflow도 전체 Hosting 파일을 배포하므로 발표 변화와 무관하게 발행 회차마다 공개 시장 quant를 동기화한다. 기업의 실적 기반 평가는 merge 정책으로 보존하되 시장 원천 시각은 현재 문서에서 가져온다. 배포 전 cycle·quant·event·policy 전체 신선도/상태를 검사하고 배포 후 네 산출물 모두 identity를 확인한다. 오래된 checkout quant를 그대로 다시 발행하지 않는다.
+
+GitHub의 schedule은 지연되거나 누락될 수 있다는 공식 제한이 있다. 이번 원인을 플랫폼 장애로 확정하는 근거로 사용하지 않는다. [GitHub 공식 문서](https://docs.github.com/en/actions/how-tos/troubleshoot-workflows). 전용 Scheduler 검토 시 무료 한도와 별개로 프로젝트 결제 활성·비용 승인이 필요하다. [Cloud Scheduler 시작 안내](https://docs.cloud.google.com/scheduler/docs/schedule-run-cron-job).
