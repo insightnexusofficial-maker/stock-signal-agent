@@ -1,0 +1,7 @@
+{
+  "name": "sayo-ui-contract-tests",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node sayo-ui.test.mjs && node dom.test.mjs" },
+  "devDependencies": { "jsdom": "26.1.0" }
+}

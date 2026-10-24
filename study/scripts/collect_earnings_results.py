@@ -314,6 +314,9 @@ def build_rules_impact_review(facts: list[dict], reviewed_at: datetime) -> dict 
         "reviewed_at": reviewed_at.isoformat(timespec="seconds"),
         "review_method": "official-result-deterministic-rules",
         "audit_passed": True,
+        "audit_kind": "deterministic",
+        "independent_audit_passed": False,
+        "industry_promotion_status": "awaiting_independent_review",
     }
 
 

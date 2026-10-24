@@ -6,11 +6,13 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
+from study_protocol import KEY_HYPOTHESES, deduplicate_evidence, evidence_lifecycle, publisher_key
+
 
 KST = timezone(timedelta(hours=9))
 SCHEMA_VERSION = "1.2"
-LOGIC_VERSION = "cycle-engine-v5-2026-07-31"
-METHODOLOGY_VERSION = "semiconductor-cycle-ai-roles-2026-07-18"
+LOGIC_VERSION = "cycle-engine-v6-2026-10-24"
+METHODOLOGY_VERSION = "evidence-lifecycle-publisher-review-2026-10-24"
 PILLARS = {"demand", "inventory", "pricing", "supply", "earnings"}
 DIRECTIONS = {"positive", "negative", "neutral"}
 SEGMENTS = [
@@ -39,17 +41,7 @@ def valid_evidence(item: dict[str, Any], today: date) -> bool:
         return False
     if item.get("pillar") not in PILLARS or item.get("direction") not in DIRECTIONS:
         return False
-    try:
-        published = date.fromisoformat(str(item["published_at"]))
-    except ValueError:
-        return False
-    age = (today - published).days
-    max_age = item.get("max_age_days", 45)
-    if not isinstance(max_age, int) or not 1 <= max_age <= 120:
-        return False
-    # 현재 상태 확정에는 모델 운영 기준의 30일 제한을 우선한다. 더 긴 값은
-    # 수집·보관 주기일 뿐, 오래된 분기 자료를 현재 신호로 승격하지 못한다.
-    return 0 <= age <= min(max_age, 30)
+    return evidence_lifecycle(item, today)["status"] == "current"
 
 
 def status_for_segment(items: list[dict[str, Any]]) -> tuple[str, int, str, list[str], list[str]]:
@@ -59,9 +51,12 @@ def status_for_segment(items: list[dict[str, Any]]) -> tuple[str, int, str, list
 
     def qualifies(direction: str) -> bool:
         selected = by_direction[direction]
-        families = {item["source_family"] for item in selected}
+        families = {publisher_key(item) for item in selected}
         pillars = {item["pillar"] for item in selected}
-        return len(families) >= 2 and len(pillars) >= 2 and all(item.get("audit_passed") is True for item in selected)
+        return len(families) >= 2 and len(pillars) >= 2 and all(
+            item.get("audit_passed") is True and item.get("audit_kind") != "deterministic"
+            for item in selected
+        )
 
     positive_ok = qualifies("positive")
     negative_ok = qualifies("negative")
@@ -84,7 +79,7 @@ def status_for_segment(items: list[dict[str, Any]]) -> tuple[str, int, str, list
         reason = "근거가 부족하거나 상충해 중립을 유지합니다."
 
     confidence_items = supporting + contrary if status == "neutral" else supporting
-    families = {item["source_family"] for item in confidence_items}
+    families = {publisher_key(item) for item in confidence_items}
     pillars = {item["pillar"] for item in confidence_items}
     if status == "neutral":
         confidence = min(65, 25 + len(families) * 8 + len(pillars) * 6)
@@ -149,6 +144,15 @@ def project_company_cycles(
             "primary_segment": primary["segment"],
             "reason": reason,
             "exposures": valid,
+            "assessment_status": "conflicting" if conflicting else primary_segment.get("assessment_status", "insufficient"),
+            "data_status": primary_segment.get("data_status", "unavailable"),
+            "key_hypotheses": primary_segment.get("key_hypotheses", []),
+            "supporting_evidence_ids": primary_segment.get("supporting_evidence_ids", []),
+            "contrary_evidence_ids": primary_segment.get("contrary_evidence_ids", []),
+            "context_evidence_ids": primary_segment.get("context_evidence_ids", []),
+            "last_reviewed_at": primary_segment.get("last_reviewed_at"),
+            "next_check_at": primary_segment.get("next_check_at"),
+            "changes": primary_segment.get("changes", []),
         })
     return projected
 
@@ -159,17 +163,35 @@ def build_report(
     companies: list[dict[str, Any]] | None = None,
     company_map_version: str | None = None,
     update_context: dict[str, Any] | None = None,
+    previous_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     now = now or datetime.now(KST)
     today = now.date()
-    valid = [item for item in evidence if valid_evidence(item, today)]
+    valid = deduplicate_evidence([item for item in evidence if valid_evidence(item, today)])
     evidence_hash = hashlib.sha256(
         json.dumps(valid, ensure_ascii=False, sort_keys=True).encode("utf-8")
     ).hexdigest()
     segments = []
+    previous_segments = {item["id"]: item for item in (previous_report or {}).get("segments", [])}
     for order, segment_id, label in SEGMENTS:
         selected = [item for item in valid if item["segment"] == segment_id]
         status, confidence, reason, supporting, contrary = status_for_segment(selected)
+        publishers = {publisher_key(item) for item in selected}
+        pillars = {item["pillar"] for item in selected}
+        directions = {item["direction"] for item in selected}
+        audited = bool(selected) and all(item.get("audit_passed") is True and item.get("audit_kind") != "deterministic" for item in selected)
+        assessment = (
+            "sufficient" if status != "neutral" else
+            "conflicting" if {"positive", "negative"}.issubset(directions) else
+            "awaiting_independent_review" if selected and not audited else "insufficient"
+        )
+        expired_count = sum(item.get("segment") == segment_id and not valid_evidence(item, today) for item in evidence)
+        reviews = [str(item.get("last_reviewed_at")) for item in selected if item.get("last_reviewed_at")]
+        next_release = sorted(str(item["next_expected_release_at"]) for item in selected if item.get("next_expected_release_at") and str(item["next_expected_release_at"])[:10] >= today.isoformat())
+        old = previous_segments.get(segment_id)
+        changes = []
+        if old and (old.get("status") != status or old.get("assessment_status") != assessment):
+            changes.append({"from": old.get("status"), "to": status, "assessment_from": old.get("assessment_status"), "assessment_to": assessment})
         segments.append({
             "order": order,
             "id": segment_id,
@@ -180,6 +202,14 @@ def build_report(
             "reason": reason,
             "supporting_evidence_ids": supporting,
             "contrary_evidence_ids": contrary,
+            "context_evidence_ids": [item["id"] for item in selected if item["direction"] == "neutral"],
+            "assessment_status": assessment,
+            "data_status": "current" if selected else "expired" if expired_count else "unavailable",
+            "coverage": {"publisher_count": len(publishers), "pillar_count": len(pillars), "evidence_count": len(selected), "expired_or_invalid_count": expired_count},
+            "key_hypotheses": KEY_HYPOTHESES.get(segment_id, []),
+            "last_reviewed_at": max(reviews) if reviews else None,
+            "next_check_at": next_release[0] if next_release else (now + timedelta(days=7)).isoformat(timespec="seconds"),
+            "changes": changes,
         })
     context = update_context or {
         "type": "weekly",
@@ -213,4 +243,6 @@ def build_report(
         "company_map_version": company_map_version,
         "company_cycle": project_company_cycles(companies or [], segments),
         "evidence": valid,
+        "collection_coverage": (previous_report or {}).get("collection_coverage", {"last_attempt_at": None, "sources": []}),
+        "assessment_policy": {"frequency_aware": True, "publisher_identity": "canonical-origin", "independent_review_required": True, "next_full_check_at": (now + timedelta(days=7)).isoformat(timespec="seconds")},
     }

@@ -104,7 +104,7 @@ def _matched_date(match: re.Match) -> date | None:
 def discover_official_earnings_date(
     html: str,
     today: date,
-    horizon_days: int = 180,
+    horizon_days: int = 45,
 ) -> date | None:
     text = _visible_text(html)
     lower = text.lower()
@@ -165,43 +165,48 @@ def discover(now: datetime | None = None, fetcher=_fetch) -> tuple[int, int, int
     calendar = json.loads(CALENDAR_PATH.read_text(encoding="utf-8"))
     validate_calendar(calendar)
     today = now.date()
-    existing_future_tickers = {
-        str(item.get("ticker") or "").upper()
-        for item in calendar.get("events", [])
-        if item.get("kind") == "earnings"
-        and item.get("ticker")
-        and date.fromisoformat(item["scheduled_date"]) >= today
-    }
     checked = 0
     failed = 0
     added = 0
+    source_checks = []
     for monitor in calendar.get("monitors", []):
         if monitor.get("kind") != "earnings":
             continue
         ticker = str(monitor["ticker"]).upper()
-        if ticker in existing_future_tickers:
-            continue
         try:
             html = fetcher(monitor["calendar_url"])
             checked += 1
         except Exception:
             failed += 1
+            source_checks.append({"ticker": ticker, "status": "failed", "checked_at": now.isoformat(timespec="seconds")})
             continue
         candidate = discover_official_earnings_date(html, today)
+        source_checks.append({"ticker": ticker, "status": "confirmed" if candidate else "awaiting_official_date", "checked_at": now.isoformat(timespec="seconds")})
         if not candidate:
             continue
+        previous = next((item for item in calendar.get("events", []) if item.get("kind") == "earnings" and str(item.get("ticker") or "").upper() == ticker and date.fromisoformat(item["scheduled_date"]) >= today), None)
+        if previous:
+            previous["last_checked_at"] = now.isoformat(timespec="seconds")
+            if previous["scheduled_date"] != candidate.isoformat():
+                history = previous.setdefault("schedule_changes", [])
+                history.append({"previous_date": previous["scheduled_date"], "previous_at": previous.get("scheduled_at"), "checked_at": now.isoformat(timespec="seconds")})
+                stable_id = previous["id"]
+                previous.update(_date_only_event(monitor, candidate, now))
+                previous["id"] = stable_id
+                previous["schedule_changes"] = history
+            continue
         calendar.setdefault("events", []).append(_date_only_event(monitor, candidate, now))
-        existing_future_tickers.add(ticker)
         added += 1
-    # 향후 일정이 없는 모든 공식 IR을 오류 없이 확인했거나 새 일정을
-    # 발견했을 때만 캘린더의 유효기간을 연장한다. 일부 출처 실패를
+    # 모든 공식 IR 확인이 성공했을 때만 유효기간을 연장한다. 일부 출처 실패를
     # 정상 갱신으로 위장하지 않는다.
-    if added or (checked and failed == 0):
+    calendar["earnings_calendar_checks"] = source_checks
+    if checked and failed == 0:
+        calendar["generated_at"] = now.isoformat(timespec="seconds")
+        calendar["expires_at"] = (now + timedelta(days=8)).isoformat(timespec="seconds")
+    if checked or failed:
         calendar["events"].sort(
             key=lambda item: (item.get("scheduled_at") or item["monitor_after"], item["id"])
         )
-        calendar["generated_at"] = now.isoformat(timespec="seconds")
-        calendar["expires_at"] = (now + timedelta(days=8)).isoformat(timespec="seconds")
         validate_calendar(calendar)
         with tempfile.NamedTemporaryFile(
             "w",
@@ -218,8 +223,8 @@ def discover(now: datetime | None = None, fetcher=_fetch) -> tuple[int, int, int
 
 def main() -> None:
     checked, failed, added = discover()
-    if checked == 0 and failed:
-        raise SystemExit("공식 IR 일정을 한 곳도 확인하지 못했습니다.")
+    if failed:
+        raise SystemExit(f"공식 IR 일정 일부 확인 실패: 성공 {checked}개 · 실패 {failed}개; 유효기간 유지")
     print(f"공식 IR 확인 {checked}개 · 실패 {failed}개 · 새 일정 {added}개")
 
 

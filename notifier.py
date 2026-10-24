@@ -9,6 +9,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 from datetime import datetime, timedelta, timezone
 import hashlib
+import os
 import requests
 
 from event_alerts import due_cycle_interrupt_alerts, due_shock_alerts
@@ -17,6 +18,7 @@ from notification_policy import (
     evaluate_buy_alert,
     is_kr_buy_alert_session,
     is_us_buy_alert_session,
+    push_recipient_enabled,
 )
 
 try:
@@ -44,15 +46,16 @@ def _mode_emoji(mode):
 
 
 def send_push(title, body, tag=None, data=None):
+    # 수집 QA 실행에서는 토큰 조회, 전송, 만료 토큰 정리 모두 생략한다.
+    if os.getenv("SAYO_DISABLE_PUSH") == "1":
+        return 0
     expires_at = datetime.now(timezone.utc) + PUSH_TTL
     tokens_ref = db.collection("fcm_tokens").stream()
     tokens = []
     for doc in tokens_ref:
         token_record = doc.to_dict()
         # 미승인 또는 알림 OFF는 제외
-        if token_record.get("approved") is not True:
-            continue
-        if token_record.get("notifications_enabled") is False:
+        if not push_recipient_enabled(token_record):
             continue
         tokens.append(doc.id)
     
@@ -116,6 +119,8 @@ def send_push(title, body, tag=None, data=None):
 
 def send_due_event_shock_alerts(event_feed=None, now=None):
     """검증된 쇼크 결과를 다음 날 07:00 KST에 최대 한 번 발송한다."""
+    if os.getenv("SAYO_DISABLE_PUSH") == "1":
+        return 0
     if event_feed is None:
         try:
             doc = db.collection("stocks").document("data").get()
@@ -185,6 +190,8 @@ def send_due_event_shock_alerts(event_feed=None, now=None):
 
 def send_due_cycle_interrupt_alerts(cycle_report=None, now=None):
     """중요 공식 발표가 만든 사이클 중간 변경을 검증 후 최대 한 번 발송한다."""
+    if os.getenv("SAYO_DISABLE_PUSH") == "1":
+        return 0
     if cycle_report is None:
         try:
             response = requests.get(CYCLE_REPORT_URL, timeout=12)
@@ -264,6 +271,8 @@ def check_and_notify(vix_data=None, qqq_data=None, kospi_data=None, now=None):
     매수 후보와 위기·정보성·VIX 변화는 화면에만 표시한다. 푸시는 매수 상태
     전환과 별도 실행의 검증된 공식 발표 쇼크만 발송한다.
     """
+    if os.getenv("SAYO_DISABLE_PUSH") == "1":
+        return 0
     print(f"\n📊 시장 모드: 미국 {_mode_emoji((qqq_data or {}).get('above_ma20', True) and 'normal' or 'adjust')} | "
           f"한국 {_mode_emoji((kospi_data or {}).get('above_ma20', True) and 'normal' or 'adjust')} "
           f"(VIX: {(vix_data or {}).get('current', '?')})")

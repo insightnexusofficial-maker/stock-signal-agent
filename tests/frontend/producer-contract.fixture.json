@@ -1,0 +1,30 @@
+{
+  "cycle_report": {
+    "data_status": "fresh",
+    "quality_status": "insufficient",
+    "generated_at": "2026-10-24T08:00:00+09:00",
+    "expires_at": "2026-10-31T08:00:00+09:00"
+  },
+  "stock": {
+    "cycle_status": "neutral",
+    "cycle_data_status": "current",
+    "cycle_assessment_status": "insufficient",
+    "cycle_reason": "합성 예시: 독립 근거 부족",
+    "cycle_hypotheses": ["합성 예시: 다음 발표에서 현금흐름 확인"],
+    "cycle_changes": [{"from": "favorable", "to": "neutral", "assessment_from": "sufficient", "assessment_to": "insufficient"}],
+    "cycle_evidence": [
+      {"id": "synthetic-positive", "fact": "합성 지지 근거", "source_url": "https://example.com/support", "published_at": "2026-10-23", "direction": "positive", "source_family": "synthetic_ir"},
+      {"id": "synthetic-negative", "fact": "합성 반대 근거", "source_url": "https://example.com/contrary", "published_at": "2026-10-23", "direction": "negative", "source_family": "synthetic_ir_2"}
+    ],
+    "cycle_last_reviewed_at": "2026-10-24T08:00:00+09:00",
+    "cycle_next_check_at": "2026-10-31T08:00:00+09:00"
+  },
+  "market_environment": {
+    "quality_status": "partial",
+    "display_only": true,
+    "series": {
+      "core_pce": {"current": 120.5, "unit": "index", "data_status": "latest_available", "observed_at": "2026-09-01", "reference_period": "2026-09", "observation_precision": "month", "trend_3m_annualized_pct": 2.5},
+      "initial_claims": {"current": 210000, "unit": "people", "data_status": "fresh", "observed_at": "2026-10-17", "observation_precision": "date", "four_week_average": 215000}
+    }
+  }
+}

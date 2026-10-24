@@ -8,6 +8,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from cycle_engine import DIRECTIONS, PILLARS, SEGMENTS
+from study_protocol import publisher_key
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +26,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="검토 완료 JSON을 검증된 evidence 저장소에 반영")
     parser.add_argument("review_file", type=Path)
     args = parser.parse_args()
-    reviews = json.loads(args.review_file.read_text(encoding="utf-8")).get("reviews", [])
+    reviews_document = json.loads(args.review_file.read_text(encoding="utf-8"))
+    reviews = reviews_document.get("reviews", [])
     inbox = json.loads((ROOT / "data/inbox.json").read_text(encoding="utf-8"))
     candidates = {item["id"]: item for item in inbox.get("candidates", [])}
     registry = json.loads((ROOT / "data/sources.json").read_text(encoding="utf-8"))
@@ -65,6 +67,10 @@ def main() -> None:
             "published_at": review["published_at"],
             "max_age_days": int(source.get("max_age_days", 45)),
             "source_family": candidate["source_family"],
+            "publisher_id": publisher_key(candidate),
+            "frequency": review.get("frequency") or candidate.get("frequency") or source.get("frequency") or "event",
+            "last_reviewed_at": review.get("reviewed_at") or reviews_document.get("generated_at"),
+            "next_expected_release_at": review.get("next_expected_release_at"),
             "confidence": "direct",
             "review_status": "verified",
             "audit_passed": review.get("audit_passed") is True,
@@ -72,6 +78,7 @@ def main() -> None:
             "reviewed_by": review.get("reviewed_by") or "human",
             "audited_by": review.get("audited_by"),
             "audit_reason": review.get("audit_reason"),
+            "audit_kind": "independent" if review.get("audit_passed") is True else "pending",
         }
 
     evidence_document["evidence"] = sorted(evidence_by_id.values(), key=lambda item: item["id"])

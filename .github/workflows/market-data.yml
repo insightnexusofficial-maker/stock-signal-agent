@@ -1,8 +1,21 @@
-name: Stock Signal Check
+name: Stock SAYO Market Data
 
 on:
-  # 외부 트리거(cron-job.org) 전용. GitHub 내장 cron은 신뢰도 낮아 제거.
+  # 기존 외부 cron의 check_signals.yml dispatch 경로는 삭제해 은퇴시킨다.
+  # 주말/휴장에도 30분 수집한다. GitHub 예약 지연은 별도 공개 메타 감사 대상이다.
+  schedule:
+    - cron: '7,37 * * * *'
   workflow_dispatch:
+    inputs:
+      suppress_push:
+        description: '수집 QA: 실제 푸시와 알림 상태 변경 생략'
+        type: boolean
+        required: false
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - '.github/refresh-market-data.json'
 
 permissions:
   actions: read
@@ -12,14 +25,17 @@ concurrency:
   group: stock-signal-check
   # 시세 데이터는 최신 실행의 가치가 가장 높다. 오래 대기한 실행이 복구 뒤
   # 최신 실행을 막지 않도록 새 dispatch가 이전 실행/대기를 대체한다.
-  # 현재 외부 30분 간격은 25분 job timeout보다 길다. 10분으로 줄이기 전에는
-  # OPERATIONS.md의 전환 게이트에 따라 실행 시간을 먼저 줄여야 한다.
+  # 예약 30분 간격은 25분 job timeout보다 길다.
   cancel-in-progress: true
 
 jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      # marker 변경으로 시작한 검증 실행은 파일 내용과 무관하게 푸시를 차단한다.
+      SAYO_DISABLE_PUSH: ${{ (github.event_name == 'push' || inputs.suppress_push == true) && '1' || '0' }}
+      SAYO_SKIP_NOTIFY: ${{ (github.event_name == 'push' || inputs.suppress_push == true) && '1' || '0' }}
     
     steps:
       - name: Record dispatch and job start
@@ -49,7 +65,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
           {
-            printf '## Stock Signal Check\n\n'
+            printf '## Stock SAYO Market Data\n\n'
             printf '| 공개 운영 항목 | 값 |\n'
             printf '| --- | --- |\n'
             printf '| Dispatch 접수 (UTC) | `%s` |\n' "$dispatch_at"
@@ -58,6 +74,8 @@ jobs:
               "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SERVER_URL" \
               "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
             printf '| Commit | `%s` |\n' "$GITHUB_SHA"
+            printf '| Trigger | `%s` |\n' "$GITHUB_EVENT_NAME"
+            printf '| 실제 푸시 생략 | `%s` |\n' "$SAYO_DISABLE_PUSH"
             printf '\n이 요약에는 비밀값, API 응답 본문, 사용자 데이터가 포함되지 않습니다.\n'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -75,15 +93,20 @@ jobs:
         run: pip install --disable-pip-version-check --no-input -r requirements-uploader.txt
       
       - name: Create Firebase key
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
           umask 077
-          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-key.json
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_KEY" > firebase-key.json
       
       - name: Create .env file
+        env:
+          KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+          KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
         run: |
           umask 077
-          printf '%s\n' "KIS_APP_KEY=${{ secrets.KIS_APP_KEY }}" > .env
-          printf '%s\n' "KIS_APP_SECRET=${{ secrets.KIS_APP_SECRET }}" >> .env
+          printf '%s\n' "KIS_APP_KEY=$KIS_APP_KEY" > .env
+          printf '%s\n' "KIS_APP_SECRET=$KIS_APP_SECRET" >> .env
       
       - name: Run signal checker
         id: signal_checker
@@ -92,6 +115,29 @@ jobs:
       - name: Remove temporary credentials
         if: always()
         run: rm -f .env firebase-key.json
+
+      - name: Audit public scheduling metadata
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          metadata_file="$RUNNER_TEMP/sayo-public-runs.json"
+          audit_file="$RUNNER_TEMP/sayo-schedule-audit.json"
+          if curl --silent --show-error --fail \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/market-data.yml/runs?per_page=100" \
+            --output "$metadata_file" 2>/dev/null \
+            && python scripts/schedule_audit.py --runs "$metadata_file" > "$audit_file"; then
+            {
+              printf '\n### 예약 실행 감사 (최근 24시간)\n\n```json\n'
+              cat "$audit_file"
+              printf '\n```\n\n생성시각 기반 slot 대조는 추정입니다. 수집 자료 완전성은 이 감사만으로 확인하지 않습니다.\n'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '\n예약 메타데이터 감사: 검증 불가. 수집 결과와 별개입니다.\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Record completion
         if: always()

@@ -25,6 +25,12 @@ class SourceCollectorTests(unittest.TestCase):
         self.assertEqual(candidates[0]["published_at_quality"], "direct")
         self.assertIn("Revenue grew", candidates[0]["content_excerpt"])
 
+    def test_release_index_does_not_assign_its_latest_date_to_page_facts(self):
+        source = {"id":"index", "label":"Official index", "source_family":"company_ir", "segments":["foundry_logic"], "default_pillar":"earnings", "page_role":"release_index"}
+        items = parse_dated_html_watch(source, b"<article>October 23, 2026 Conference</article><article>Revenue result July 1, 2026</article>", "https://example.com/index", datetime(2026, 10, 24, tzinfo=timezone.utc))
+        self.assertIsNone(items[0]["published_at"])
+        self.assertEqual(items[0]["published_at_quality"], "unknown")
+
     def test_dated_html_limits_excerpt_around_latest_direct_date(self):
         body = b'''<html><title>Official releases</title><body>
           <article>June 1, 2026 older item</article>

@@ -35,8 +35,13 @@ class FrontendEntryFlowTests(unittest.TestCase):
     def test_approval_is_server_checked_with_bounded_retry(self):
         self.assertIn("getDocFromServer(doc(db, \"fcm_tokens\", token))", self.source)
         self.assertRegex(self.source, r"const APPROVAL_TIMEOUT_MS = \d+;")
+        self.assertRegex(self.source, r"const APPROVAL_REST_TIMEOUT_MS = \d+;")
         self.assertRegex(self.source, r"const APPROVAL_MAX_ATTEMPTS = 2;")
         self.assertIn("withTimeout(", self.source)
+        self.assertIn("fetchApprovalStatusFromRest(token)", self.source)
+        self.assertIn("encodeURIComponent(token)", self.source)
+        self.assertIn('url.searchParams.set("key", firebaseConfig.apiKey)', self.source)
+        self.assertIn('state: "approved_cached"', self.source)
         self.assertIn("snap.metadata.fromCache", self.source)
         self.assertNotIn("statusKnown", self.source)
 
@@ -66,7 +71,7 @@ class FrontendEntryFlowTests(unittest.TestCase):
         self.assertIn("fallbackLoadPromise", self.source)
 
     def test_app_version_changes_for_the_entry_flow_release(self):
-        self.assertIn('const APP_VERSION = "20260731-market-alerts-1";', self.source)
+        self.assertIn('const APP_VERSION = "20260825-approval-rest-fallback-1";', self.source)
 
     def test_buy_alert_guide_separates_watchlist_from_pushes(self):
         self.assertIn("매수 후보만으로는 푸시 알림을 보내지 않아요.", self.source)

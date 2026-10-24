@@ -1,11 +1,14 @@
 name: Verified official event feed
 
 on:
+  push:
+    branches: [main]
+    paths: [".github/refresh-study-events.json"]
   schedule:
     # 매일 07:15 KST: 향후 공식 실적 발표일 발견.
     - cron: "15 22 * * *"
-    # 평일 주요 글로벌 발표 창에만 매시간 확인한다(기존 30분×24/7 대비 82% 축소).
-    - cron: "17 20-23,5-9,12-14 * * 1-5"
+    # UTC 평일 주요 발표 창에 매시간 확인한다. FOMC 14:00 ET(DST 포함) 창을 포함한다.
+    - cron: "17 18-23,5-9,12-14 * * 1-5"
   workflow_dispatch:
 
 permissions:
@@ -21,6 +24,8 @@ jobs:
     timeout-minutes: 15
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE: ${{ secrets.FIREBASE_TOKEN != '' || secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
+      ALERT_CREDENTIAL_AVAILABLE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
     defaults:
       run:
         working-directory: study
@@ -32,9 +37,25 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Prepare temporary Hosting credential fallback
+        if: ${{ env.FIREBASE_TOKEN == '' && env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' }}
+        env:
+          FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$FIREBASE_DEPLOY_SERVICE_ACCOUNT" > "$RUNNER_TEMP/study-firebase-key.json"
+          printf 'GOOGLE_APPLICATION_CREDENTIALS=%s/study-firebase-key.json\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+
+      - name: Install contract validation dependency
+        run: pip install --disable-pip-version-check --no-input -r requirements-test.txt
+
       - name: Discover official earnings dates
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' }}
         run: python scripts/discover_earnings_calendar.py
+
+      - name: Discover official macro release dates
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' }}
+        run: python scripts/discover_macro_calendar.py
 
       - name: Check whether an announcement window is active
         id: due
@@ -42,18 +63,18 @@ jobs:
 
       - name: Detect official earnings result publication
         id: earnings
-        if: ${{ steps.due.outputs.active == 'true' || ((github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *') && steps.due.outputs.backfill_active == 'true') }}
+        if: ${{ steps.due.outputs.active == 'true' || (((github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *') && steps.due.outputs.backfill_active == 'true') }}
         env:
-          INCLUDE_RECENT_OVERDUE: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' }}
+          INCLUDE_RECENT_OVERDUE: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' }}
         run: python scripts/collect_earnings_results.py
 
       - name: Collect supported official macro results
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: python scripts/collect_event_results.py --include-recent-overdue
 
       - name: Apply verified announcement impact to the cycle
         id: impact
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: python scripts/apply_event_cycle_impact.py
 
       - name: Refresh company assessments only after an earnings result
@@ -63,51 +84,88 @@ jobs:
 
       - name: Build verified event feed
         id: build
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: python scripts/build_event_feed.py
 
+      - name: Refresh official policy context
+        id: policy
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        run: python scripts/build_macro_policy_signal.py
+
       - name: Run event tests and static validation
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: |
-          python -m unittest discover -s tests -p "test_*event*.py" -v
+          python -m unittest discover -s tests -v
           python -m unittest tests/test_apply_event_cycle_impact.py tests/test_sync_sayo_quant_lifecycle.py -v
           python scripts/validate_build.py
+          python scripts/validate_schema.py
+
+      - name: Require current event publication readiness
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        run: |
+          python scripts/publication_health.py --event-only
+          python scripts/publication_health.py --preflight --deployment-ready "${{ env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' }}"
 
       - name: Save verified event snapshot
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') || github.event.schedule == '15 22 * * *' || steps.due.outputs.active == 'true' }}
         run: |
           git config user.name "stock-sayo-study-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/event-calendar.json data/event-results.json data/evidence.json public/data/event-latest.json public/data/cycle-latest.json public/data/quant-latest.json
+          git add data/event-calendar.json data/event-results.json data/evidence.json public/data/event-latest.json public/data/cycle-latest.json public/data/quant-latest.json public/data/macro-policy-latest.json
           git diff --cached --quiet || git commit -m "chore: refresh verified event feed"
           git push
 
       - name: Install Firebase CLI
-        if: ${{ env.FIREBASE_TOKEN != '' && (steps.build.outputs.changed == 'true' || steps.impact.outputs.cycle_changed == 'true' || steps.quant.outputs.changed == 'true') }}
+        if: ${{ env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' && (steps.build.outputs.changed == 'true' || steps.impact.outputs.cycle_changed == 'true' || steps.quant.outputs.changed == 'true' || steps.policy.outputs.changed == 'true') }}
         run: npm install --global firebase-tools
 
       - name: Deploy validated event feed
-        if: ${{ env.FIREBASE_TOKEN != '' && (steps.build.outputs.changed == 'true' || steps.impact.outputs.cycle_changed == 'true' || steps.quant.outputs.changed == 'true') }}
-        run: firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"
+        if: ${{ env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' && (steps.build.outputs.changed == 'true' || steps.impact.outputs.cycle_changed == 'true' || steps.quant.outputs.changed == 'true' || steps.policy.outputs.changed == 'true') }}
+        run: |
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"
+          else
+            firebase deploy --only hosting --non-interactive
+          fi
+
+      - name: Verify every changed public artifact identity
+        if: ${{ steps.build.outputs.changed == 'true' || steps.impact.outputs.cycle_changed == 'true' || steps.quant.outputs.changed == 'true' || steps.policy.outputs.changed == 'true' }}
+        working-directory: study
+        env:
+          EVENT_CHANGED: ${{ steps.build.outputs.changed }}
+          CYCLE_CHANGED: ${{ steps.impact.outputs.cycle_changed }}
+          QUANT_CHANGED: ${{ steps.quant.outputs.changed }}
+          POLICY_CHANGED: ${{ steps.policy.outputs.changed }}
+        run: |
+          artifacts=()
+          if [ "$EVENT_CHANGED" = "true" ]; then artifacts+=(event-latest.json); fi
+          if [ "$CYCLE_CHANGED" = "true" ]; then artifacts+=(cycle-latest.json); fi
+          if [ "$QUANT_CHANGED" = "true" ]; then artifacts+=(quant-latest.json); fi
+          if [ "$POLICY_CHANGED" = "true" ]; then artifacts+=(macro-policy-latest.json); fi
+          python scripts/publication_health.py --artifacts "${artifacts[@]}" --verify-public
 
       - name: Install alert dependencies for a critical interrupt
-        if: ${{ steps.impact.outputs.critical == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
+        if: ${{ github.event_name != 'push' && steps.impact.outputs.critical == 'true' && env.ALERT_CREDENTIAL_AVAILABLE == 'true' }}
         working-directory: .
         run: pip install --disable-pip-version-check --no-input -r requirements-uploader.txt
 
       - name: Create temporary Firebase key for a critical interrupt
-        if: ${{ steps.impact.outputs.critical == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
+        if: ${{ github.event_name != 'push' && steps.impact.outputs.critical == 'true' && env.ALERT_CREDENTIAL_AVAILABLE == 'true' }}
         working-directory: .
+        env:
+          FIREBASE_ALERT_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
           umask 077
-          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-key.json
+          printf '%s' "$FIREBASE_ALERT_SERVICE_ACCOUNT" > firebase-key.json
 
       - name: Push the audited critical cycle interrupt
-        if: ${{ steps.impact.outputs.critical == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
+        if: ${{ github.event_name != 'push' && steps.impact.outputs.critical == 'true' && env.ALERT_CREDENTIAL_AVAILABLE == 'true' }}
         working-directory: .
         run: python send_cycle_interrupt_alerts.py
 
       - name: Remove temporary alert credentials
         if: always()
         working-directory: .
-        run: rm -f firebase-key.json
+        run: |
+          rm -f firebase-key.json
+          rm -f "$RUNNER_TEMP/study-firebase-key.json"

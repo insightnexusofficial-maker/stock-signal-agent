@@ -25,13 +25,26 @@ service cloud.firestore {
       // 일반 사용자는 자기 토큰만 조회하고, 관리자만 승인 목록을 관리한다.
       allow get: if true;
       allow list: if isAdmin();
-      allow update: if isAdmin()
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved'])
-                    && request.resource.data.approved is bool;
+      // 기존 등록 토큰을 가진 클라이언트는 수신 설정만 바꿀 수 있다.
+      // 승인·닉네임·토큰·등록 시각을 함께 변경하는 요청은 허용하지 않는다.
+      function updatesPushPreferenceOnly() {
+        return resource.data.token == token
+               && request.resource.data.token == resource.data.token
+               && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['push_enabled', 'push_updated_at'])
+               && request.resource.data.push_enabled is bool
+               && request.resource.data.push_updated_at is string
+               && request.resource.data.push_updated_at.size() <= 40;
+      }
+      allow update: if (isAdmin()
+                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved'])
+                       && request.resource.data.approved is bool)
+                    || updatesPushPreferenceOnly();
       allow delete: if isAdmin();
 
       allow create: if request.resource.data.keys().hasOnly([
-                      'token', 'nickname', 'registered_at', 'createdAt', 'approved'
+                      'token', 'nickname', 'registered_at', 'createdAt', 'approved',
+                      'push_enabled', 'push_updated_at'
                     ])
                   && request.resource.data.keys().hasAll([
                       'token', 'nickname', 'registered_at', 'createdAt', 'approved'
@@ -42,7 +55,12 @@ service cloud.firestore {
                   && request.resource.data.nickname.size() <= 30
                   && request.resource.data.registered_at is string
                   && request.resource.data.createdAt is timestamp
-                  && request.resource.data.approved == false;
+                  && request.resource.data.approved == false
+                  && (!('push_enabled' in request.resource.data)
+                      || request.resource.data.push_enabled is bool)
+                  && (!('push_updated_at' in request.resource.data)
+                      || (request.resource.data.push_updated_at is string
+                          && request.resource.data.push_updated_at.size() <= 40));
     }
   }
 }

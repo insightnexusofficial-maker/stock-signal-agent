@@ -1,7 +1,10 @@
 import unittest
 from datetime import datetime
 
-from scripts import build_macro_policy_signal
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import build_macro_policy_signal
 
 
 class MacroPolicySignalTests(unittest.TestCase):
@@ -15,7 +18,7 @@ class MacroPolicySignalTests(unittest.TestCase):
         self.assertEqual(payload["sector"]["id"], "us_rate_policy")
         self.assertEqual(payload["sector"]["status"], "hike_watch")
         self.assertEqual(payload["sector"]["probability_level"], "elevated")
-        self.assertGreaterEqual(payload["sector"]["probability_pct"], 50)
+        self.assertIsNone(payload["sector"]["probability_pct"])
         self.assertEqual(len({item["source_family"] for item in payload["evidence"]}), 2)
 
 

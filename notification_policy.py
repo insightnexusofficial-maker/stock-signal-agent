@@ -16,6 +16,14 @@ US_BUY_ALERT_QUIET_START_KST = time(5, 0)
 US_BUY_ALERT_QUIET_END_KST = time(9, 0)
 
 
+def push_recipient_enabled(record):
+    """승인과 기기별 수신 동의를 모두 확인한다. 누락된 구버전 설정은 유지한다."""
+    if not isinstance(record, dict) or record.get("approved") is not True:
+        return False
+    # 새 설정은 명시적인 사용자 선택이다. 구버전 필드는 마이그레이션 전만 사용한다.
+    return record.get("push_enabled", record.get("notifications_enabled", True)) is True
+
+
 def is_kr_buy_alert_session(now=None):
     """한국 주식·ETF 매수 푸시를 평가해도 되는 정규장 시간인지 확인한다."""
     now = now or datetime.now(KST)

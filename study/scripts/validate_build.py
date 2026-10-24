@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from event_feed import build_public_feed
+from study_protocol import publisher_key
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -161,13 +162,13 @@ def validate_json() -> list[str]:
         sector = macro_policy.get("sector") or {}
         quality_gate = macro_policy.get("quality_gate") or {}
         if (
-            quality_gate.get("status") != "passed"
-            or quality_gate.get("mode") != "official-speech-plus-market-pricing"
+            quality_gate.get("status") not in {"passed", "unavailable"}
+            or quality_gate.get("mode") not in {"official-speech-plus-market-pricing", "official-policy-decision"}
             or not re.fullmatch(r"[0-9a-f]{64}", str(macro_policy.get("content_sha256", "")))
             or sector.get("id") != "us_rate_policy"
             or sector.get("status") not in MACRO_POLICY_STATUSES
             or sector.get("chip_tone") not in MACRO_POLICY_TONES
-            or sector.get("review_status") != "verified"
+            or sector.get("review_status") not in {"verified", "unavailable"}
         ):
             errors.append("macro-policy-latest.json 품질 게이트 오류")
         try:
@@ -185,7 +186,8 @@ def validate_json() -> list[str]:
             errors.append("macro-policy-latest.json 가능성 범위 오류")
         evidence = macro_policy.get("evidence") or []
         evidence_ids = {item.get("id") for item in evidence}
-        if len(evidence) < 2 or len({item.get("source_family") for item in evidence}) < 2:
+        required_evidence = 0 if quality_gate.get("status") == "unavailable" else 1 if quality_gate.get("mode") == "official-policy-decision" else 2
+        if len(evidence) < required_evidence or len({item.get("source_family") for item in evidence}) < required_evidence:
             errors.append("macro-policy-latest.json 독립 근거 부족")
         if set(sector.get("evidence_ids") or []) - evidence_ids:
             errors.append("macro-policy-latest.json 근거 참조 오류")
@@ -319,7 +321,7 @@ def validate_json() -> list[str]:
         if segment.get("status") in {"favorable", "caution"}:
             selected_ids = set(segment.get("supporting_evidence_ids", []))
             selected = [item for item in cycle.get("evidence", []) if item.get("id") in selected_ids]
-            families = {item.get("source_family") for item in selected}
+            families = {publisher_key(item) for item in selected}
             pillars = {item.get("pillar") for item in selected}
             if len(families) < 2 or len(pillars) < 2:
                 errors.append(f"cycle: {segment.get('id')} 상태 확정 근거 부족")

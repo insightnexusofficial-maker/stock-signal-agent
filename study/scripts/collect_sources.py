@@ -10,7 +10,7 @@ import tempfile
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -110,6 +110,8 @@ def base_candidate(source: dict, title: str, url: str, published_at: str | None,
         "published_at": published_at,
         "published_at_quality": "direct" if published_at else "unknown",
         "source_family": source["source_family"],
+        "publisher_id": source.get("publisher_id"),
+        "frequency": source.get("frequency", "event"),
         "candidate_segments": source["segments"],
         "candidate_pillar": source["default_pillar"],
         "direction": "unverified",
@@ -174,6 +176,10 @@ def parse_dated_html_watch(source: dict, body: bytes, final_url: str, observed: 
     text = " ".join(parser.text_parts)
     month = r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
     patterns = (rf"{month}\s+\d{{1,2}},\s+\d{{4}}", rf"\d{{1,2}}\s+{month}\s+\d{{4}}", r"\d{4}-\d{2}-\d{2}")
+    # Index/landing pages are not a single release. A date elsewhere on the
+    # page must not authenticate an unrelated financial fact.
+    if source.get("page_role") == "release_index":
+        return parse_html_watch(source, body, final_url)
     dated = []
     for pattern in patterns:
         for match in re.finditer(pattern, text, flags=re.IGNORECASE):
@@ -232,7 +238,7 @@ def main() -> None:
                     continue
                 candidate["collected_at"] = now.isoformat(timespec="seconds")
                 merged[candidate["id"]] = {**merged.get(candidate["id"], {}), **candidate}
-            source_results.append({"source_id": source["id"], "status": "ok", "items": len(candidates)})
+            source_results.append({"source_id": source["id"], "status": "ok", "items": len(candidates), "dated_items": sum(bool(item.get("published_at")) for item in candidates), "evidence_status": "dated_candidates" if any(item.get("published_at") for item in candidates) else "publication_date_unverified"})
         except Exception as exc:
             source_results.append({"source_id": source["id"], "status": "error", "error": str(exc)[:240]})
 

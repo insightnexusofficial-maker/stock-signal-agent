@@ -23,6 +23,14 @@ class FakeResponse:
 
 
 class UploaderRegressionTests(unittest.TestCase):
+    def test_cycle_neutral_context_fact_remains_visible_without_signal_change(self):
+        stock={"code":"NVDA","signal":"WAIT","step":1,"buy_level":"watch"}
+        report={"report_id":"neutral-report","evidence":[{"id":"capex","fact":"공식 투자계획","direction":"neutral","source_url":"https://investor.nvidia.com/a","published_at":"2026-10-24"}],"company_cycle":[{"ticker":"NVDA","status":"neutral","supporting_evidence_ids":[],"contrary_evidence_ids":[],"context_evidence_ids":["capex"]}]}
+        uploader.attach_cycle_context(stock,report)
+        self.assertEqual(stock["cycle_evidence"][0]["id"],"capex")
+        self.assertEqual((stock["signal"],stock["step"],stock["buy_level"]),("WAIT",1,"watch"))
+
+
     @patch("uploader.get_fnguide_forward_consensus")
     @patch("uploader.get_naver_consensus")
     def test_kr_forward_peg_uses_multi_year_forward_consensus(self, naver, fnguide):
@@ -310,7 +318,9 @@ class UploaderRegressionTests(unittest.TestCase):
 
         self.assertEqual(result["price"], 3000.0)
         self.assertTrue(result["is_stale"])
-        self.assertEqual(result["stale_as_of"], "07월 15일 15:31")
+        # A document-wide refresh is not the market observation's timestamp.
+        self.assertIsNone(result["stale_as_of"])
+        self.assertIsNone(result["observed_at"])
 
     @patch("uploader.db")
     def test_publish_patch_does_not_overwrite_with_none_or_empty_lists(self, firestore_db):

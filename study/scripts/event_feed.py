@@ -501,6 +501,9 @@ def build_public_feed(calendar_path=None, results_path=None, now=None) -> dict:
         },
         "event_sync": {
             "calendar_status": sync["calendar_status"],
+            "calendar_checks": {"earnings": calendar.get("earnings_calendar_checks", []), "macro": calendar.get("macro_calendar_checks", [])},
+            "macro_automatic_schedule_scope": ["macro-us-cpi", "macro-us-jobs", "macro-us-pce", "macro-fomc"],
+            "macro_manual_confirmation_scope": ["macro-kr-cpi", "macro-bok-rate"],
             "monitored_company_count": sync["monitored_company_count"],
             "monitored_macro_count": sync["monitored_macro_count"],
             "due_event_ids": sync["due_event_ids"],

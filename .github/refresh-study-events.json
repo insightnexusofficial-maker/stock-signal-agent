@@ -1,0 +1,5 @@
+{
+  "schema_version": "1.0",
+  "requested_at": "2026-10-24T08:31:07Z",
+  "purpose": "Validate official calendar and event publication after QA improvements. Critical push is suppressed for this trigger."
+}

@@ -85,7 +85,11 @@
       "primary_role": "manufacturing_memory",
       "calendar_url": "https://news.samsung.com/global/tag/earnings-release",
       "results_url": "https://news.samsung.com/global/tag/earnings-release",
-      "segments": ["memory_hbm_dram", "memory_nand", "foundry_logic"]
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand",
+        "foundry_logic"
+      ]
     },
     {
       "id": "earnings-000660",
@@ -95,7 +99,10 @@
       "primary_role": "manufacturing_memory",
       "calendar_url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
       "results_url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
-      "segments": ["memory_hbm_dram", "memory_nand"]
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand"
+      ]
     },
     {
       "id": "earnings-MU",
@@ -105,7 +112,10 @@
       "primary_role": "manufacturing_memory",
       "calendar_url": "https://investors.micron.com/events-and-presentations",
       "results_url": "https://investors.micron.com/quarterly-results",
-      "segments": ["memory_hbm_dram", "memory_nand"]
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand"
+      ]
     },
     {
       "id": "earnings-TSM",
@@ -114,8 +124,10 @@
       "name": "TSMC",
       "primary_role": "manufacturing_memory",
       "calendar_url": "https://investor.tsmc.com/english/financial-calendar",
-      "results_url": "https://investor.tsmc.com/english/quarterly-results/2026/q2",
-      "segments": ["foundry_logic"]
+      "results_url": "https://investor.tsmc.com/english/quarterly-results",
+      "segments": [
+        "foundry_logic"
+      ]
     },
     {
       "id": "earnings-NVDA",
@@ -125,7 +137,9 @@
       "primary_role": "ai_chip_design",
       "calendar_url": "https://investor.nvidia.com/events-and-presentations/default.aspx",
       "results_url": "https://investor.nvidia.com/financial-info/quarterly-results/default.aspx",
-      "segments": ["ai_compute_design"]
+      "segments": [
+        "ai_compute_design"
+      ]
     },
     {
       "id": "earnings-AMD",
@@ -135,7 +149,10 @@
       "primary_role": "ai_chip_design",
       "calendar_url": "https://ir.amd.com/news-events/ir-calendar",
       "results_url": "https://ir.amd.com/financial-information/quarterly-results",
-      "segments": ["ai_compute_design", "foundry_logic"]
+      "segments": [
+        "ai_compute_design",
+        "foundry_logic"
+      ]
     },
     {
       "id": "earnings-AVGO",
@@ -145,7 +162,10 @@
       "primary_role": "ai_chip_design",
       "calendar_url": "https://investor.broadcom.com/",
       "results_url": "https://investor.broadcom.com/financial-information/quarterly-results",
-      "segments": ["ai_compute_design", "cloud_capex"]
+      "segments": [
+        "ai_compute_design",
+        "cloud_capex"
+      ]
     },
     {
       "id": "earnings-ASML",
@@ -155,7 +175,9 @@
       "primary_role": "equipment_materials",
       "calendar_url": "https://www.asml.com/en/investors/financial-calendar",
       "results_url": "https://www.asml.com/en/investors/financial-results",
-      "segments": ["equipment_materials"]
+      "segments": [
+        "equipment_materials"
+      ]
     },
     {
       "id": "earnings-LRCX",
@@ -165,7 +187,9 @@
       "primary_role": "equipment_materials",
       "calendar_url": "https://investor.lamresearch.com/events",
       "results_url": "https://investor.lamresearch.com/quarterly-results",
-      "segments": ["equipment_materials"]
+      "segments": [
+        "equipment_materials"
+      ]
     },
     {
       "id": "earnings-MSFT",
@@ -173,9 +197,12 @@
       "ticker": "MSFT",
       "name": "Microsoft",
       "primary_role": "demand_capex",
-      "calendar_url": "https://www.microsoft.com/en-us/Investor/events/FY-2026/earnings-fy-2026-q4",
-      "results_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
-      "segments": ["cloud_capex", "ai_services"]
+      "calendar_url": "https://www.microsoft.com/en-us/Investor/earnings",
+      "results_url": "https://www.microsoft.com/en-us/Investor/earnings",
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ]
     },
     {
       "id": "earnings-META",
@@ -185,7 +212,10 @@
       "primary_role": "demand_capex",
       "calendar_url": "https://investor.atmeta.com/investor-events/default.aspx",
       "results_url": "https://investor.atmeta.com/financials/default.aspx",
-      "segments": ["cloud_capex", "ai_services"]
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ]
     },
     {
       "id": "earnings-AMZN",
@@ -195,7 +225,10 @@
       "primary_role": "demand_capex",
       "calendar_url": "https://ir.aboutamazon.com/events/default.aspx",
       "results_url": "https://ir.aboutamazon.com/quarterly-results/default.aspx",
-      "segments": ["cloud_capex", "ai_services"]
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ]
     },
     {
       "id": "earnings-GOOGL",
@@ -205,7 +238,10 @@
       "primary_role": "demand_capex",
       "calendar_url": "https://abc.xyz/investor/",
       "results_url": "https://abc.xyz/investor/",
-      "segments": ["cloud_capex", "ai_services"]
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ]
     },
     {
       "id": "earnings-ORCL",
@@ -215,7 +251,10 @@
       "primary_role": "demand_capex",
       "calendar_url": "https://investor.oracle.com/events-and-presentations/default.aspx",
       "results_url": "https://investor.oracle.com/financial-reporting/quarterly-earnings/default.aspx",
-      "segments": ["cloud_capex", "ai_services"]
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ]
     },
     {
       "id": "earnings-INTC",
@@ -225,7 +264,10 @@
       "primary_role": "manufacturing_memory",
       "calendar_url": "https://www.intc.com/news-events/ir-calendar",
       "results_url": "https://www.intc.com/filings-reports/earnings-results",
-      "segments": ["foundry_logic", "ai_compute_design"]
+      "segments": [
+        "foundry_logic",
+        "ai_compute_design"
+      ]
     },
     {
       "id": "earnings-AMAT",
@@ -235,7 +277,9 @@
       "primary_role": "equipment_materials",
       "calendar_url": "https://ir.appliedmaterials.com/events/",
       "results_url": "https://ir.appliedmaterials.com/financial-information/quarterly-results/",
-      "segments": ["equipment_materials"]
+      "segments": [
+        "equipment_materials"
+      ]
     },
     {
       "id": "earnings-8035",
@@ -245,7 +289,9 @@
       "primary_role": "equipment_materials",
       "calendar_url": "https://www.tel.com/ir/calendar/",
       "results_url": "https://www.tel.com/ir/library/report/",
-      "segments": ["equipment_materials"]
+      "segments": [
+        "equipment_materials"
+      ]
     },
     {
       "id": "earnings-042700",
@@ -255,7 +301,9 @@
       "primary_role": "equipment_materials",
       "calendar_url": "https://www.hanmisemi.com/eng/ir/ir.php",
       "results_url": "https://www.hanmisemi.com/eng/ir/ir.php",
-      "segments": ["equipment_materials"]
+      "segments": [
+        "equipment_materials"
+      ]
     },
     {
       "id": "earnings-VRT",
@@ -265,7 +313,9 @@
       "primary_role": "physical_infrastructure",
       "calendar_url": "https://investors.vertiv.com/events-presentations/events-presentations/default.aspx",
       "results_url": "https://investors.vertiv.com/financials/quarterly-results/default.aspx",
-      "segments": ["power_infrastructure"]
+      "segments": [
+        "power_infrastructure"
+      ]
     },
     {
       "id": "earnings-ANET",
@@ -275,7 +325,10 @@
       "primary_role": "physical_infrastructure",
       "calendar_url": "https://investors.arista.com/Communications/Press-Releases-and-Events/default.aspx",
       "results_url": "https://investors.arista.com/Financial-Information/Quarterly-Results/default.aspx",
-      "segments": ["cloud_capex", "power_infrastructure"]
+      "segments": [
+        "cloud_capex",
+        "power_infrastructure"
+      ]
     },
     {
       "id": "earnings-SMCI",
@@ -285,7 +338,10 @@
       "primary_role": "physical_infrastructure",
       "calendar_url": "https://ir.supermicro.com/events-and-presentations/default.aspx",
       "results_url": "https://ir.supermicro.com/financials/quarterly-results/default.aspx",
-      "segments": ["power_infrastructure", "ai_compute_design"]
+      "segments": [
+        "power_infrastructure",
+        "ai_compute_design"
+      ]
     },
     {
       "id": "earnings-VST",
@@ -295,7 +351,9 @@
       "primary_role": "physical_infrastructure",
       "calendar_url": "https://investor.vistracorp.com/events-and-presentations/default.aspx",
       "results_url": "https://investor.vistracorp.com/financial-information/quarterly-results/default.aspx",
-      "segments": ["power_infrastructure"]
+      "segments": [
+        "power_infrastructure"
+      ]
     },
     {
       "id": "earnings-PLTR",
@@ -305,7 +363,9 @@
       "primary_role": "ai_monetization",
       "calendar_url": "https://investors.palantir.com/events",
       "results_url": "https://investors.palantir.com/financials/quarterly-results",
-      "segments": ["ai_services"]
+      "segments": [
+        "ai_services"
+      ]
     },
     {
       "id": "macro-us-cpi",
@@ -388,7 +448,10 @@
       "schedule_source_name": "Microsoft",
       "schedule_source_url": "https://news.microsoft.com/source/2026/07/08/microsoft-announces-quarterly-earnings-release-date-68/",
       "result_source_url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
-      "segments": ["cloud_capex", "ai_services"]
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ]
     },
     {
       "id": "earnings-META-2026q2",
@@ -405,7 +468,10 @@
       "schedule_source_name": "Meta",
       "schedule_source_url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-to-Announce-Second-Quarter-2026-Results/default.aspx",
       "result_source_url": "https://investor.atmeta.com/financials/default.aspx",
-      "segments": ["cloud_capex", "ai_services"]
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ]
     },
     {
       "id": "earnings-LRCX-2026june",
@@ -422,7 +488,9 @@
       "schedule_source_name": "Lam Research",
       "schedule_source_url": "https://investor.lamresearch.com/events?item=93",
       "result_source_url": "https://investor.lamresearch.com/quarterly-results",
-      "segments": ["equipment_materials"]
+      "segments": [
+        "equipment_materials"
+      ]
     },
     {
       "id": "macro-us-pce-2026-06",
@@ -455,7 +523,10 @@
       "schedule_source_name": "Amazon",
       "schedule_source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-to-Webcast-Second-Quarter-2026-Financial-Results-Conference-Call/default.aspx",
       "result_source_url": "https://ir.aboutamazon.com/quarterly-results/default.aspx",
-      "segments": ["cloud_capex", "ai_services"]
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ]
     },
     {
       "id": "earnings-AMD-2026q2",
@@ -472,7 +543,10 @@
       "schedule_source_name": "AMD",
       "schedule_source_url": "https://ir.amd.com/news-events/press-releases/detail/1289/amd-to-report-fiscal-second-quarter-2026-financial-results",
       "result_source_url": "https://ir.amd.com/financial-information/quarterly-results",
-      "segments": ["ai_compute_design", "foundry_logic"]
+      "segments": [
+        "ai_compute_design",
+        "foundry_logic"
+      ]
     },
     {
       "id": "macro-us-jobs-2026-07",
@@ -505,7 +579,9 @@
       "schedule_source_name": "TSMC",
       "schedule_source_url": "https://investor.tsmc.com/english/financial-calendar",
       "result_source_url": "https://investor.tsmc.com/english/monthly-revenue/2026",
-      "segments": ["foundry_logic"]
+      "segments": [
+        "foundry_logic"
+      ]
     },
     {
       "id": "company-TSM-monthly-revenue-2026-08",
@@ -522,7 +598,9 @@
       "schedule_source_name": "TSMC",
       "schedule_source_url": "https://investor.tsmc.com/english/financial-calendar",
       "result_source_url": "https://investor.tsmc.com/english/monthly-revenue/2026",
-      "segments": ["foundry_logic"]
+      "segments": [
+        "foundry_logic"
+      ]
     },
     {
       "id": "macro-us-cpi-2026-07",
@@ -555,7 +633,9 @@
       "schedule_source_name": "Vertiv",
       "schedule_source_url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Announces-Date-of-Second-Quarter-2026-Earnings-Release-and-Conference-Call/default.aspx",
       "result_source_url": "https://investors.vertiv.com/financials/quarterly-results/default.aspx",
-      "segments": ["power_infrastructure"]
+      "segments": [
+        "power_infrastructure"
+      ]
     },
     {
       "id": "earnings-8035-fy2027q1",
@@ -572,7 +652,9 @@
       "schedule_source_name": "Tokyo Electron",
       "schedule_source_url": "https://www.tel.com/ir/calendar/",
       "result_source_url": "https://www.tel.com/ir/library/report/",
-      "segments": ["equipment_materials"]
+      "segments": [
+        "equipment_materials"
+      ]
     },
     {
       "id": "earnings-AMAT-fy2026q3",
@@ -589,7 +671,9 @@
       "schedule_source_name": "Applied Materials",
       "schedule_source_url": "https://ir.appliedmaterials.com/news-releases/news-release-details/applied-materials-report-fiscal-third-quarter-2026-results-aug",
       "result_source_url": "https://ir.appliedmaterials.com/financial-information/quarterly-results/",
-      "segments": ["equipment_materials"]
+      "segments": [
+        "equipment_materials"
+      ]
     },
     {
       "id": "earnings-ANET-2026q2",
@@ -606,7 +690,10 @@
       "schedule_source_name": "Arista Networks",
       "schedule_source_url": "https://investors.arista.com/Communications/Press-Releases-and-Events/Press-Release-Detail/2026/Arista-Networks-to-Announce-Q2-2026-Financial-Results-on-Tuesday-August-4-2026/default.aspx",
       "result_source_url": "https://investors.arista.com/Financial-Information/Quarterly-Results/default.aspx",
-      "segments": ["cloud_capex", "power_infrastructure"]
+      "segments": [
+        "cloud_capex",
+        "power_infrastructure"
+      ]
     },
     {
       "id": "earnings-VST-2026q2",
@@ -623,7 +710,9 @@
       "schedule_source_name": "Vistra",
       "schedule_source_url": "https://investor.vistracorp.com/2026-07-06-Vistra-to-Report-Second-Quarter-Results-on-Aug-7%2C-2026",
       "result_source_url": "https://investor.vistracorp.com/financial-information/quarterly-results",
-      "segments": ["power_infrastructure"]
+      "segments": [
+        "power_infrastructure"
+      ]
     },
     {
       "id": "earnings-SMCI-fy2026q4",
@@ -640,7 +729,10 @@
       "schedule_source_name": "Supermicro",
       "schedule_source_url": "https://ir.supermicro.com/events-and-presentations/event-details/2026/Fiscal-4Q-2026-Results-2026-g23ewVabuT/default.aspx",
       "result_source_url": "https://ir.supermicro.com/financials/quarterly-results/default.aspx",
-      "segments": ["power_infrastructure", "ai_compute_design"]
+      "segments": [
+        "power_infrastructure",
+        "ai_compute_design"
+      ]
     },
     {
       "id": "earnings-NVDA-fy2027q2",
@@ -657,7 +749,9 @@
       "schedule_source_name": "NVIDIA",
       "schedule_source_url": "https://investor.nvidia.com/events-and-presentations/events-and-presentations/event-details/2026/NVIDIA-2nd-Quarter-FY27-Financial-Results/default.aspx",
       "result_source_url": "https://investor.nvidia.com/financial-info/quarterly-results/default.aspx",
-      "segments": ["ai_compute_design"],
+      "segments": [
+        "ai_compute_design"
+      ],
       "schedule_history": [
         {
           "recorded_at": "2026-07-29T08:06:34+09:00",

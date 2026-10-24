@@ -1,11 +1,11 @@
 {
   "schema_version": "1.2",
-  "logic_version": "cycle-engine-v5-2026-07-31",
-  "methodology_version": "semiconductor-cycle-ai-roles-2026-07-18",
-  "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-  "report_id": "semiconductor-cycle-2026-10-24-0907-weekly",
-  "generated_at": "2026-10-24T09:07:35+09:00",
-  "expires_at": "2026-11-01T09:07:35+09:00",
+  "logic_version": "cycle-engine-v6-2026-10-24",
+  "methodology_version": "evidence-lifecycle-publisher-review-2026-10-24",
+  "evidence_sha256": "50efcb0f8269867ee3b4a907f012458474ecb25477b7cd24eed80ca7b5909d5d",
+  "report_id": "semiconductor-cycle-2026-10-24-1730-weekly",
+  "generated_at": "2026-10-24T17:30:35+09:00",
+  "expires_at": "2026-11-01T17:30:35+09:00",
   "fallback_status": "pending-neutral",
   "update_context": {
     "type": "weekly",
@@ -15,10 +15,10 @@
     "reason": "토요일 정기 전체 조사"
   },
   "quality_gate": {
-    "status": "insufficient",
+    "status": "passed",
     "mode": "verified-only",
-    "evidence_count": 0,
-    "message": "검증된 최신 근거가 없어 모든 세그먼트를 중립으로 유지합니다."
+    "evidence_count": 1,
+    "message": "검증된 공식 근거만 사이클 상태에 반영합니다."
   },
   "segments": [
     {
@@ -30,7 +30,24 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "coverage": {
+        "publisher_count": 0,
+        "pillar_count": 0,
+        "evidence_count": 0,
+        "expired_or_invalid_count": 8
+      },
+      "key_hypotheses": [
+        "고객 투자계획의 실제 집행",
+        "클라우드 매출과 투자 대비 현금창출",
+        "투자 축소·지연 근거"
+      ],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "order": "02",
@@ -41,7 +58,26 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [
+        "c672826e266c99c68f11a29b-ai_compute_design"
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "current",
+      "coverage": {
+        "publisher_count": 1,
+        "pillar_count": 1,
+        "evidence_count": 1,
+        "expired_or_invalid_count": 6
+      },
+      "key_hypotheses": [
+        "주요 고객 수요와 출하 전환",
+        "제품 구성·매출총이익률",
+        "수출규제와 공급 제약"
+      ],
+      "last_reviewed_at": "2026-10-24T17:27:52+09:00",
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "order": "03",
@@ -52,7 +88,24 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "coverage": {
+        "publisher_count": 0,
+        "pillar_count": 0,
+        "evidence_count": 0,
+        "expired_or_invalid_count": 2
+      },
+      "key_hypotheses": [
+        "제품별 가격·재고",
+        "HBM 수요와 수익성",
+        "공급 증가·고객 인증"
+      ],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "order": "04",
@@ -63,7 +116,24 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "coverage": {
+        "publisher_count": 0,
+        "pillar_count": 0,
+        "evidence_count": 0,
+        "expired_or_invalid_count": 2
+      },
+      "key_hypotheses": [
+        "NAND 가격·재고",
+        "수요 회복과 출하",
+        "감산 해제·공급 증가"
+      ],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "order": "05",
@@ -74,7 +144,24 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "coverage": {
+        "publisher_count": 0,
+        "pillar_count": 0,
+        "evidence_count": 0,
+        "expired_or_invalid_count": 3
+      },
+      "key_hypotheses": [
+        "가동률·선단공정 수요",
+        "월별 매출의 실현",
+        "고객 투자와 수율"
+      ],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "order": "06",
@@ -85,7 +172,24 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "coverage": {
+        "publisher_count": 0,
+        "pillar_count": 0,
+        "evidence_count": 0,
+        "expired_or_invalid_count": 3
+      },
+      "key_hypotheses": [
+        "수주·취소와 매출 전환",
+        "고객 설비투자 집행",
+        "수출규제·납기"
+      ],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "order": "07",
@@ -96,7 +200,24 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "assessment_status": "insufficient",
+      "data_status": "unavailable",
+      "coverage": {
+        "publisher_count": 0,
+        "pillar_count": 0,
+        "evidence_count": 0,
+        "expired_or_invalid_count": 0
+      },
+      "key_hypotheses": [
+        "최종 수요와 주문",
+        "유통·고객 재고",
+        "가격·가동률"
+      ],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "order": "08",
@@ -107,7 +228,24 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "coverage": {
+        "publisher_count": 0,
+        "pillar_count": 0,
+        "evidence_count": 0,
+        "expired_or_invalid_count": 3
+      },
+      "key_hypotheses": [
+        "수주잔고와 프로젝트 지연",
+        "납기·이익률",
+        "고객 투자와 현금 전환"
+      ],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "order": "09",
@@ -118,7 +256,24 @@
       "horizon_months": "3-6",
       "reason": "근거가 부족하거나 상충해 중립을 유지합니다.",
       "supporting_evidence_ids": [],
-      "contrary_evidence_ids": []
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "coverage": {
+        "publisher_count": 0,
+        "pillar_count": 0,
+        "evidence_count": 0,
+        "expired_or_invalid_count": 7
+      },
+      "key_hypotheses": [
+        "사용량의 매출 전환",
+        "투자 대비 현금창출",
+        "서비스 원가·경쟁력"
+      ],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     }
   ],
   "company_map_version": "company-cycle-map-v1-2026-07-19",
@@ -144,7 +299,20 @@
           "segment": "memory_nand",
           "weight": 0.2
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "제품별 가격·재고",
+        "HBM 수요와 수익성",
+        "공급 증가·고객 인증"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "000660",
@@ -163,7 +331,20 @@
           "segment": "memory_nand",
           "weight": 0.25
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "제품별 가격·재고",
+        "HBM 수요와 수익성",
+        "공급 증가·고객 인증"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "042700",
@@ -178,7 +359,20 @@
           "segment": "equipment_materials",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주·취소와 매출 전환",
+        "고객 설비투자 집행",
+        "수출규제·납기"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "NVDA",
@@ -193,7 +387,22 @@
           "segment": "ai_compute_design",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "current",
+      "key_hypotheses": [
+        "주요 고객 수요와 출하 전환",
+        "제품 구성·매출총이익률",
+        "수출규제와 공급 제약"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [
+        "c672826e266c99c68f11a29b-ai_compute_design"
+      ],
+      "last_reviewed_at": "2026-10-24T17:27:52+09:00",
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "AVGO",
@@ -212,7 +421,22 @@
           "segment": "cloud_capex",
           "weight": 0.25
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "current",
+      "key_hypotheses": [
+        "주요 고객 수요와 출하 전환",
+        "제품 구성·매출총이익률",
+        "수출규제와 공급 제약"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [
+        "c672826e266c99c68f11a29b-ai_compute_design"
+      ],
+      "last_reviewed_at": "2026-10-24T17:27:52+09:00",
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "MU",
@@ -231,7 +455,20 @@
           "segment": "memory_nand",
           "weight": 0.35
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "제품별 가격·재고",
+        "HBM 수요와 수익성",
+        "공급 증가·고객 인증"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "AMD",
@@ -250,7 +487,22 @@
           "segment": "foundry_logic",
           "weight": 0.2
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "current",
+      "key_hypotheses": [
+        "주요 고객 수요와 출하 전환",
+        "제품 구성·매출총이익률",
+        "수출규제와 공급 제약"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [
+        "c672826e266c99c68f11a29b-ai_compute_design"
+      ],
+      "last_reviewed_at": "2026-10-24T17:27:52+09:00",
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "TSM",
@@ -265,7 +517,20 @@
           "segment": "foundry_logic",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "가동률·선단공정 수요",
+        "월별 매출의 실현",
+        "고객 투자와 수율"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "INTC",
@@ -284,7 +549,20 @@
           "segment": "ai_compute_design",
           "weight": 0.3
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "가동률·선단공정 수요",
+        "월별 매출의 실현",
+        "고객 투자와 수율"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "AMAT",
@@ -299,7 +577,20 @@
           "segment": "equipment_materials",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주·취소와 매출 전환",
+        "고객 설비투자 집행",
+        "수출규제·납기"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "LRCX",
@@ -314,7 +605,20 @@
           "segment": "equipment_materials",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주·취소와 매출 전환",
+        "고객 설비투자 집행",
+        "수출규제·납기"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "ASML",
@@ -329,7 +633,20 @@
           "segment": "equipment_materials",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주·취소와 매출 전환",
+        "고객 설비투자 집행",
+        "수출규제·납기"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "8035",
@@ -344,7 +661,20 @@
           "segment": "equipment_materials",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주·취소와 매출 전환",
+        "고객 설비투자 집행",
+        "수출규제·납기"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "MSFT",
@@ -363,7 +693,20 @@
           "segment": "ai_services",
           "weight": 0.4
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "고객 투자계획의 실제 집행",
+        "클라우드 매출과 투자 대비 현금창출",
+        "투자 축소·지연 근거"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "GOOGL",
@@ -382,7 +725,20 @@
           "segment": "ai_services",
           "weight": 0.45
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "고객 투자계획의 실제 집행",
+        "클라우드 매출과 투자 대비 현금창출",
+        "투자 축소·지연 근거"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "META",
@@ -401,7 +757,20 @@
           "segment": "ai_services",
           "weight": 0.3
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "고객 투자계획의 실제 집행",
+        "클라우드 매출과 투자 대비 현금창출",
+        "투자 축소·지연 근거"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "ORCL",
@@ -420,7 +789,20 @@
           "segment": "ai_services",
           "weight": 0.25
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "고객 투자계획의 실제 집행",
+        "클라우드 매출과 투자 대비 현금창출",
+        "투자 축소·지연 근거"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "AMZN",
@@ -439,7 +821,20 @@
           "segment": "ai_services",
           "weight": 0.4
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "고객 투자계획의 실제 집행",
+        "클라우드 매출과 투자 대비 현금창출",
+        "투자 축소·지연 근거"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "ANET",
@@ -458,7 +853,20 @@
           "segment": "power_infrastructure",
           "weight": 0.3
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "고객 투자계획의 실제 집행",
+        "클라우드 매출과 투자 대비 현금창출",
+        "투자 축소·지연 근거"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "VRT",
@@ -473,7 +881,20 @@
           "segment": "power_infrastructure",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주잔고와 프로젝트 지연",
+        "납기·이익률",
+        "고객 투자와 현금 전환"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "SMCI",
@@ -492,7 +913,20 @@
           "segment": "ai_compute_design",
           "weight": 0.35
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주잔고와 프로젝트 지연",
+        "납기·이익률",
+        "고객 투자와 현금 전환"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "VST",
@@ -507,7 +941,20 @@
           "segment": "power_infrastructure",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주잔고와 프로젝트 지연",
+        "납기·이익률",
+        "고객 투자와 현금 전환"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "PLTR",
@@ -522,7 +969,20 @@
           "segment": "ai_services",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "사용량의 매출 전환",
+        "투자 대비 현금창출",
+        "서비스 원가·경쟁력"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "TSLA",
@@ -537,7 +997,20 @@
           "segment": "analog_auto_industrial",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "unavailable",
+      "key_hypotheses": [
+        "최종 수요와 주문",
+        "유통·고객 재고",
+        "가격·가동률"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "010120",
@@ -552,7 +1025,20 @@
           "segment": "power_infrastructure",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주잔고와 프로젝트 지연",
+        "납기·이익률",
+        "고객 투자와 현금 전환"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     },
     {
       "ticker": "034020",
@@ -567,8 +1053,134 @@
           "segment": "power_infrastructure",
           "weight": 1.0
         }
-      ]
+      ],
+      "assessment_status": "insufficient",
+      "data_status": "expired",
+      "key_hypotheses": [
+        "수주잔고와 프로젝트 지연",
+        "납기·이익률",
+        "고객 투자와 현금 전환"
+      ],
+      "supporting_evidence_ids": [],
+      "contrary_evidence_ids": [],
+      "context_evidence_ids": [],
+      "last_reviewed_at": null,
+      "next_check_at": "2026-10-31T17:30:35+09:00",
+      "changes": []
     }
   ],
-  "evidence": []
+  "evidence": [
+    {
+      "id": "c672826e266c99c68f11a29b-ai_compute_design",
+      "source_id": "nvidia_news_rss",
+      "segment": "ai_compute_design",
+      "pillar": "supply",
+      "direction": "neutral",
+      "fact": "NVIDIA는 공급망 파트너들과 기판·첨단 패키징·반도체 테스트·광엔진 제조능력의 향후 확대 계획을 발표했으며, 기판 능력은 향후 3년간 2.5배 확대를 목표로 제시했다.",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-and-supply-chain-partners-expand-capacity-to-accelerate-ai-infrastructure-buildout",
+      "published_at": "2026-10-21",
+      "max_age_days": 120,
+      "source_family": "fabless_nvidia_ir",
+      "publisher_id": "issuer:nvidia",
+      "frequency": "event",
+      "last_reviewed_at": "2026-10-24T17:27:52+09:00",
+      "next_expected_release_at": null,
+      "confidence": "direct",
+      "review_status": "verified",
+      "audit_passed": true,
+      "contrary": false,
+      "reviewed_by": "codex-terra-low-primary-source",
+      "audited_by": "codex-sol-high-independent",
+      "audit_reason": "NVIDIA 공식 보도자료의 발행일, 공급망 범위와 2.5배 목표를 재확인했다. 원문은 해당 공급능력 확대와 시점을 전향적 진술로 구분하므로 발표된 계획이라는 중립 사실만 통과시키며, 실현 공급량·실현 수요·세그먼트 상태로 일반화하지 않는다.",
+      "audit_kind": "independent"
+    }
+  ],
+  "collection_coverage": {
+    "last_attempt_at": "2026-10-24T09:07:28+09:00",
+    "sources": [
+      {
+        "source_id": "nvidia_news_rss",
+        "status": "ok",
+        "items": 12,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "amd_ir",
+        "status": "ok",
+        "items": 10,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "nvidia_ir_results",
+        "status": "ok",
+        "items": 1,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "tsmc_monthly",
+        "status": "error",
+        "items": null,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "micron_ir",
+        "status": "error",
+        "items": null,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "asml_results",
+        "status": "error",
+        "items": null,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "semi_news",
+        "status": "error",
+        "items": null,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "wsts_news",
+        "status": "ok",
+        "items": 1,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "vertiv_ir",
+        "status": "error",
+        "items": null,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "microsoft_ir",
+        "status": "ok",
+        "items": 1,
+        "dated_items": null,
+        "evidence_status": null
+      },
+      {
+        "source_id": "meta_ir",
+        "status": "ok",
+        "items": 1,
+        "dated_items": null,
+        "evidence_status": null
+      }
+    ]
+  },
+  "assessment_policy": {
+    "frequency_aware": true,
+    "publisher_identity": "canonical-origin",
+    "independent_review_required": true,
+    "next_full_check_at": "2026-10-31T17:30:35+09:00"
+  }
 }

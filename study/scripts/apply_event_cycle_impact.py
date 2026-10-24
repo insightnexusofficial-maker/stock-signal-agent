@@ -12,6 +12,7 @@ from pathlib import Path
 
 from cycle_engine import KST, build_report
 from event_feed import validate_calendar, validate_results
+from study_protocol import metric_interpretation, publisher_key
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -73,7 +74,12 @@ def result_evidence(result: dict, event: dict) -> list[dict]:
         if fact.get("unit") != "percent" or abs(value) < 5:
             continue
         metric = str(fact.get("metric") or "metric")
-        direction = "positive" if value > 0 else "negative"
+        pillar, direction, interpretation_note = metric_interpretation(metric, value, fact, event)
+        review = result.get("impact_review") or {}
+        independent = (
+            review.get("independent_audit_passed") is True
+            or (review.get("audit_passed") is True and review.get("review_method") != "official-result-deterministic-rules")
+        )
         label = str(fact.get("label") or metric.replace("_", " "))
         for segment in event.get("segments") or []:
             digest = hashlib.sha256(
@@ -83,19 +89,25 @@ def result_evidence(result: dict, event: dict) -> list[dict]:
                 "id": f"event-{digest}",
                 "source_id": result["event_id"],
                 "segment": segment,
-                "pillar": _pillar(metric),
+                "pillar": pillar,
                 "direction": direction,
                 "fact": f"{event['name']}: {label}은 공식 비교 기준 {value:+g}%였다.",
                 "source_url": source_urls[0],
                 "published_at": published,
-                "max_age_days": 30,
+                "max_age_days": 120,
+                "frequency": "quarterly",
+                "last_reviewed_at": review.get("reviewed_at"),
                 "source_family": f"event_{ticker}_ir",
+                "publisher_id": publisher_key({"source_url": source_urls[0], "source_family": f"event_{ticker}_ir"}),
+                "metric": metric,
+                "interpretation_note": interpretation_note,
                 "confidence": "direct",
                 "review_status": "verified",
-                "audit_passed": True,
+                "audit_passed": independent,
+                "audit_kind": "independent" if independent else "deterministic",
                 "contrary": direction == "negative",
                 "reviewed_by": "official-event-impact-review",
-                "audited_by": "deterministic-generalization-guard",
+                "audited_by": review.get("audited_by") if independent else None,
                 "origin_event_id": result["event_id"],
             })
     return candidates
@@ -180,6 +192,7 @@ def apply(now: datetime | None = None) -> dict:
         now=now,
         companies=company_map.get("companies", []),
         company_map_version=company_map.get("version"),
+        previous_report=previous,
         update_context={
             "type": "event_interrupt",
             "critical": bool(critical_reasons),
@@ -189,6 +202,11 @@ def apply(now: datetime | None = None) -> dict:
         },
     )
     changes = _segment_changes(previous, candidate)
+    changes_by_segment = {item["segment"]: item for item in changes}
+    for segment in candidate["segments"]:
+        segment["changes"] = [changes_by_segment[segment["id"]]] if segment["id"] in changes_by_segment else []
+    for company in candidate["company_cycle"]:
+        company["changes"] = [changes_by_segment[company["primary_segment"]]] if company["primary_segment"] in changes_by_segment else []
     critical = bool(critical_reasons) or any(
         item["to"] == "caution"
         or (item["from"] == "favorable" and item["to"] == "neutral")

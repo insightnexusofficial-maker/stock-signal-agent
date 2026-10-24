@@ -1,7 +1,7 @@
 {
   "schema_version": "1.2",
-  "feed_id": "market-events-c25e7356a93c6b47",
-  "content_sha256": "c25e7356a93c6b4751f8b343a0768507fd2a5be258ccb9c2ecdebc85c296ddd1",
+  "feed_id": "market-events-ffb32051cfa7e6c3",
+  "content_sha256": "ffb32051cfa7e6c3d6b8dccd1a59841e268c596fdbf4bceee4d367eb94684e0a",
   "generated_at": "2026-08-01T08:14:35+09:00",
   "expires_at": "2026-08-08T12:00:00+09:00",
   "quality_gate": {
@@ -11,6 +11,20 @@
   },
   "event_sync": {
     "calendar_status": "stale",
+    "calendar_checks": {
+      "earnings": [],
+      "macro": []
+    },
+    "macro_automatic_schedule_scope": [
+      "macro-us-cpi",
+      "macro-us-jobs",
+      "macro-us-pce",
+      "macro-fomc"
+    ],
+    "macro_manual_confirmation_scope": [
+      "macro-kr-cpi",
+      "macro-bok-rate"
+    ],
     "monitored_company_count": 23,
     "monitored_macro_count": 6,
     "due_event_ids": [],
@@ -177,7 +191,7 @@
         "cloud_capex",
         "ai_services"
       ],
-      "calendar_url": "https://www.microsoft.com/en-us/Investor/events/FY-2026/earnings-fy-2026-q4",
+      "calendar_url": "https://www.microsoft.com/en-us/Investor/earnings",
       "tracker_status": "reviewed",
       "impact_review": {
         "trend_change": "strengthening",

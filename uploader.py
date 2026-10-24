@@ -16,6 +16,10 @@ from config import (
     SECTOR_CRITERIA, TREND_WINDOWS, MACRO_GUARDS,
     SLOPE_RULES, BUY_LEVELS, EXIT_TRIGGERS,
 )
+from macro_context import (
+    annotate_market_value, build_market_environment, collect_reference_series,
+    compact_history, market_value_usable, observation_time,
+)
 
 if os.getenv("SAYO_SKIP_FIREBASE_INIT") != "1":
     load_dotenv()
@@ -41,8 +45,8 @@ _kis_token_cache = {"token": None, "expires_at": 0.0}
 
 
 
-APP_KEY = os.getenv("KIS_APP_KEY")
-APP_SECRET = os.getenv("KIS_APP_SECRET")
+APP_KEY = None if os.getenv("SAYO_SKIP_FIREBASE_INIT") == "1" else os.getenv("KIS_APP_KEY")
+APP_SECRET = None if os.getenv("SAYO_SKIP_FIREBASE_INIT") == "1" else os.getenv("KIS_APP_SECRET")
 BASE_URL = "https://openapi.koreainvestment.com:9443"
 
 KST = timezone(timedelta(hours=9))
@@ -262,7 +266,7 @@ def fetch_cycle_report(url=None, now=None):
             expires_at = expires_at.replace(tzinfo=KST)
         if (
             report.get("schema_version") not in {"1.1", "1.2"}
-            or report.get("quality_gate", {}).get("status") != "passed"
+            or report.get("quality_gate", {}).get("status") not in {"passed", "insufficient"}
             or expires_at <= now
             or not isinstance(report.get("company_cycle"), list)
         ):
@@ -388,11 +392,13 @@ def fetch_macro_policy_signal(url=None, now=None):
             expires_at = expires_at.replace(tzinfo=KST)
         sector = signal.get("sector") or {}
         evidence = signal.get("evidence") or []
+        policy_mode = signal.get("quality_gate", {}).get("mode")
+        minimum_evidence = 1 if policy_mode == "official-policy-decision" else 2
         evidence_ids = {item.get("id") for item in evidence}
         if (
             signal.get("schema_version") != "1.0"
             or signal.get("quality_gate", {}).get("status") != "passed"
-            or signal.get("quality_gate", {}).get("mode") != "official-speech-plus-market-pricing"
+            or policy_mode not in {"official-speech-plus-market-pricing", "official-policy-decision"}
             or expires_at <= now
             or not re.fullmatch(r"[0-9a-f]{64}", str(signal.get("content_sha256") or ""))
             or sector.get("id") != "us_rate_policy"
@@ -402,7 +408,7 @@ def fetch_macro_policy_signal(url=None, now=None):
             or sector.get("review_status") != "verified"
             or int(sector.get("confidence", -1)) < 0
             or int(sector.get("confidence", -1)) > 85
-            or len(evidence) < 2
+            or len(evidence) < minimum_evidence
             or set(sector.get("evidence_ids") or []) - evidence_ids
         ):
             raise ValueError("검증 또는 만료 조건을 통과하지 못한 거시정책 신호")
@@ -429,6 +435,9 @@ def fetch_macro_policy_signal(url=None, now=None):
             "source_name": sector.get("primary_source_name"),
             "source_url": sector.get("primary_source_url"),
             "source_published_at": sector.get("source_published_at"),
+            "mode": policy_mode,
+            "target_range_lower": sector.get("target_range_lower"),
+            "target_range_upper": sector.get("target_range_upper"),
         }
     except Exception as error:
         _record_collection_error(
@@ -458,10 +467,32 @@ def attach_cycle_context(data, cycle_report):
         data["cycle_primary_segment"] = company.get("primary_segment")
         data["cycle_report_id"] = cycle_report.get("report_id")
         data["cycle_expires_at"] = cycle_report.get("expires_at")
+        for source, target in (
+            ("assessment_status", "cycle_assessment_status"),
+            ("data_status", "cycle_data_status"),
+            ("coverage", "cycle_coverage"),
+            ("key_hypotheses", "cycle_hypotheses"),
+            ("last_reviewed_at", "cycle_last_reviewed_at"),
+            ("next_check_at", "cycle_next_check_at"),
+            ("changes", "cycle_changes"),
+        ):
+            data[target] = company.get(source)
+        evidence_ids = set(company.get("supporting_evidence_ids") or []) | set(company.get("contrary_evidence_ids") or []) | set(company.get("context_evidence_ids") or [])
+        data["cycle_evidence"] = [
+            {key: item.get(key) for key in ("id", "fact", "source_url", "published_at", "direction", "source_family")}
+            for item in cycle_report.get("evidence", [])
+            if item.get("id") in evidence_ids
+        ][:6]
     elif data.get("sector") in CYCLE_COVERED_SECTORS and cycle_report.get("quality_gate", {}).get("status") != "passed":
         data["cycle_status"] = "pending"
         data["cycle_label"] = "사이클 중립 · 갱신 대기"
         data["cycle_reason"] = "검증된 최신 사이클 리포트를 불러오지 못했습니다."
+        data["cycle_assessment_status"] = "unavailable"
+        data["cycle_data_status"] = "unavailable"
+        data["cycle_coverage"] = None
+        data["cycle_hypotheses"] = []
+        data["cycle_evidence"] = []
+        data["cycle_changes"] = []
     return data
 
 
@@ -672,7 +703,14 @@ def _get_usdkrw_from_naver_api():
         change = -abs(change)
     current_num = _to_float(current)
     prev = current_num - change if current_num is not None and change is not None else None
-    return _make_exchange_rate(current_num, prev, change_pct, "naver_mobile")
+    result = _make_exchange_rate(current_num, prev, change_pct, "naver_mobile")
+    if result:
+        result["observed_at"] = observation_time(
+            data.get("localTradedAt") or data.get("tradeDateTime")
+            or data.get("closePriceDate") or data.get("date")
+        )
+        result["source_url"] = "https://m.stock.naver.com/marketindex/exchange/FX_USDKRW"
+    return result
 
 
 def _get_usdkrw_from_yahoo_chart():
@@ -683,14 +721,20 @@ def _get_usdkrw_from_yahoo_chart():
     chart = (res.json().get("chart") or {}).get("result") or []
     if not chart:
         return None
-    closes = (((chart[0].get("indicators") or {}).get("quote") or [{}])[0].get("close") or [])
-    closes = [_to_float(value) for value in closes]
-    closes = [value for value in closes if value is not None]
+    raw_closes = (((chart[0].get("indicators") or {}).get("quote") or [{}])[0].get("close") or [])
+    history = []
+    for stamp, value in zip(chart[0].get("timestamp") or [], raw_closes):
+        close = _to_float(value)
+        if close is not None and isinstance(stamp, (int, float)):
+            history.append({"date": datetime.fromtimestamp(stamp, timezone.utc).date().isoformat(), "value": close})
+    closes = [item["value"] for item in history]
     if not closes:
         return None
     current = closes[-1]
     prev = closes[-2] if len(closes) >= 2 else current
-    return _make_exchange_rate(current, prev, source="yahoo_chart")
+    result = _make_exchange_rate(current, prev, source="yahoo_chart")
+    result.update({"observed_at": history[-1]["date"], "history": history, "source_url": "https://finance.yahoo.com/quote/KRW=X/"})
+    return result
 
 
 def _get_usdkrw_from_naver_html():
@@ -769,6 +813,9 @@ def _get_kospi_from_naver_api():
         raise ValueError("invalid KOSPI moving average")
     status["source"] = "naver_mobile"
     status["data_as_of"] = traded_at
+    status["observed_at"] = traded_at
+    status["history"] = [{"date": day, "value": closes_by_date[day]} for day in sorted(closes_by_date)]
+    status["source_url"] = "https://m.stock.naver.com/domestic/index/KOSPI/total"
     return status
 
 
@@ -788,14 +835,22 @@ def _get_cached_macro_value(field):
         required_key = "current" if field in ("vix", "usdkrw") else "price"
         if not isinstance(value, dict) or _to_float(value.get(required_key)) is None:
             return None
-        cached = deepcopy(value)
-        cached["source"] = "firestore_cache"
-        cached["is_stale"] = True
-        cached["stale_as_of"] = payload.get("updated")
-        return cached
+        return annotate_market_value(value, field, from_cache=True)
     except Exception as e:
-        print(f"   {field} 직전값 조회 에러: {e}")
+        print(f"   {field} 직전값 조회 실패 ({_classify_request_error(e)})")
         return None
+
+
+def _history_observations(hist):
+    """Daily bars expose their dates, rather than a fabricated intraday time."""
+    if hist is None or hist.empty:
+        return {"observed_at": None, "history": []}
+    points = []
+    for stamp, value in hist["Close"].dropna().items():
+        close = _to_float(value)
+        if close is not None:
+            points.append({"date": stamp.date().isoformat(), "value": close})
+    return {"observed_at": points[-1]["date"] if points else None, "history": compact_history(points)}
 
 
 def get_macro_data():
@@ -828,10 +883,13 @@ def get_macro_data():
                 "ma5": ma5,
                 "mode": mode,
                 "reversal": reversal,
+                "source": "yahoo",
+                "source_url": "https://finance.yahoo.com/quote/%5EVIX/",
+                **_history_observations(hist),
             }
     except Exception as e:
         _record_collection_error("yahoo", "macro_vix", _classify_request_error(e))
-        print(f"   VIX 에러: {e}")
+        print(f"   VIX 수집 실패 ({_classify_request_error(e)})")
     
     # QQQ
     try:
@@ -844,10 +902,12 @@ def get_macro_data():
             confirm_days=confirm,
         )
         if status:
+            status.update(_history_observations(hist))
+            status.update({"source": "yahoo", "source_url": "https://finance.yahoo.com/quote/QQQ/"})
             result["qqq"] = status
     except Exception as e:
         _record_collection_error("yahoo", "macro_qqq", _classify_request_error(e))
-        print(f"   QQQ 에러: {e}")
+        print(f"   QQQ 수집 실패 ({_classify_request_error(e)})")
     
     # KOSPI: 한국 장중 현재값과 거래일 이력을 같은 공급원에서 가져온다.
     # Yahoo는 한국 종가가 하루 늦는 구간이 있어 공개 네이버 지수를 우선한다.
@@ -869,10 +929,12 @@ def get_macro_data():
             )
             if status:
                 status["source"] = "yahoo_fallback"
+                status["source_url"] = "https://finance.yahoo.com/quote/%5EKS11/"
+                status.update(_history_observations(hist))
                 result["kospi"] = status
         except Exception as e:
             _record_collection_error("yahoo", "macro_kospi", _classify_request_error(e))
-            print(f"   Yahoo KOSPI 폴백 에러: {_classify_request_error(e)}")
+            print(f"   Yahoo KOSPI 폴백 실패 ({_classify_request_error(e)})")
     
     # 환율 (USD/KRW): HTML 구조나 단일 공급원 장애에 묶이지 않도록 순차 폴백.
     rate_providers = (
@@ -880,22 +942,30 @@ def get_macro_data():
         ("Yahoo chart", _get_usdkrw_from_yahoo_chart),
         ("네이버 HTML", _get_usdkrw_from_naver_html),
     )
+    undated_rate = None
     for provider_name, provider in rate_providers:
         try:
-            result["usdkrw"] = provider()
-            if result["usdkrw"]:
+            candidate = provider()
+            if candidate and observation_time(candidate.get("observed_at") or candidate.get("data_as_of")):
+                result["usdkrw"] = candidate
                 break
+            if candidate and undated_rate is None:
+                undated_rate = candidate
         except Exception as e:
             _record_collection_error(
                 "naver" if "네이버" in provider_name else "yahoo",
                 "macro_usdkrw",
                 _classify_request_error(e),
             )
-            print(f"   USD/KRW {provider_name} 에러: {e}")
+            print(f"   USD/KRW {provider_name} 수집 실패 ({_classify_request_error(e)})")
+    if result["usdkrw"] is None:
+        result["usdkrw"] = undated_rate
 
     for field in ("vix", "qqq", "kospi", "usdkrw"):
         if not result[field]:
             result[field] = _get_cached_macro_value(field)
+        else:
+            result[field] = annotate_market_value(result[field], field)
         
     return result
 
@@ -907,8 +977,12 @@ def determine_market_mode(macro, region="us"):
     idx_data = macro.get("kospi") if region == "kr" else macro.get("qqq")
     idx_data = idx_data or {}
     
-    vix_current = vix_data.get("current", 0)
-    idx_above = idx_data.get("above_ma20", True)
+    if not market_value_usable(vix_data, "current") or not market_value_usable(idx_data, "price"):
+        return "unknown"
+    if not isinstance(idx_data.get("above_ma20"), bool):
+        return "unknown"
+    vix_current = vix_data["current"]
+    idx_above = idx_data["above_ma20"]
     
     # 우선순위: panic > caution > adjust > normal
     if vix_current >= 35:
@@ -922,6 +996,8 @@ def determine_market_mode(macro, region="us"):
 
 
 def get_rsi_threshold(criteria, market_mode):
+    if market_mode == "unknown":
+        return None
     key = f"rsi_{market_mode}"
     return criteria.get(key, criteria.get("rsi_normal", 40))
 
@@ -2334,10 +2410,12 @@ def check_stock_signal(data, sector, macro, region="us"):
     step1 = val_ok and eps_trend_ok and hits >= 2
     
     # === RSI 매수 구간 판정 ===
-    zone_upper = rsi_threshold + BUY_LEVELS.get("candidate_rsi_upper_offset", 10)
-    in_zone = rsi is not None and rsi_threshold <= rsi <= zone_upper
+    zone_upper = rsi_threshold + BUY_LEVELS.get("candidate_rsi_upper_offset", 10) if rsi_threshold is not None else None
+    in_zone = rsi is not None and rsi_threshold is not None and rsi_threshold <= rsi <= zone_upper
     data["in_buy_zone"] = in_zone
     data["rsi_zone_upper"] = zone_upper
+    data["timing_status"] = "pending_macro" if rsi_threshold is None else "available"
+    data["timing_reason"] = "신선한 VIX·지역 지수 확인 전 타이밍 판정을 보류합니다." if rsi_threshold is None else None
     
     # === 매수 레벨 판정 (candidate / strong) ===
     # candidate: 펀더멘털 통과 (RSI 무관) — 관심 종목 워치리스트
@@ -2376,9 +2454,9 @@ def check_etf_signal(data, macro):
     band_pct = data.get("band_pct")
     
     # 매수 구간 판정
-    zone_upper = rsi_threshold + BUY_LEVELS.get("candidate_rsi_upper_offset", 10)
-    rsi_in_zone = rsi is not None and rsi <= zone_upper          # 임계값+10 이하 = 워치 구간
-    rsi_strong = rsi is not None and rsi <= rsi_threshold        # 임계값 이하 = 강한 매수
+    zone_upper = rsi_threshold + BUY_LEVELS.get("candidate_rsi_upper_offset", 10) if rsi_threshold is not None else None
+    rsi_in_zone = rsi is not None and zone_upper is not None and rsi <= zone_upper
+    rsi_strong = rsi is not None and rsi_threshold is not None and rsi <= rsi_threshold
     nav_ok = nav_discount is not None and nav_discount < criteria["nav_discount_threshold"]
     band_ok = band_pct is not None and band_pct < criteria["band_threshold"]
 
@@ -2398,6 +2476,8 @@ def check_etf_signal(data, macro):
     data["selection_hit_details"] = hit_details
     data["in_buy_zone"] = rsi_strong  # notifier가 RSI 돌파 감지용
     data["rsi_zone_upper"] = zone_upper
+    data["timing_status"] = "pending_macro" if rsi_threshold is None else "available"
+    data["timing_reason"] = "신선한 VIX·지역 지수 확인 전 타이밍 판정을 보류합니다." if rsi_threshold is None else None
     
     # === 매수 레벨 판정 ===
     # candidate: RSI 워치 구간 OR NAV 할인 OR 밴드 하단
@@ -2524,7 +2604,7 @@ def check_crisis_trigger(data, macro):
     idx_data = idx_data or {}
     idx_below_ma = not idx_data.get("above_ma20", True)
     
-    if vix_current >= vix_panic and idx_below_ma:
+    if market_value_usable(vix_data, "current") and market_value_usable(idx_data, "price") and vix_current >= vix_panic and idx_below_ma:
         triggers.append("market_panic")
         details.append(f"시장 위기: VIX {vix_current} + 지수 MA20 하향")
     
@@ -2601,6 +2681,17 @@ def _run_upload_data(report, started_at):
     
     print("\n📈 매크로 지표 확인...")
     macro = get_macro_data()
+    try:
+        previous_environment = _get_published_payload().get("market_environment") or {}
+    except Exception as error:
+        _record_collection_error("firestore", "macro_reference_cache", _classify_request_error(error))
+        previous_environment = {}
+    reference_series = collect_reference_series(
+        previous=previous_environment.get("series") or {},
+        fetcher=requests.get,
+        on_error=lambda error: _record_collection_error("fred", "macro_reference", _classify_request_error(error)),
+    )
+    market_environment = build_market_environment(macro, reference_series)
     cycle_report = fetch_cycle_report()
     event_feed = fetch_event_feed()
     macro_policy_signal = fetch_macro_policy_signal()
@@ -2635,6 +2726,7 @@ def _run_upload_data(report, started_at):
             "qqq": macro.get("qqq"),
             "kospi": macro.get("kospi"),
             "usdkrw": macro.get("usdkrw"),
+            "market_environment": market_environment,
             "market_mode": mode_us,
             "market_mode_us": mode_us,
             "market_mode_kr": mode_kr,
@@ -2864,7 +2956,7 @@ def _run_upload_data(report, started_at):
         "kr_stock": len(kr_stock_list),
         "kr_etf": len(kr_etf_list),
         "us_stock": len(us_stock_list),
-        "macro": sum(value is not None for value in macro.values()),
+        "macro": sum(market_value_usable(value, "current" if key in {"vix", "usdkrw"} else "price") for key, value in macro.items()),
     }
     collection_metadata = _final_collection_metadata(report, counts, started_at, finished_at)
     collection_status = collection_metadata["collection_status"]
@@ -2878,6 +2970,7 @@ def _run_upload_data(report, started_at):
         "qqq": macro.get("qqq"),
         "kospi": macro.get("kospi"),
         "usdkrw": macro.get("usdkrw"),
+        "market_environment": market_environment,
         "market_mode": mode_us,       # 하위호환 (기존 PWA)
         "market_mode_us": mode_us,
         "market_mode_kr": mode_kr,
@@ -2886,6 +2979,7 @@ def _run_upload_data(report, started_at):
             "generated_at": cycle_report.get("generated_at"),
             "expires_at": cycle_report.get("expires_at"),
             "quality_status": cycle_report.get("quality_gate", {}).get("status"),
+            "data_status": "fresh" if cycle_report.get("quality_gate", {}).get("status") in {"passed", "insufficient"} else "unavailable",
         },
         "event_calendar": event_feed,
         "macro_policy_signal": macro_policy_signal,

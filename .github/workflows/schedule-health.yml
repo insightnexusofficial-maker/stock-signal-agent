@@ -1,0 +1,60 @@
+name: Stock SAYO Schedule Health
+
+on:
+  schedule:
+    - cron: '25 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: stock-sayo-schedule-health
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out public audit code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+
+      - name: Read public run metadata and audit latest gaps
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          metadata_file="$RUNNER_TEMP/sayo-public-runs.json"
+          audit_file="$RUNNER_TEMP/sayo-schedule-health.json"
+          if ! curl --silent --show-error --fail \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/market-data.yml/runs?per_page=100" \
+            --output "$metadata_file" 2>/dev/null; then
+            printf '예약 감사: 공개 실행 메타데이터 검증 불가.\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          audit_status=0
+          python scripts/schedule_audit.py --runs "$metadata_file" \
+            --activation-marker .github/refresh-market-data.json \
+            --fail-on-overdue --attempt-limit-minutes 65 \
+            --success-limit-minutes 90 --warmup-minutes 80 \
+            > "$audit_file" || audit_status=$?
+          {
+            printf '## 예약 실행 독립 점검\n\n```json\n'
+            cat "$audit_file"
+            printf '\n```\n\n'
+            printf '최신 시도 65분·프로세스 성공 90분 초과를 검사합니다. 전환 후 80분은 준비 기간입니다.\n'
+            printf '수집 재실행과 푸시 발송은 하지 않습니다. 자료 신선도는 별도 검증 대상입니다.\n'
+            printf '수집과 같은 GitHub 플랫폼이므로 플랫폼 장애에 독립적인 감시는 아닙니다.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$audit_status"

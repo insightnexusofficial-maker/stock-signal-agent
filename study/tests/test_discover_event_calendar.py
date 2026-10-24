@@ -76,6 +76,8 @@ class DiscoverEarningsCalendarTests(unittest.TestCase):
                 item for item in updated["events"]
                 if item["id"] == "earnings-PLTR-2026-08-04"
             )
+            self.assertEqual(updated["expires_at"], calendar["expires_at"])
+            self.assertTrue(any(row["status"] == "failed" for row in updated["earnings_calendar_checks"]))
             self.assertEqual(added, 1)
             self.assertEqual(event["schedule_status"], "date_confirmed")
             self.assertIsNone(event["scheduled_at"])

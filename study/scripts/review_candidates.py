@@ -148,6 +148,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Terra 추출과 조건부 Sol 감사를 수행해 검토 JSON 생성")
     parser.add_argument("--output", type=Path, default=ROOT / "data/ai-reviewed.json")
     parser.add_argument("--log", type=Path, default=ROOT / "data/ai-review-log.json")
+    parser.add_argument("--require-reviewer", action="store_true", help="신규 후보가 있는데 검토기를 사용할 수 없으면 실패 처리")
     args = parser.parse_args()
     now = datetime.now(KST)
     inbox = json.loads((ROOT / "data/inbox.json").read_text(encoding="utf-8"))
@@ -158,6 +159,8 @@ def main() -> None:
     if not candidates or not api_key:
         atomic_write(args.output, {"generated_at": now.isoformat(timespec="seconds"), "reviews": [], "status": "no_new_candidates" if not candidates else "api_key_missing"})
         print("AI 검토 생략: " + ("신규 직접 근거 없음" if not candidates else "OPENAI_API_KEY 없음"))
+        if candidates and args.require_reviewer:
+            raise SystemExit("신규 근거 검토 미완료: 발행할 수 없습니다")
         return
 
     extraction = call_responses(
@@ -206,6 +209,8 @@ def main() -> None:
             "audit_passed": audit.get("audit_passed") is True and not audit.get("generalization_warning", False),
             "contrary": review["contrary"], "reviewed_by": TERRA_MODEL, "audited_by": SOL_MODEL if key in audits else None,
             "sol_reason": reasons.get(key), "audit_reason": audit.get("reason"),
+            "reviewed_at": now.isoformat(timespec="seconds"),
+            "frequency": candidate.get("frequency", "event"),
         })
         log_items.append({
             "candidate_id": candidate["id"], "content_hash": candidate.get("content_hash"),

@@ -42,7 +42,7 @@ class NotifierSecurityTests(unittest.TestCase):
         self.assertIn("steps.impact.outputs.critical == 'true'", self.workflow)
         self.assertIn("python send_cycle_interrupt_alerts.py", self.workflow)
         self.assertIn("if: always()", self.workflow)
-        self.assertIn("run: rm -f firebase-key.json", self.workflow)
+        self.assertRegex(self.workflow, r"run:\s+(?:\|\s+)?rm -f firebase-key\.json")
 
     def test_event_workflow_uses_scoped_repository_permission(self):
         self.assertRegex(self.workflow, r"permissions:\s+contents: write")

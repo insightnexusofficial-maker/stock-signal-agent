@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -12,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 KST = timezone(timedelta(hours=9))
 INPUT = ROOT / "data" / "macro-policy-signals.json"
 OUTPUT = ROOT / "public" / "data" / "macro-policy-latest.json"
+RESULTS = ROOT / "data" / "event-results.json"
+CALENDAR = ROOT / "data" / "event-calendar.json"
 
 ALLOWED_DOMAINS = {
     "www.federalreserve.gov",
@@ -53,10 +57,16 @@ def _validate_signal(signal: dict, now: datetime) -> list[str]:
     if signal.get("probability_level") not in {"low", "watch", "elevated", "high"}:
         errors.append("가능성 등급 오류")
     probability = signal.get("probability_pct")
-    if probability is not None and not 0 <= float(probability) <= 100:
-        errors.append("가능성 수치 범위 오류")
-    if not 0 <= int(signal.get("confidence", -1)) <= 85:
-        errors.append("신뢰도 범위 오류")
+    try:
+        if probability is not None and (not math.isfinite(float(probability)) or not 0 <= float(probability) <= 100):
+            errors.append("가능성 수치 범위 오류")
+    except (ValueError, TypeError):
+        errors.append("가능성 수치 형식 오류")
+    try:
+        if not 0 <= int(signal.get("confidence", -1)) <= 85:
+            errors.append("신뢰도 범위 오류")
+    except (ValueError, TypeError):
+        errors.append("신뢰도 형식 오류")
     if signal.get("chip_tone") not in TONES:
         errors.append("칩 tone 오류")
     if not isinstance(evidence, list) or len(evidence) < 2:
@@ -70,7 +80,9 @@ def _validate_signal(signal: dict, now: datetime) -> list[str]:
             if host not in ALLOWED_DOMAINS:
                 errors.append(f"허용되지 않은 도메인 {host}")
             try:
-                datetime.fromisoformat(str(item["published_at"]))
+                published = _parse_dt(item["published_at"])
+                if not published <= now <= published + timedelta(days=120):
+                    errors.append("근거 발행일 미래 또는 수명 초과")
             except (KeyError, ValueError, TypeError):
                 errors.append(f"근거 발행일 오류 {item.get('id')}")
             if not item.get("fact"):
@@ -78,11 +90,68 @@ def _validate_signal(signal: dict, now: datetime) -> list[str]:
     return errors
 
 
+def official_policy_context(results: dict, calendar: dict, now: datetime) -> dict | None:
+    candidates = [item for item in results.get("results", []) if str(item.get("event_id", "")).startswith("macro-fomc-") and item.get("status") == "complete" and item.get("review_status") == "verified"]
+    for item in sorted(candidates, key=lambda row: str(row.get("source_published_at") or ""), reverse=True):
+        try:
+            published = _parse_dt(item["source_published_at"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        urls = [url for url in item.get("source_urls", []) if urlparse(str(url)).hostname == "www.federalreserve.gov"]
+        facts = {fact.get("metric"): fact.get("value") for fact in item.get("facts", [])}
+        lower = facts.get("federal_funds_target_range_lower")
+        upper = facts.get("federal_funds_target_range_upper")
+        try:
+            lower, upper = float(lower), float(upper)
+        except (TypeError, ValueError):
+            continue
+        if not all(math.isfinite(value) for value in (lower, upper)) or not 0 <= lower <= upper <= 100:
+            continue
+        if not urls or not published <= now <= published + timedelta(days=62):
+            continue
+        expiry = published + timedelta(days=62)
+        for event in calendar.get("events", []):
+            if not str(event.get("id", "")).startswith("macro-fomc-") or not event.get("scheduled_at"):
+                continue
+            scheduled = _parse_dt(event["scheduled_at"])
+            if published < scheduled:
+                expiry = min(expiry, scheduled + timedelta(hours=6))
+        if expiry <= now:
+            continue
+        change = facts.get("federal_funds_target_range_change")
+        direction = "mixed" if change is None else "hike" if float(change) > 0 else "cut" if float(change) < 0 else "hold"
+        return {
+            "signal_id": "official-decision-" + item["event_id"],
+            "generated_at": now.isoformat(timespec="seconds"),
+            "expires_at": expiry.isoformat(timespec="seconds"),
+            "quality_gate": {"status": "passed", "mode": "official-policy-decision", "evidence_count": 1, "message": "공식 결정 사실입니다. 미래 정책 확률을 추정하지 않습니다."},
+            "sector": {"id": "us_rate_policy", "label": "미국 금리정책", "status": "neutral", "direction": direction, "probability_level": "low", "probability_pct": None, "confidence": 85, "display_label": f"공식 정책금리 {float(lower):g}–{float(upper):g}%", "chip_tone": "neutral", "horizon": "최근 공식 결정", "summary": f"최근 공식 목표금리 범위는 {float(lower):g}–{float(upper):g}%입니다. 미래 인상·인하 가능성은 별도 관측 전까지 표시하지 않습니다.", "primary_source_name": "Federal Reserve", "primary_source_url": urls[0], "source_published_at": published.isoformat(timespec="seconds"), "review_status": "verified", "evidence_ids": [item["event_id"]]},
+            "evidence": [{"id": item["event_id"], "source_family": "federal_reserve_policy_decision", "source_name": "Federal Reserve", "source_url": urls[0], "published_at": published.isoformat(timespec="seconds"), "fact": f"공식 목표금리 범위 {float(lower):g}–{float(upper):g}%"}],
+        }
+    return None
+
+
+def unavailable_context(now: datetime) -> dict:
+    return {
+        "signal_id": None,
+        "generated_at": now.isoformat(timespec="seconds"),
+        "expires_at": now.isoformat(timespec="seconds"),
+        "quality_gate": {"status": "unavailable", "mode": "official-policy-decision", "evidence_count": 0, "message": "유효한 최신 정책 근거 확인 대기"},
+        "sector": {"id": "us_rate_policy", "label": "미국 금리정책", "status": "neutral", "direction": "mixed", "probability_level": "low", "probability_pct": None, "confidence": 0, "display_label": "정책 자료 확인 대기", "chip_tone": "neutral", "horizon": "", "summary": "정책 자료가 없거나 만료됐습니다. 위험 해소나 중립 전망을 뜻하지 않습니다.", "primary_source_name": "Federal Reserve", "primary_source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm", "source_published_at": None, "review_status": "unavailable", "evidence_ids": []},
+        "evidence": [],
+    }
+
+
+def _finish(core: dict) -> dict:
+    content = {key: core[key] for key in ("signal_id", "sector", "evidence")}
+    return {"schema_version": "1.0", "logic_version": "macro-policy-v2-2026-10-24", "content_sha256": _canonical_sha256(content), **core}
+
+
 def build(now: datetime | None = None) -> dict:
     now = now or datetime.now(KST)
     source = json.loads(INPUT.read_text(encoding="utf-8"))
     signals = source.get("signals") or []
-    if source.get("schema_version") != "1.0" or not signals:
+    if source.get("schema_version") != "1.0":
         raise RuntimeError("macro-policy-signals.json 계약 오류")
 
     candidates = sorted(
@@ -90,10 +159,16 @@ def build(now: datetime | None = None) -> dict:
         key=lambda item: (str(item.get("source_published_at") or ""), str(item.get("id") or "")),
         reverse=True,
     )
-    selected = candidates[0]
-    errors = _validate_signal(selected, now)
-    if errors:
-        raise RuntimeError("macro policy signal 검증 실패: " + "; ".join(errors))
+    selected = next((candidate for candidate in candidates if not _validate_signal(candidate, now)), None)
+    if selected is None:
+        results = json.loads(RESULTS.read_text()) if RESULTS.exists() else {}
+        calendar = json.loads(CALENDAR.read_text()) if CALENDAR.exists() else {}
+        return _finish(official_policy_context(results, calendar, now) or unavailable_context(now))
+
+    # A probability without the underlying pricing observation is not a number
+    # the service can substantiate. Keep the qualitative reviewed context only.
+    pricing = selected.get("probability_source") or {}
+    probability = selected.get("probability_pct") if all(pricing.get(key) for key in ("source_url", "observed_at", "meeting", "method")) else None
 
     public_core = {
         "signal_id": selected["id"],
@@ -103,7 +178,7 @@ def build(now: datetime | None = None) -> dict:
             "status": selected["status"],
             "direction": selected["direction"],
             "probability_level": selected["probability_level"],
-            "probability_pct": selected.get("probability_pct"),
+            "probability_pct": probability,
             "confidence": selected["confidence"],
             "display_label": selected["display_label"],
             "chip_tone": selected["chip_tone"],
@@ -136,8 +211,23 @@ def build(now: datetime | None = None) -> dict:
 
 def main() -> None:
     payload = build()
-    OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    previous = json.loads(OUTPUT.read_text()) if OUTPUT.exists() else {}
+    changed = policy_changed(previous, payload)
+    if changed:
+        OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    output_path = os.environ.get("GITHUB_OUTPUT")
+    if output_path:
+        with Path(output_path).open("a") as handle:
+            handle.write(f"changed={'true' if changed else 'false'}\n")
     print(f"거시정책 신호 {payload['signal_id']} → {OUTPUT}")
+
+
+def policy_changed(previous: dict, payload: dict) -> bool:
+    if previous.get("content_sha256") != payload.get("content_sha256"):
+        return True
+    if payload.get("quality_gate", {}).get("status") == "unavailable":
+        return previous.get("quality_gate", {}).get("status") != "unavailable"
+    return previous.get("expires_at") != payload.get("expires_at")
 
 
 if __name__ == "__main__":

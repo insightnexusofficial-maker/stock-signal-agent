@@ -151,6 +151,9 @@ def _month_shift(value: str, offset: int) -> str:
 
 
 def _event_reference_month(event: dict) -> str:
+    reference = str(event.get("reference_period") or "")
+    if re.fullmatch(r"20\d{2}-(?:0[1-9]|1[0-2])", reference):
+        return reference
     match = re.search(r"(20\d{2})-(0[1-9]|1[0-2])$", str(event.get("id") or ""))
     if not match:
         raise ValueError("거시 이벤트 기준월을 확인하지 못했습니다.")

@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "max_items_per_source": 12,
   "sources": [
     {
@@ -10,8 +10,12 @@
       "allowed_domain": "nvidianews.nvidia.com",
       "source_family": "fabless_nvidia_ir",
       "max_age_days": 120,
-      "segments": ["ai_compute_design"],
-      "default_pillar": "demand"
+      "segments": [
+        "ai_compute_design"
+      ],
+      "default_pillar": "demand",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:nvidia"
     },
     {
       "id": "amd_ir",
@@ -21,13 +25,17 @@
       "allowed_domain": "ir.amd.com",
       "source_family": "fabless_amd_ir",
       "max_age_days": 120,
-      "segments": ["ai_compute_design"],
-      "default_pillar": "demand"
+      "segments": [
+        "ai_compute_design"
+      ],
+      "default_pillar": "demand",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:amd"
     },
     {
       "id": "nvidia_ir_results",
       "label": "NVIDIA Investor Relations",
-      "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-First-Quarter-Fiscal-2027/default.aspx",
+      "url": "https://investor.nvidia.com/financial-info/quarterly-results/default.aspx",
       "type": "dated_html_watch",
       "allowed_domain": "investor.nvidia.com",
       "source_family": "fabless_nvidia_ir",
@@ -35,7 +43,10 @@
       "segments": [
         "ai_compute_design"
       ],
-      "default_pillar": "earnings"
+      "default_pillar": "earnings",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:nvidia",
+      "page_role": "release_index"
     },
     {
       "id": "tsmc_monthly",
@@ -45,8 +56,12 @@
       "allowed_domain": "investor.tsmc.com",
       "source_family": "foundry_tsmc_ir",
       "max_age_days": 45,
-      "segments": ["foundry_logic"],
-      "default_pillar": "earnings"
+      "segments": [
+        "foundry_logic"
+      ],
+      "default_pillar": "earnings",
+      "frequency": "monthly",
+      "publisher_id": "issuer:tsmc"
     },
     {
       "id": "micron_ir",
@@ -56,8 +71,14 @@
       "allowed_domain": "investors.micron.com",
       "source_family": "memory_micron_ir",
       "max_age_days": 120,
-      "segments": ["memory_hbm_dram", "memory_nand"],
-      "default_pillar": "pricing"
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand"
+      ],
+      "default_pillar": "pricing",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:micron",
+      "page_role": "release_index"
     },
     {
       "id": "asml_results",
@@ -67,8 +88,13 @@
       "allowed_domain": "www.asml.com",
       "source_family": "equipment_asml_ir",
       "max_age_days": 120,
-      "segments": ["equipment_materials"],
-      "default_pillar": "earnings"
+      "segments": [
+        "equipment_materials"
+      ],
+      "default_pillar": "earnings",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:asml",
+      "page_role": "release_index"
     },
     {
       "id": "semi_news",
@@ -78,8 +104,14 @@
       "allowed_domain": "www.semi.org",
       "source_family": "industry_association_semi",
       "max_age_days": 120,
-      "segments": ["equipment_materials", "foundry_logic"],
-      "default_pillar": "supply"
+      "segments": [
+        "equipment_materials",
+        "foundry_logic"
+      ],
+      "default_pillar": "supply",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:semi",
+      "page_role": "release_index"
     },
     {
       "id": "wsts_news",
@@ -89,8 +121,16 @@
       "allowed_domain": "www.wsts.org",
       "source_family": "industry_association_wsts",
       "max_age_days": 120,
-      "segments": ["memory_hbm_dram", "memory_nand", "foundry_logic", "analog_auto_industrial"],
-      "default_pillar": "demand"
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand",
+        "foundry_logic",
+        "analog_auto_industrial"
+      ],
+      "default_pillar": "demand",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:wsts",
+      "page_role": "release_index"
     },
     {
       "id": "vertiv_ir",
@@ -100,24 +140,35 @@
       "allowed_domain": "investors.vertiv.com",
       "source_family": "infrastructure_vertiv_ir",
       "max_age_days": 120,
-      "segments": ["power_infrastructure"],
-      "default_pillar": "demand"
+      "segments": [
+        "power_infrastructure"
+      ],
+      "default_pillar": "demand",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:vertiv",
+      "page_role": "release_index"
     },
     {
       "id": "microsoft_ir",
       "label": "Microsoft Investor Relations",
-      "url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3",
+      "url": "https://www.microsoft.com/en-us/Investor/earnings",
       "type": "dated_html_watch",
       "allowed_domain": "www.microsoft.com",
       "source_family": "hyperscaler_microsoft_ir",
       "max_age_days": 120,
-      "segments": ["cloud_capex", "ai_services"],
-      "default_pillar": "earnings"
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "default_pillar": "earnings",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:microsoft",
+      "page_role": "release_index"
     },
     {
       "id": "meta_ir",
       "label": "Meta Investor Relations",
-      "url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-First-Quarter-2026-Results/default.aspx",
+      "url": "https://investor.atmeta.com/financials/default.aspx",
       "type": "dated_html_watch",
       "allowed_domain": "investor.atmeta.com",
       "source_family": "hyperscaler_meta_ir",
@@ -126,7 +177,264 @@
         "cloud_capex",
         "ai_services"
       ],
+      "default_pillar": "earnings",
+      "frequency": "quarterly",
+      "publisher_id": "issuer:meta",
+      "page_role": "release_index"
+    },
+    {
+      "id": "issuer_005930",
+      "label": "삼성전자 Official IR",
+      "url": "https://news.samsung.com/global/tag/earnings-release",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "news.samsung.com",
+      "source_family": "earnings-005930_ir",
+      "publisher_id": "issuer:samsung",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand",
+        "foundry_logic"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_000660",
+      "label": "SK하이닉스 Official IR",
+      "url": "https://www.skhynix.com/eng/ir/irFinancialInfo.jsp",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "www.skhynix.com",
+      "source_family": "earnings-000660_ir",
+      "publisher_id": "issuer:skhynix",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "memory_hbm_dram",
+        "memory_nand"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_AVGO",
+      "label": "Broadcom Official IR",
+      "url": "https://investor.broadcom.com/financial-information/quarterly-results",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "investor.broadcom.com",
+      "source_family": "earnings-avgo_ir",
+      "publisher_id": "issuer:broadcom",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "ai_compute_design",
+        "cloud_capex"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_LRCX",
+      "label": "Lam Research Official IR",
+      "url": "https://investor.lamresearch.com/quarterly-results",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "investor.lamresearch.com",
+      "source_family": "earnings-lrcx_ir",
+      "publisher_id": "issuer:lamresearch",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "equipment_materials"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_AMZN",
+      "label": "Amazon Official IR",
+      "url": "https://ir.aboutamazon.com/quarterly-results/default.aspx",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "ir.aboutamazon.com",
+      "source_family": "earnings-amzn_ir",
+      "publisher_id": "issuer:amazon",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_GOOGL",
+      "label": "Alphabet Official IR",
+      "url": "https://abc.xyz/investor/",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "abc.xyz",
+      "source_family": "earnings-googl_ir",
+      "publisher_id": "issuer:alphabet",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_ORCL",
+      "label": "Oracle Official IR",
+      "url": "https://investor.oracle.com/financial-reporting/quarterly-earnings/default.aspx",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "investor.oracle.com",
+      "source_family": "earnings-orcl_ir",
+      "publisher_id": "issuer:oracle",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "cloud_capex",
+        "ai_services"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_INTC",
+      "label": "Intel Official IR",
+      "url": "https://www.intc.com/filings-reports/earnings-results",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "www.intc.com",
+      "source_family": "earnings-intc_ir",
+      "publisher_id": "issuer:intel",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "foundry_logic",
+        "ai_compute_design"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_AMAT",
+      "label": "Applied Materials Official IR",
+      "url": "https://ir.appliedmaterials.com/financial-information/quarterly-results/",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "ir.appliedmaterials.com",
+      "source_family": "earnings-amat_ir",
+      "publisher_id": "issuer:appliedmaterials",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "equipment_materials"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_8035",
+      "label": "Tokyo Electron Official IR",
+      "url": "https://www.tel.com/ir/library/report/",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "www.tel.com",
+      "source_family": "earnings-8035_ir",
+      "publisher_id": "issuer:tokyoelectron",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "equipment_materials"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_042700",
+      "label": "한미반도체 Official IR",
+      "url": "https://www.hanmisemi.com/eng/ir/ir.php",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "www.hanmisemi.com",
+      "source_family": "earnings-042700_ir",
+      "publisher_id": "issuer:hanmisemi",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "equipment_materials"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_ANET",
+      "label": "Arista Networks Official IR",
+      "url": "https://investors.arista.com/Financial-Information/Quarterly-Results/default.aspx",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "investors.arista.com",
+      "source_family": "earnings-anet_ir",
+      "publisher_id": "issuer:arista",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "cloud_capex",
+        "power_infrastructure"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_SMCI",
+      "label": "Supermicro Official IR",
+      "url": "https://ir.supermicro.com/financials/quarterly-results/default.aspx",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "ir.supermicro.com",
+      "source_family": "earnings-smci_ir",
+      "publisher_id": "issuer:supermicro",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "power_infrastructure",
+        "ai_compute_design"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_VST",
+      "label": "Vistra Official IR",
+      "url": "https://investor.vistracorp.com/financial-information/quarterly-results/default.aspx",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "investor.vistracorp.com",
+      "source_family": "earnings-vst_ir",
+      "publisher_id": "issuer:vistra",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "power_infrastructure"
+      ],
+      "default_pillar": "earnings"
+    },
+    {
+      "id": "issuer_PLTR",
+      "label": "Palantir Official IR",
+      "url": "https://investors.palantir.com/financials/quarterly-results",
+      "type": "dated_html_watch",
+      "page_role": "release_index",
+      "allowed_domain": "investors.palantir.com",
+      "source_family": "earnings-pltr_ir",
+      "publisher_id": "issuer:palantir",
+      "frequency": "quarterly",
+      "max_age_days": 120,
+      "segments": [
+        "ai_services"
+      ],
       "default_pillar": "earnings"
     }
-  ]
+  ],
+  "coverage_scope": {
+    "earnings_issuers": 23,
+    "note": "Registry coverage is a collection target. Landing pages without a release-specific publication date remain pending and cannot become scored evidence."
+  }
 }

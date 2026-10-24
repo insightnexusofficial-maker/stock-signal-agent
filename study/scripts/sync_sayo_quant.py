@@ -71,6 +71,9 @@ def build_snapshot(document: dict, criteria_config: dict, now: datetime) -> dict
         "expires_at": expires.isoformat(timespec="seconds"),
         "source": "Stock SAYO public Firestore snapshot",
         "source_updated_at": decoded.get("updated"),
+        "source_collection_finished_at": decoded.get("collection_finished_at"),
+        "source_document_updated_at": document.get("updateTime"),
+        "source_collection_status": decoded.get("collection_status"),
         "alignment": {
             "mode": "reproduce-and-verify-step1",
             "aligned": sum(1 for stock in stocks if stock["sayo_alignment"] == "aligned"),

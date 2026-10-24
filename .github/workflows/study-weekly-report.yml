@@ -18,6 +18,7 @@ jobs:
     timeout-minutes: 20
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE: ${{ secrets.FIREBASE_TOKEN != '' || secrets.FIREBASE_SERVICE_ACCOUNT_KEY != '' }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     defaults:
       run:
@@ -30,24 +31,30 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Prepare temporary Hosting credential fallback
+        if: ${{ env.FIREBASE_TOKEN == '' && env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' }}
+        env:
+          FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$FIREBASE_DEPLOY_SERVICE_ACCOUNT" > "$RUNNER_TEMP/study-firebase-key.json"
+          printf 'GOOGLE_APPLICATION_CREDENTIALS=%s/study-firebase-key.json\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+
+      - name: Install contract validation dependency
+        run: pip install --disable-pip-version-check --no-input -r requirements-test.txt
+
       - name: Collect official source candidates
         run: python scripts/collect_sources.py
 
       - name: Sync Stock SAYO quantitative snapshot
         run: python scripts/sync_sayo_quant.py
 
-      - name: Sync verified official event results
-        run: |
-          python scripts/collect_event_results.py --include-recent-overdue
-          python scripts/build_event_feed.py
-
       - name: Extract and audit new evidence
-        if: ${{ env.OPENAI_API_KEY != '' }}
         env:
           OPENAI_TERRA_MODEL: gpt-5.6-terra
           OPENAI_SOL_MODEL: gpt-5.6-sol
         run: |
-          python scripts/review_candidates.py
+          python scripts/review_candidates.py --require-reviewer
           python scripts/apply_review.py data/ai-reviewed.json
 
       - name: Build verified cycle report
@@ -57,19 +64,42 @@ jobs:
         run: |
           python -m unittest discover -s tests -v
           python scripts/validate_build.py
+          python scripts/validate_schema.py
+
+      - name: Require fresh reviewed artifacts and publication route
+        run: |
+          python scripts/publication_health.py
+          python scripts/publication_health.py --preflight --deployment-ready "${{ env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' }}"
 
       - name: Save generated snapshots
         run: |
           git config user.name "stock-sayo-study-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/inbox.json data/evidence.json data/ai-review-log.json data/company-cycle-map.json data/event-calendar.json data/event-results.json public/data/quant-latest.json public/data/cycle-latest.json public/data/event-latest.json
+          git add data/inbox.json data/evidence.json data/ai-review-log.json data/company-cycle-map.json public/data/quant-latest.json public/data/cycle-latest.json
           git diff --cached --quiet || git commit -m "chore: weekly verified report refresh"
           git push
 
       - name: Install Firebase CLI
-        if: ${{ env.FIREBASE_TOKEN != '' }}
+        if: ${{ env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' }}
         run: npm install --global firebase-tools
 
       - name: Deploy validated report
-        if: ${{ env.FIREBASE_TOKEN != '' }}
-        run: firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"
+        if: ${{ env.FIREBASE_DEPLOY_CREDENTIAL_AVAILABLE == 'true' }}
+        run: |
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"
+          else
+            firebase deploy --only hosting --non-interactive
+          fi
+
+      - name: Verify public publication identity
+        run: python scripts/publication_health.py --verify-public
+
+      - name: Record publication outcome
+        if: always()
+        run: |
+          printf 'Study publication outcome: %s. Success requires reviewed fresh artifacts and matching public publication.\n' '${{ job.status }}' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove temporary Hosting credential
+        if: always()
+        run: rm -f "$RUNNER_TEMP/study-firebase-key.json"
