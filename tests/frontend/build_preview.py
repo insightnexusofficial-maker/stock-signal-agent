@@ -4,6 +4,7 @@ Usage: python3 -B tests/frontend/build_preview.py /private/tmp/sayo-ui-preview
 Serve that output folder on localhost. No credentials or browser state are read.
 """
 from datetime import date, timedelta
+import argparse
 import json
 from pathlib import Path
 import re
@@ -13,7 +14,27 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def build(output: Path) -> None:
+def public_market_snapshot(path: Path) -> dict:
+    """Decode only a saved public stocks/data REST document, never account data."""
+    document = json.loads(path.read_text())
+    expected = "projects/stock-sayo/databases/(default)/documents/stocks/data"
+    if document.get("name") != expected:
+        raise ValueError("Preview input must be the public stocks/data REST document")
+    def value(field):
+        if "mapValue" in field:
+            return {key: value(item) for key, item in field["mapValue"].get("fields", {}).items()}
+        if "arrayValue" in field:
+            return [value(item) for item in field["arrayValue"].get("values", [])]
+        for key in ("stringValue", "timestampValue", "booleanValue", "doubleValue"):
+            if key in field:
+                return field[key]
+        if "integerValue" in field:
+            return int(field["integerValue"])
+        return None
+    return {key: value(item) for key, item in document.get("fields", {}).items()}
+
+
+def build(output: Path, snapshot: Path | None = None) -> None:
     output.mkdir(parents=True, exist_ok=True)
     assets = output / "assets"
     assets.mkdir(exist_ok=True)
@@ -52,6 +73,8 @@ def build(output: Path) -> None:
         "event_sync_status": "unavailable",
         "cycle_report": {"data_status": "fresh", "quality_status": "insufficient", "generated_at": "2026-10-24T08:00:00+09:00", "expires_at": "2026-10-31T08:00:00+09:00"},
     }
+    if snapshot:
+        data = public_market_snapshot(snapshot)
     source = (ROOT / "public" / "index.html").read_text()
     match = re.search(r'<script type="module">(.*?)</script>', source, re.S)
     module = match.group(1)
@@ -71,11 +94,16 @@ def build(output: Path) -> None:
       document.querySelector('#gate-screen').classList.add('hidden');
     """
     source = source[:match.start()] + '<script type="module">' + module + '</script>' + source[match.end():]
-    source = source.replace('<div class="app">', '<div class="app"><p style="padding:8px 0;color:var(--fg-2)">합성 데이터 미리보기 · 운영 서비스와 연결되지 않습니다.</p>', 1)
+    notice = "공개 시장자료 미리보기 · 알림 등록과 사용자 정보에 연결되지 않습니다." if snapshot else "합성 데이터 미리보기 · 운영 서비스와 연결되지 않습니다."
+    source = source.replace('<div class="app">', f'<div class="app"><p style="padding:8px 0;color:var(--fg-2);font-size:12px;line-height:1.5">{notice}</p>', 1)
     source = source.replace('<link rel="manifest" href="/manifest.json">', '')
     (output / "index.html").write_text(source)
     print(output)
 
 
 if __name__ == "__main__":
-    build(Path(sys.argv[1]))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("output", type=Path)
+    parser.add_argument("--public-snapshot", type=Path)
+    args = parser.parse_args()
+    build(args.output, args.public_snapshot)

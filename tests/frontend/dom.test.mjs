@@ -57,5 +57,10 @@ assert.equal(document.querySelector('#data-notice').hidden,false);
 click('#metric-dialog .dialog-close');
 document.querySelector('#macro-vix').dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
 assert.equal(document.querySelector('#metric-dialog').open,true);
+click('#metric-dialog .dialog-close');
+click('[data-series="core_pce"]');
+ui.update(data); // the overview buttons are replaced while the dialog is open
+click('#metric-dialog .dialog-close');
+assert.equal(document.activeElement.dataset.series,'core_pce');
 dom.window.close();delete globalThis.document;
 console.log('SAYO synthetic DOM: settings, push save/rollback/permission, theme, focus, keyboard, value/chart, missing/stale updates passed');

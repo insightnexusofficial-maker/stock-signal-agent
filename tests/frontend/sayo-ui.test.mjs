@@ -39,3 +39,37 @@ Object.defineProperty(globalThis,"localStorage",{configurable:true,get(){throw n
 assert.equal(preferenceStorage(),null);
 delete globalThis.localStorage;
 console.log("SAYO UI: freshness, history/chart, producer cycle/month-period contract, escaping, blocked preference storage passed");
+
+// The reading layer must preserve units and compare only dated observations.
+const {metricReading}=await import(`data:text/javascript;base64,${Buffer.from(source).toString("base64")}`);
+const rate={current:4.2,unit:"%",data_status:"fresh",observed_at:"2026-10-23",history:[{date:"2026-09-23",value:4},{date:"2026-10-23",value:4.2}]};
+assert.match(metricReading("us_2y",rate).comparison,/4% 대비 \+0.2%p/);
+assert.match(metricReading("us_2y",{...rate,history:[{date:"2025-01-01",value:3}]}).comparison,/자료 부족/);
+assert.match(metricReading("us_2y",{...rate,history:[{date:"2026-10-24",value:3}]}).comparison,/자료 부족/);
+assert.match(metricReading("us_2y",{...rate,current:null}).meaning,/해석할 수 없습니다/);
+assert.match(metricReading("us_2y",{...rate,data_status:"stale"}).meaning,/직전 자료 기준/);
+assert.match(metricReading("nfci",{current:-.2,data_status:"fresh",observed_at:"2026-10-23"}).meaning,/장기 평균보다 돈을 구하기 쉬운/);
+assert.match(metricReading("nfci",{current:.2,data_status:"fresh",observed_at:"2026-10-23"}).meaning,/장기 평균보다 돈을 구하기 어려운/);
+assert.match(metricReading("usd_broad",{...rate,unit:"index",current:110,history:[{date:"2026-09-23",value:100}]}).comparison,/\+10%/);
+const monthly={current:102,unit:"index",data_status:"latest_available",observed_at:"2026-09-01",trend_3m_annualized_pct:2.5,history:[{date:"2025-09-01",value:100},{date:"2026-08-01",value:101}]};
+assert.match(metricReading("core_pce",monthly).comparison,/3개월 연율 2.50%/);
+assert.match(metricReading("core_pce",monthly).comparison,/전년 같은 달 대비 \+2%/);
+assert.match(metricReading("core_pce",monthly).comparison,/전월 대비 \+0.99%/);
+assert.match(metricReading("unemployment",{...monthly,current:4.2,unit:"%",history:[{date:"2026-07-01",value:4}]}).comparison,/자료 부족/);
+assert.match(metricReading("unemployment",{...monthly,current:4.2,unit:"%",history:[{date:"2026-08-01",value:4}]}).comparison,/\+0.2%p/);
+const weeks=Array.from({length:8},(_,i)=>({date:new Date(Date.UTC(2026,7,29+i*7)).toISOString().slice(0,10),value:i<4?200000:210000}));
+const claims={current:210000,unit:"people",data_status:"fresh",observed_at:weeks.at(-1).date,four_week_average:210000,history:weeks};
+assert.match(metricReading("initial_claims",claims).comparison,/이전 4주 평균 대비 \+10,000건/);
+assert(!metricReading("initial_claims",{...claims,history:weeks.filter((_,i)=>i!==3)}).comparison.includes("이전 4주"));
+assert(!metricReading("initial_claims",{...claims,observed_at:"2026-10-23"}).comparison.includes("이전 4주"));
+console.log("SAYO metric reading: dated baselines, percentage points, missing/gapped/future history, inflation and claims units passed");
+
+for(const state of ["unknown","unavailable"]) {
+  assert.match(metricReading("nfci",{current:-.2,data_status:state}).meaning,/현재 해석을 보류/);
+  assert.match(metricReading("nfci",{current:-.2,data_status:state}).comparison,/검증 전 자료/);
+}
+const inflationMonths=Array.from({length:7},(_,i)=>({date:`2026-${String(i+3).padStart(2,"0")}-01`,value:100+i}));
+assert.match(metricReading("core_pce",{...monthly,current:106,history:inflationMonths}).comparison,/직전 3개월 연율/);
+assert(!metricReading("core_pce",{...monthly,current:106,history:inflationMonths.filter((_,i)=>i!==2)}).comparison.includes("직전 3개월 연율"));
+
+assert.match(metricReading("nfci",{current:-.2,data_status:"fresh"}).meaning,/현재 해석을 보류/);

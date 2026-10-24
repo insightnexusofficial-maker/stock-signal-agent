@@ -6,7 +6,9 @@
 <title>기업 분석 — 반도체 · AI 스터디 지도</title>
 <meta name="description" content="반도체·AI 산업 흐름과 기업별 실적 체력과 가격 부담을 함께 읽는 학습 지도">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F4F5F1;
@@ -26,11 +28,11 @@
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{animation:none!important;transition:none!important}}
 body{
-  font-family:'Pretendard',system-ui,sans-serif;
+  font-family:'IBM Plex Sans KR',system-ui,sans-serif;
   background:var(--bg);color:var(--ink);
   font-size:16px;line-height:1.8;
 }
-.mono{font-family:'Pretendard',monospace}
+.mono{font-family:'IBM Plex Mono',monospace}
 
 /* ================= 좌측 드로어 ================= */
 .sidebar{
@@ -42,10 +44,10 @@ body{
 .sidebar .brand{
   padding:0 22px 20px;border-bottom:1px solid rgba(255,255,255,.12);
 }
-.sidebar .brand .b-title{font-weight:600;font-size:17px;color:#fff;line-height:1.4}
+.sidebar .brand .b-title{font-weight:700;font-size:17px;color:#fff;line-height:1.4}
 .sidebar .brand .b-sub{font-size:12px;color:#93AC9C;margin-top:4px}
 .sidebar .brand .b-date{
-  display:inline-block;margin-top:10px;font-family:'Pretendard',monospace;
+  display:inline-block;margin-top:10px;font-family:'IBM Plex Mono',monospace;
   font-size:11px;color:var(--gold-soft);border:1px solid rgba(201,162,39,.45);
   border-radius:999px;padding:2px 10px;
 }
@@ -60,7 +62,7 @@ body{
   padding:8px 12px;border-radius:8px;line-height:1.45;
 }
 .sidebar a .num{
-  font-family:'Pretendard',monospace;font-size:11px;color:var(--gold);
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);
   width:18px;flex:none;
 }
 .sidebar a:hover{background:rgba(255,255,255,.08);color:#fff}
@@ -99,14 +101,14 @@ body{
 }
 .hero svg.traces{position:absolute;inset:0;width:100%;height:100%;opacity:.13}
 .hero .content{position:relative;padding-bottom:0}
-.hero h1{font-size:clamp(27px,4.6vw,42px);font-weight:600;line-height:1.3;letter-spacing:-.02em;margin-bottom:14px}
+.hero h1{font-size:clamp(27px,4.6vw,42px);font-weight:700;line-height:1.3;letter-spacing:-.02em;margin-bottom:14px}
 .hero h1 em{font-style:normal;color:var(--gold-soft)}
 .hero p{max-width:620px;color:#C9D8CD;font-size:16.5px}
 
 /* 섹션 공통 */
 section{padding-top:64px}
 .sec-num{
-  display:inline-block;font-family:'Pretendard',monospace;font-size:12px;
+  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;
   color:var(--price);background:#F6E8DE;border-radius:6px;padding:3px 10px;
   margin-bottom:10px;letter-spacing:.08em;
 }
@@ -123,7 +125,7 @@ h2.sec-title{font-size:clamp(22px,3.2vw,29px);letter-spacing:-.01em;margin-botto
 .summary-card li{font-size:16px}
 .summary-card li b{color:var(--board)}
 .summary-card li .lead{
-  display:block;font-weight:600;color:var(--board);margin-bottom:2px;
+  display:block;font-weight:700;color:var(--board);margin-bottom:2px;
 }
 
 /* 산업 지도 (돈의 흐름) */
@@ -135,8 +137,8 @@ h2.sec-title{font-size:clamp(22px,3.2vw,29px);letter-spacing:-.01em;margin-botto
   transition:background .15s,border-color .15s;
 }
 .flow a:hover{background:#FBF7E9;border-color:var(--gold)}
-.flow .fn{font-family:'Pretendard',monospace;font-size:13px;color:var(--price);font-weight:600}
-.flow .ft{font-weight:600;font-size:15.5px;line-height:1.4}
+.flow .fn{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--price);font-weight:600}
+.flow .ft{font-weight:700;font-size:15.5px;line-height:1.4}
 .flow .ft small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
 .flow .fa{font-size:13px;color:var(--gold);font-weight:500;white-space:nowrap}
 .arrow-note{
@@ -158,7 +160,7 @@ h2.sec-title{font-size:clamp(22px,3.2vw,29px);letter-spacing:-.01em;margin-botto
 .stage-what b{color:var(--board)}
 .stage-what .row{display:block;margin-top:8px}
 .stage-what .k{
-  display:inline-block;font-size:12.5px;font-weight:600;color:#fff;background:var(--board2);
+  display:inline-block;font-size:12.5px;font-weight:700;color:#fff;background:var(--board2);
   border-radius:5px;padding:1px 8px;margin-right:7px;vertical-align:1px;
 }
 
@@ -172,10 +174,10 @@ details.co summary{cursor:pointer;list-style:none;padding:16px 20px}
 details.co summary::-webkit-details-marker{display:none}
 .co-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .tick{
-  font-family:'Pretendard',monospace;font-size:11px;font-weight:600;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
   background:var(--board);color:var(--gold-soft);border-radius:5px;padding:2px 8px;
 }
-.name{font-weight:600;font-size:17px}
+.name{font-weight:700;font-size:17px}
 .tag{font-size:13.5px;color:var(--muted)}
 .gauges{display:flex;gap:22px;flex-wrap:wrap}
 .g{display:flex;align-items:center;gap:8px}
@@ -183,7 +185,7 @@ details.co summary::-webkit-details-marker{display:none}
 .g-bar{width:96px;height:8px;background:#E9EBE2;border-radius:4px;overflow:hidden;display:inline-block}
 .g-bar i{display:block;height:100%;width:var(--v);background:var(--fund);border-radius:4px;transition:width .5s ease}
 .g.price .g-bar i{background:var(--price)}
-.g-val{font-family:'Pretendard',monospace;font-size:12px;color:var(--ink);width:24px}
+.g-val{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink);width:24px}
 .co-body{padding:4px 22px 20px;border-top:1px dashed var(--line)}
 .plain{
   background:#FBF7E9;border-left:3px solid var(--gold);
@@ -191,7 +193,7 @@ details.co summary::-webkit-details-marker{display:none}
 }
 .plain b{color:var(--board)}
 .co-body dl{display:grid;gap:12px}
-.co-body dt{font-size:13px;font-weight:600;color:var(--price)}
+.co-body dt{font-size:13px;font-weight:700;color:var(--price)}
 .co-body dd{font-size:15px}
 .co-body dd b{color:var(--board)}
 
@@ -213,7 +215,7 @@ details.co summary::-webkit-details-marker{display:none}
 /* 시나리오 */
 .scen{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin-bottom:12px}
 .scen .p{
-  display:inline-block;font-family:'Pretendard',monospace;font-size:12px;
+  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;
   color:#fff;background:var(--price);border-radius:5px;padding:2px 10px;margin-bottom:8px;
 }
 .scen.win .p{background:var(--fund)}
@@ -224,10 +226,10 @@ details.co summary::-webkit-details-marker{display:none}
 
 /* 용어 사전 */
 .gloss details{border-bottom:1px dashed var(--line);padding:12px 4px}
-.gloss summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none}
+.gloss summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none}
 .gloss summary::-webkit-details-marker{display:none}
 .gloss summary .term{
-  font-family:'Pretendard',monospace;font-size:12.5px;color:#fff;
+  font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#fff;
   background:var(--board2);border-radius:5px;padding:2px 8px;margin-right:9px;
 }
 .gloss p{font-size:14.5px;color:#37493E;padding:8px 0 4px}
@@ -237,7 +239,7 @@ footer{margin-top:70px;background:var(--board);color:#93AC9C;padding:30px 0;font
 footer .content{padding-bottom:0;display:grid;gap:6px}
 footer b{color:var(--gold-soft)}
 </style>
-<link rel="stylesheet" href="assets/site.css?v=20260731e">
+<link rel="stylesheet" href="assets/site.css?v=20261024-original">
 <script src="assets/site.js?v=20260731e" defer></script>
 <script src="assets/quant-sync.js?v=20260731e" defer></script>
 </head>
