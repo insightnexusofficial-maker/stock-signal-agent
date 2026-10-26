@@ -1,14 +1,15 @@
-/* Added features only. The original app layout and dark palette live in index.html. */
+/* Feature styling and light-theme colors; existing dashboard layout stays in index.html. */
 :root { --focus-ring:var(--accent); --dialog-backdrop:rgb(0 0 0 / .65); }
 :root[data-theme="light"] {
   color-scheme:light;
   --bg-0:#f7f5f1; --bg-1:#fff; --bg-2:#fff; --bg-3:#f0ede8; --bg-4:#e7e2db;
   --fg-1:#292621; --fg-2:#4d4842; --fg-3:#655e56; --fg-4:#6b635a;
   --border-1:#ded8d0; --border-2:#c7beb3;
-  --signal-strong:#286147; --signal-candidate:#286147; --signal-now:#964c40;
+  --brand-rgb:75, 102, 207; --accent:#4b66cf; --on-accent:#ffffff;
+  --signal-strong:var(--accent); --signal-candidate:var(--accent); --signal-now:#964c40;
   --signal-crisis:#a33f3a; --signal-warn:#805518; --signal-watch:#8a4e23; --signal-info:#315d7a;
-  --macro-good:#286147; --macro-warn:#805518; --macro-bad:#a33f3a; --accent:#315d7a;
-  --trend-up-strong:#286147; --trend-up:#286147; --trend-flat:#655e56;
+  --macro-good:var(--accent); --macro-warn:#805518; --macro-bad:#a33f3a;
+  --trend-up-strong:var(--accent); --trend-up:var(--accent); --trend-flat:#655e56;
   --trend-down:#8a4e23; --trend-down-strong:#a33f3a;
   --dialog-backdrop:rgb(32 27 21 / .45);
 }
@@ -55,7 +56,7 @@
 .settings-row input[role="switch"] { appearance:none; box-sizing:border-box; width:48px; height:28px; padding:3px; border-radius:20px; border:1px solid var(--border-2); background:var(--bg-4); flex-shrink:0; cursor:pointer; }
 .settings-row input[role="switch"]::before { content:""; display:block; width:20px; height:20px; background:var(--fg-2); border-radius:50%; transition:transform .15s; }
 .settings-row input[role="switch"]:checked { background:var(--signal-strong); }
-.settings-row input[role="switch"]:checked::before { transform:translateX(18px); background:var(--bg-1); }
+.settings-row input[role="switch"]:checked::before { transform:translateX(18px); background:var(--on-accent); }
 .settings-row input:disabled { opacity:.5; cursor:not-allowed; }
 .settings-message { font-size:12px; color:var(--fg-2); line-height:1.6; min-height:24px; margin-top:12px; }
 .view-switch { display:flex; gap:4px; padding:4px; background:var(--bg-3); border-radius:8px; margin-bottom:16px; width:fit-content; }
@@ -81,7 +82,7 @@
 .metric-source { margin-top:18px; display:flex; justify-content:space-between; gap:8px 12px; flex-wrap:wrap; font-size:11px; color:var(--fg-3); }
 :root[data-theme="light"] .gate-screen { background:var(--bg-0); }
 :root[data-theme="light"] .gate-screen::before,:root[data-theme="light"] .gate-screen::after { opacity:.15; }
-:root[data-theme="light"] .gate-title,:root[data-theme="light"] .gate-subtitle,:root[data-theme="light"] .gate-desc,:root[data-theme="light"] .gate-note,:root[data-theme="light"] .gate-state-desc { color:var(--fg-2); }
+:root[data-theme="light"] .gate-desc,:root[data-theme="light"] .gate-note,:root[data-theme="light"] .gate-state-desc { color:var(--fg-2); }
 :root[data-theme="light"] .gate-state-title { color:var(--fg-1); }
 :root[data-theme="light"] .guide-card,:root[data-theme="light"] .guide-summary,:root[data-theme="light"] .guide-list { background:var(--bg-2); color:var(--fg-1); border-color:var(--border-2); }
 :root[data-theme="light"] .guide-text,:root[data-theme="light"] .guide-intro,:root[data-theme="light"] .guide-quiet { color:var(--fg-2); }
@@ -92,3 +93,10 @@
 :root[data-theme="light"] .guide-float { background:var(--bg-2); color:var(--fg-1); }
 :root[data-theme="light"] .guide-float a { color:var(--fg-1); }
 :root[data-theme="light"] .stock-row .badge.cycle-favorable { color:var(--signal-strong); }
+
+/* Brand emphasis follows the selected theme, while warnings retain their meaning. */
+.tab-btn.active { color:var(--accent); }
+.gate-cta { font-weight:600; box-shadow:0 4px 20px rgba(var(--brand-rgb), .20); }
+.gate-cta:hover { box-shadow:0 6px 24px rgba(var(--brand-rgb), .28); }
+.gate-desc strong { font-weight:500; }
+.gate-desc,.gate-note,.gate-state-desc,.gate-pending-desc { word-break:keep-all; overflow-wrap:break-word; }

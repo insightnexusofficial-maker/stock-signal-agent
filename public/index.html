@@ -44,12 +44,14 @@
   --border-1: #2e2b29;
   --border-2: #3a3735;
 
-  /* 시그널 컬러 — 톤다운된 자연 색감 */
- /* 시그널 컬러 — 차분한 자연 톤 (도서관/카페 분위기) */
-  --signal-strong: #7fb09a;            /* 자연 그린 (세이지+머메이드) */
-  --signal-strong-glow: rgba(127, 176, 154, 0.14);
-  --signal-candidate: #86b6a0;         /* 부드러운 세이지 */
-  --signal-candidate-glow: rgba(134, 182, 160, 0.10);
+  /* 대표색 — 금빛. 밝은 테마는 sayo-ui.css의 기존 Study 파란색 사용. */
+  --brand-rgb: 231, 196, 95;
+  --accent: #e7c45f;
+  --on-accent: #1a1816;
+  --signal-strong: var(--accent);
+  --signal-strong-glow: rgba(var(--brand-rgb), 0.14);
+  --signal-candidate: var(--accent);
+  --signal-candidate-glow: rgba(var(--brand-rgb), 0.10);
   --signal-now: #d97a6c;               /* 머스트 빨강 (테라코타) */
   --signal-now-glow: rgba(217, 122, 108, 0.15);
   --signal-crisis: #c75858;            /* 차분한 빨강 */
@@ -59,19 +61,17 @@
   --signal-info: #7aa2c2;              /* 차분한 블루 (덴마크 블루) */
 
     /* 추세 컬러 */
-  --trend-up-strong: #7fb09a;
-  --trend-up: #86b6a0;
+  --trend-up-strong: var(--accent);
+  --trend-up: var(--accent);
   --trend-flat: #948d87;
   --trend-down: #c98c5e;
   --trend-down-strong: #c75858;
 
   /* 매크로 컬러 */
-  --macro-good: #7fb09a;
+  --macro-good: var(--accent);
   --macro-warn: #d4a574;
   --macro-bad: #d97a6c;
 
-  /* 강조 */
-  --accent: #7aa2c2;
 
   /* 폰트 */
   --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
@@ -278,7 +278,7 @@ button {
   color: var(--fg-2);
 }
 
-.macro-badge.good { background: rgba(0, 214, 143, 0.15); color: var(--macro-good); }
+.macro-badge.good { background: rgba(var(--brand-rgb), 0.15); color: var(--macro-good); }
 .macro-badge.warn { background: rgba(255, 184, 77, 0.15); color: var(--macro-warn); }
 .macro-badge.bad { background: rgba(255, 84, 84, 0.18); color: var(--macro-bad); }
 
@@ -320,8 +320,8 @@ button {
 }
 
 .macro-policy-chip.good {
-  border-color: rgba(0, 214, 143, 0.35);
-  background: rgba(0, 214, 143, 0.08);
+  border-color: rgba(var(--brand-rgb), 0.35);
+  background: rgba(var(--brand-rgb), 0.08);
 }
 
 .macro-policy-chip .label {
@@ -418,7 +418,7 @@ button {
   top: 0;
   bottom: 0;
 }
-.vix-gauge .zone.normal { background: rgba(0, 214, 143, 0.25); left: 0; width: 50%; }
+.vix-gauge .zone.normal { background: rgba(var(--brand-rgb), 0.25); left: 0; width: 50%; }
 .vix-gauge .zone.warn   { background: rgba(255, 184, 77, 0.25); left: 50%; width: 20%; }
 .vix-gauge .zone.bad    { background: rgba(255, 84, 84, 0.25); left: 70%; width: 30%; }
 
@@ -461,7 +461,7 @@ button {
   text-transform: uppercase;
   font-weight: 700;
 }
-.mode-tag.normal { background: rgba(0, 214, 143, 0.15); color: var(--macro-good); }
+.mode-tag.normal { background: rgba(var(--brand-rgb), 0.15); color: var(--macro-good); }
 .mode-tag.adjust { background: rgba(255, 184, 77, 0.15); color: var(--macro-warn); }
 .mode-tag.caution { background: rgba(255, 140, 66, 0.18); color: var(--signal-watch); }
 .mode-tag.panic { background: rgba(255, 84, 84, 0.20); color: var(--macro-bad); }
@@ -593,14 +593,14 @@ button {
   text-transform: uppercase;
   white-space: nowrap;
 }
-.badge.candidate { background: rgba(90, 210, 140, 0.16); color: var(--signal-candidate); }
-.badge.strong { background: rgba(0, 214, 143, 0.20); color: var(--signal-strong); }
+.badge.candidate { background: rgba(var(--brand-rgb), 0.16); color: var(--signal-candidate); }
+.badge.strong { background: rgba(var(--brand-rgb), 0.20); color: var(--signal-strong); }
 .badge.now { background: rgba(255, 84, 84, 0.22); color: var(--signal-now); }
 .badge.crisis { background: rgba(255, 56, 56, 0.22); color: var(--signal-crisis); }
 .badge.warn { background: rgba(255, 184, 77, 0.18); color: var(--signal-warn); }
 .badge.watch { background: rgba(255, 140, 66, 0.20); color: var(--signal-watch); }
 .badge.info { background: rgba(92, 179, 255, 0.18); color: var(--signal-info); }
-.badge.cycle-favorable { background: rgba(47, 133, 90, 0.18); color: #67d59a; }
+.badge.cycle-favorable { background: rgba(var(--brand-rgb), 0.18); color: var(--signal-strong); }
 .badge.cycle-neutral { background: rgba(122, 162, 194, 0.15); color: var(--signal-info); }
 .badge.cycle-caution { background: rgba(255, 184, 77, 0.18); color: var(--signal-warn); }
 
@@ -788,7 +788,7 @@ button {
   transition: all .15s;
 }
 .btn-subscribe:hover { background: var(--bg-4); color: var(--fg-1); border-color: var(--border-2); }
-.btn-subscribe.active { background: rgba(0, 214, 143, 0.15); color: var(--signal-strong); border-color: var(--signal-strong); }
+.btn-subscribe.active { background: rgba(var(--brand-rgb), 0.15); color: var(--signal-strong); border-color: var(--signal-strong); }
 /* ============================================================
    라벨 가시성 — 데스크톱은 헤더로 충분 / 모바일만 행 라벨 표시
    ============================================================ */
@@ -1176,9 +1176,9 @@ button {
   animation: pulse-ring 2s ease-out infinite;
 }
 @keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(127, 176, 154, 0.5); }
-  70% { box-shadow: 0 0 0 7px rgba(127, 176, 154, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(127, 176, 154, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5); }
+  70% { box-shadow: 0 0 0 7px rgba(var(--brand-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0); }
 }
 
 /* ============================================================
@@ -1193,7 +1193,7 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 64px 24px 40px;
+  padding: max(24px, env(safe-area-inset-top, 0px)) 24px max(24px, env(safe-area-inset-bottom, 0px));
   text-align: center;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -1203,8 +1203,13 @@ button {
 .gate-screen::before,
 .gate-screen::after {
   content: "";
-  flex: 1;
-  min-height: 24px;
+  flex: 1 0 0;
+  min-height: 0;
+}
+
+.gate-screen > * {
+  flex-shrink: 0;
+  max-width: 100%;
 }
 
 .gate-screen.hidden {
@@ -1231,22 +1236,6 @@ button {
   filter: saturate(1.16) contrast(1.08) drop-shadow(0 1px 1px rgba(242, 201, 106, 0.18));
 }
 
-.gate-title {
-  font-size: 40px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--fg-1);
-  margin-bottom: 6px;
-  line-height: 1;
-}
-
-.gate-subtitle {
-  font-size: 14px;
-  color: var(--fg-3);
-  margin-bottom: 28px;
-  letter-spacing: -0.01em;
-}
-
 .gate-desc {
   max-width: 320px;
   font-size: 13px;
@@ -1267,21 +1256,22 @@ button {
   gap: 8px;
   padding: 14px 28px;
   background: var(--signal-strong);
-  color: #0a0e13;
+  color: var(--on-accent);
   border: none;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0, 214, 143, 0.25);
+  box-shadow: 0 4px 20px rgba(var(--brand-rgb), 0.25);
   transition: transform .15s, box-shadow .15s;
-  min-width: 240px;
+  width: min(280px, 100%);
+  min-width: 0;
 }
 
 .gate-cta:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(0, 214, 143, 0.35);
+  box-shadow: 0 6px 24px rgba(var(--brand-rgb), 0.35);
 }
 
 .gate-cta:active {
@@ -1291,7 +1281,7 @@ button {
 .gate-note {
   margin-top: 20px;
   font-size: 12px;
-  color: var(--fg-4);
+  color: var(--fg-2);
   max-width: 300px;
   line-height: 1.5;
 }
@@ -1674,7 +1664,7 @@ button {
 }
 
 .favorite-btn.active {
-  color: #f2c94c;
+  color: var(--accent);
 }
 
 .favorite-btn:hover {
@@ -1726,7 +1716,7 @@ button {
 .stock-row .badge.warn { background: rgba(212, 165, 116, 0.15); color: var(--signal-warn); }
 .stock-row .badge.watch { background: rgba(201, 140, 94, 0.15); color: var(--signal-watch); }
 .stock-row .badge.info { background: rgba(122, 162, 194, 0.15); color: var(--signal-info); }
-.stock-row .badge.cycle-favorable { background: rgba(47, 133, 90, 0.18); color: #67d59a; }
+.stock-row .badge.cycle-favorable { background: rgba(var(--brand-rgb), 0.18); color: var(--signal-strong); }
 .stock-row .badge.cycle-neutral { background: rgba(122, 162, 194, 0.15); color: var(--signal-info); }
 .stock-row .badge.cycle-caution { background: rgba(212, 165, 116, 0.15); color: var(--signal-warn); }
 
@@ -2002,7 +1992,7 @@ button {
 }
 </style>
 
-<link rel="stylesheet" href="/assets/sayo-ui.css?v=20261024-original-ui-2">
+<link rel="stylesheet" href="/assets/sayo-ui.css?v=20261027-gold-blue-1">
 <script>try { document.documentElement.dataset.theme = localStorage.getItem("sayo:theme") === "light" ? "light" : "dark"; } catch (e) {}</script>
 </head>
 <body>
@@ -2013,9 +2003,6 @@ button {
         <div class="gate-icon">
         <img src="/assets/sayo-logo-20260712-transparent.png" alt="SAYO" />
         </div>
-
-        <h1 class="gate-title">SAYO</h1>
-        <div class="gate-subtitle">매수 시그널 모니터</div>
 
         <p class="gate-desc">
         관심 종목의 변화를 확인하고<br>
@@ -2579,7 +2566,7 @@ button {
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
-    import { createSayoUI, cycleLabel, renderCycleContext } from "/assets/sayo-ui.js?v=20261024-original-ui-2";
+    import { createSayoUI, cycleLabel, renderCycleContext } from "/assets/sayo-ui.js?v=20261027-gold-blue-1";
 
     const firebaseConfig = {
         apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
@@ -2593,7 +2580,7 @@ button {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const APP_VERSION = "20260825-approval-rest-fallback-1";
-    const UI_VERSION = "20261024-original-ui-2";
+    const UI_VERSION = "20261027-gold-blue-1";
     let sayoUi = null;
 
     function perfMark(name) {
