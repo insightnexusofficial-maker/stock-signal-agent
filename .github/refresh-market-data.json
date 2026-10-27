@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "revision": "2026-10-24-qa-fix-2",
+  "revision": "manual-verification-2026-10-27T15:08:03Z",
   "monitoring_started_at": "2026-10-24T08:31:07Z",
   "purpose": "Run secured market collection once after this marker changes on main.",
   "push_delivery": "always_suppressed_for_push_trigger",
-  "qa_requested_at": "2026-10-24T13:46:11Z"
+  "qa_requested_at": "2026-10-27T15:08:03Z"
 }
