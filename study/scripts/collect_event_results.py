@@ -20,6 +20,7 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 from event_feed import KST, build_event_sync, validate_calendar, validate_results
+from official_policy import TARGET as TARGET_RANGE
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,12 +38,6 @@ SUPPORTED_MACRO_PREFIXES = (
 )
 STATEMENT_PATH = re.compile(
     r"^/newsevents/pressreleases/monetary(?P<date>\d{8})a\.htm$"
-)
-TARGET_RANGE = re.compile(
-    r"target range for the federal funds rate at\s+"
-    r"(?P<lower>\d+(?:-\d+/\d+|\.\d+)?)\s+to\s+"
-    r"(?P<upper>\d+(?:-\d+/\d+|\.\d+)?)\s+percent",
-    re.IGNORECASE,
 )
 PCE_MOM = re.compile(
     r"From the preceding month, the PCE price index for \w+ "
@@ -300,6 +295,9 @@ def discover_latest_fomc_statement(calendar_html: str) -> tuple[str, str]:
 
 
 def _number(value: str) -> float:
+    if "/" in value and "-" not in value:
+        numerator, denominator = value.split("/", 1)
+        return float(numerator) / float(denominator)
     if "-" not in value:
         return float(value)
     whole, fraction = value.split("-", 1)
@@ -314,8 +312,8 @@ def parse_fomc_target_range(statement_html: str) -> tuple[float, float]:
     match = TARGET_RANGE.search(statement_text)
     if not match:
         raise ValueError("FOMC 성명에서 목표금리 범위를 확인하지 못했습니다.")
-    lower = _number(match.group("lower"))
-    upper = _number(match.group("upper"))
+    lower = _number(match.group(1))
+    upper = _number(match.group(2))
     if not 0 <= lower <= upper <= 25:
         raise ValueError("FOMC 목표금리 범위가 허용 범위를 벗어났습니다.")
     return lower, upper

@@ -9,10 +9,10 @@ const dom=new JSDOM(html,{url:'http://127.0.0.1:8772',runScripts:'outside-only',
 dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
 dom.window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new dom.window.Event('close'));};
 const uiSource=await readFile(new URL('../../public/assets/sayo-ui.js',import.meta.url),'utf8');
-dom.window.eval(`window.previewUi=(()=>{${uiSource.replaceAll('export function','function')}\nreturn {createSayoUI,cycleLabel,renderCycleContext};})();`);
+dom.window.eval(`window.previewUi=(()=>{${uiSource.replaceAll('export function','function')}\nreturn {createSayoUI,cycleLabel,renderCycleContext,policyDisplay,eventFeedState};})();`);
 let module=html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
 assert(!module.includes('https://www.gstatic.com'));
-module=module.replace(/import \{ createSayoUI, cycleLabel, renderCycleContext \} from "[^"]+";/,'const {createSayoUI,cycleLabel,renderCycleContext}=window.previewUi;');
+module=module.replace(/import \{ createSayoUI, cycleLabel, renderCycleContext, policyDisplay, eventFeedState \} from "[^"]+";/,'const {createSayoUI,cycleLabel,renderCycleContext,policyDisplay,eventFeedState}=window.previewUi;');
 dom.window.eval(module + `
 window.rerenderPreview=()=>render(latestData); window.expirePreviewCycles=()=>render({...latestData,us_stock:latestData.us_stock.map(stock=>({...stock,cycle_status:"favorable",cycle_data_status:"expired"}))});`);
 await new Promise(resolve=>setTimeout(resolve,40));

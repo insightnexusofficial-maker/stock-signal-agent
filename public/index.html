@@ -137,7 +137,7 @@ button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
-  align-items: end;
+  align-items: start;
   margin-bottom: 24px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border-1);
@@ -145,7 +145,7 @@ button {
 
 .brand-logo {
   min-width: 0;
-  height: 90px;
+  height: 72px;
   background: transparent;
   border: 0;
   overflow: hidden;
@@ -158,7 +158,7 @@ button {
   height: 100%;
   display: block;
   object-fit: contain;
-  object-position: center;
+  object-position: left top;
   filter: saturate(1.16) contrast(1.08) drop-shadow(0 1px 1px rgba(242, 201, 106, 0.18));
 }
 
@@ -179,7 +179,7 @@ button {
 .macro-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(18px, 3vw, 42px);
+  gap: 14px;
   padding-bottom: 20px;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--border-1);
@@ -187,8 +187,8 @@ button {
 
 @media (max-width: 600px) {
   .macro-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
     padding-bottom: 20px;
     margin-bottom: 24px;
   }
@@ -220,10 +220,11 @@ button {
     gap: 8px;
   }
   
-  .brand-logo { height: 77px; }
+  .brand-logo { height: 64px; }
 }
 
 .macro-card {
+  min-width: 0;
   background: var(--bg-2);            /* bg-1 → bg-2 (더 짙게) */
   border: 1px solid var(--border-2);
   border-radius: 10px;
@@ -349,7 +350,8 @@ button {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  align-items: baseline;
+  align-items: center;
+  min-height: 44px;
   cursor: pointer;
   list-style: none;
 }
@@ -357,6 +359,7 @@ button {
 .event-panel-head::-webkit-details-marker { display: none; }
 .event-panel[open] .event-panel-head { margin-bottom: 12px; }
 .event-panel-head-copy {
+  min-width: 0;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -365,7 +368,13 @@ button {
 }
 .event-panel-toggle {
   color: var(--fg-4);
-  font-size: 14px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  font-size: 24px;
+  line-height: 1;
   transition: transform .15s ease;
 }
 .event-panel[open] .event-panel-toggle { transform: rotate(180deg); }
@@ -807,19 +816,7 @@ button {
   position: relative;
 }
 .row-bar {
-  display: none; /* 별도 div 대신 left border로 처리 */
-}
-.stock-row.signal-strong { border-left: 4px solid var(--signal-strong); }
-.stock-row.signal-candidate { border-left: 4px solid var(--signal-candidate); }
-.stock-row.signal-now { border-left: 4px solid var(--signal-now); }
-.stock-row.signal-crisis { border-left: 4px solid var(--signal-crisis); }
-.stock-row.signal-warn { border-left: 4px solid var(--signal-warn); }
-.stock-row.signal-watch { border-left: 4px solid var(--signal-watch); }
-.stock-row.signal-info { border-left: 4px solid var(--signal-info); }
-
-/* 컬러바 없는 평상시 행도 동일 폭으로 정렬 맞춤 */
-.stock-row:not([class*="signal-"]) {
-  border-left: 4px solid transparent;
+  display: none; /* 신호 띠는 카드 내부 pseudo element로 처리 */
 }
 
 /* 그리드 첫 칸(row-bar)이 사라지므로 grid 재조정 */
@@ -839,17 +836,7 @@ button {
     display: block;
     padding: 18px 18px;
     border-bottom: 1px solid var(--border-1);
-    border-left: 5px solid transparent;
   }
-  
-  /* 컬러바 강화 (얇음 4 → 5) */
-  .stock-row.signal-strong { border-left: 5px solid var(--signal-strong); }
-  .stock-row.signal-candidate { border-left: 5px solid var(--signal-candidate); }
-  .stock-row.signal-now { border-left: 5px solid var(--signal-now); }
-  .stock-row.signal-crisis { border-left: 5px solid var(--signal-crisis); }
-  .stock-row.signal-warn { border-left: 5px solid var(--signal-warn); }
-  .stock-row.signal-watch { border-left: 5px solid var(--signal-watch); }
-  .stock-row.signal-info { border-left: 5px solid var(--signal-info); }
   
   /* 종목명 영역 — 더 큼 */
   .stock-row .col-name {
@@ -1619,18 +1606,29 @@ button {
   border: 1px solid var(--border-1);
   border-radius: 12px;
   margin-bottom: 10px;
-  border-left: 4px solid transparent;
   overflow: hidden;
   transition: border-color .2s, background .2s;
 }
 
-.stock-row.signal-strong { border-left-color: var(--signal-strong); }
-.stock-row.signal-candidate { border-left-color: var(--signal-candidate); }
-.stock-row.signal-now { border-left-color: var(--signal-now); }
-.stock-row.signal-crisis { border-left-color: var(--signal-crisis); }
-.stock-row.signal-warn { border-left-color: var(--signal-warn); }
-.stock-row.signal-watch { border-left-color: var(--signal-watch); }
-.stock-row.signal-info { border-left-color: var(--signal-info); }
+.stock-row:last-child { border-bottom: 1px solid var(--border-1); }
+.stock-row::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 4px;
+  border-radius: 0;
+  background: var(--row-signal, transparent);
+  pointer-events: none;
+}
+.stock-row.signal-strong { --row-signal: var(--signal-strong); }
+.stock-row.signal-candidate { --row-signal: var(--signal-candidate); }
+.stock-row.signal-now { --row-signal: var(--signal-now); }
+.stock-row.signal-crisis { --row-signal: var(--signal-crisis); }
+.stock-row.signal-warn { --row-signal: var(--signal-warn); }
+.stock-row.signal-watch { --row-signal: var(--signal-watch); }
+.stock-row.signal-info { --row-signal: var(--signal-info); }
 
 /* 클릭 가능한 헤더 */
 .stock-row-header {
@@ -1992,7 +1990,7 @@ button {
 }
 </style>
 
-<link rel="stylesheet" href="/assets/sayo-ui.css?v=20261027-gold-blue-1">
+<link rel="stylesheet" href="/assets/sayo-ui.css?v=20261028-layout-sync-1">
 <script>try { document.documentElement.dataset.theme = localStorage.getItem("sayo:theme") === "light" ? "light" : "dark"; } catch (e) {}</script>
 </head>
 <body>
@@ -2058,7 +2056,6 @@ button {
             <span class="updated-label">최근 업데이트</span>
             <div class="updated-time" id="updated-time">— —</div>
             <div class="header-controls">
-              <button class="settings-open" id="settings-open" type="button" aria-haspopup="dialog" aria-controls="settings-dialog">설정</button>
               <div class="detect-status" id="detect-status">
                 <span class="pulse-dot"></span>
                 <span>시그널 탐지 중</span>
@@ -2317,7 +2314,7 @@ button {
               <span class="event-panel-title" id="event-panel-title">주요 실적·거시 발표</span>
               <span class="event-panel-meta" id="event-panel-meta">공식 일정 확인 중</span>
             </span>
-            <span class="event-panel-toggle" aria-hidden="true">▾</span>
+            <span class="event-panel-toggle" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
           </summary>
           <div class="event-list" id="event-calendar-list" aria-live="polite">
             <div class="event-empty">공식 발표 일정을 불러오는 중입니다.</div>
@@ -2543,10 +2540,13 @@ button {
         <!-- ============================================================
              푸터
              ============================================================ -->
-        <a class="guide-bottom-entry" href="/guide.html">
-            <span>SAYO 사용 가이드</span>
-            <span>열기</span>
-        </a>
+        <div class="bottom-tools">
+            <a class="guide-bottom-entry" href="/guide.html">
+                <span>SAYO 사용 가이드</span>
+                <span>열기</span>
+            </a>
+            <button class="settings-open" id="settings-open" type="button" aria-label="화면과 푸시 알림 설정" title="설정" aria-haspopup="dialog" aria-controls="settings-dialog"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.4 3.2h5.2l.5 2.1 1.5.9 2.1-.6 2.6 4.5-1.6 1.5v1.8l1.6 1.5-2.6 4.5-2.1-.6-1.5.9-.5 2.1H9.4l-.5-2.1-1.5-.9-2.1.6-2.6-4.5 1.6-1.5v-1.8L2.7 10l2.6-4.5 2.1.6 1.5-.9.5-2.1Z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
+        </div>
         <div class="guide-float" id="guide-float">
             <a href="/guide.html">SAYO 사용 가이드</a>
             <button type="button" id="guide-float-close" aria-label="가이드 닫기">×</button>
@@ -2566,7 +2566,7 @@ button {
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
-    import { createSayoUI, cycleLabel, renderCycleContext } from "/assets/sayo-ui.js?v=20261027-gold-blue-1";
+    import { createSayoUI, cycleLabel, renderCycleContext, policyDisplay, eventFeedState } from "/assets/sayo-ui.js?v=20261028-layout-sync-1";
 
     const firebaseConfig = {
         apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
@@ -2580,7 +2580,7 @@ button {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const APP_VERSION = "20260825-approval-rest-fallback-1";
-    const UI_VERSION = "20261027-gold-blue-1";
+    const UI_VERSION = "20261028-layout-sync-1";
     let sayoUi = null;
 
     function perfMark(name) {
@@ -2787,19 +2787,12 @@ button {
       const meta = $("#macro-policy-meta");
       if (!row || !chip || !label || !meta) return;
 
-      const showSignal = signal && (signal.status || signal.generated_at || signal.source_published_at);
-      if (!showSignal) { row.hidden = true; return; }
-      const verified = signal.quality_status === "passed";
-      const tone = verified && ["good", "warn", "bad", "neutral"].includes(signal.chip_tone) ? signal.chip_tone : "neutral";
-      const direction = { hike: "인상", hold: "유지", cut: "인하", mixed: "혼조" };
-      label.textContent = verified ? signal.display_label || "공식 금리정책" : "금리정책 확인 필요";
-      const statusText = verified ? direction[signal.direction] || "공식 결정 확인" : "검증된 자료 확인 불가";
-      const horizon = signal.horizon ? ` · ${signal.horizon}` : "";
-      const sourceDate = signal.source_published_at ? ` · 발표 ${signal.source_published_at}` : "";
-      meta.textContent = `${statusText}${horizon}${sourceDate}`;
-      chip.className = `macro-policy-chip ${tone}`;
-      chip.title = signal.summary || statusText;
-      if (typeof signal.source_url === "string" && signal.source_url.startsWith("https://")) chip.href = signal.source_url;
+      const display = policyDisplay(signal);
+      label.textContent = display.label;
+      meta.textContent = display.meta;
+      chip.className = `macro-policy-chip ${display.tone}`;
+      chip.title = display.description;
+      if (display.source) chip.href = display.source;
       else chip.removeAttribute("href");
       row.hidden = false;
     }
@@ -2973,11 +2966,12 @@ button {
       const events = Array.isArray(feed?.events) ? feed.events.slice(0, 6) : [];
       const recentResults = Array.isArray(feed?.recent_results) ? feed.recent_results : [];
       const resultByEvent = new Map(recentResults.map((item) => [item.event_id, item]));
-      meta.textContent = feed?.generated_at
-        ? `공식 일정 갱신 ${String(feed.generated_at).slice(0, 10)}`
-        : "직전 공식 일정 확인 중";
+      const health = eventFeedState(data);
+      meta.textContent = health.label;
+      meta.title = health.reason;
+      meta.classList.toggle("needs-review", !health.current);
       if (!events.length) {
-        list.innerHTML = '<div class="event-empty">확정된 공식 일정을 확인 중입니다.</div>';
+        list.innerHTML = `<div class="event-empty">${escapeHtml(health.reason)}</div>`;
         return;
       }
       const statusLabel = {
@@ -2994,7 +2988,7 @@ button {
         return `<article class="event-card">
         <div class="event-card-top">
           <span>${item.kind === "macro" ? "거시" : "기업"}${item.ticker ? ` · ${escapeHtml(item.ticker)}` : ""}</span>
-          <span class="event-card-status ${escapeHtml(item.sync_status || "")}">${escapeHtml(statusLabel[item.sync_status] || "일정 확인")}</span>
+          <span class="event-card-status ${escapeHtml(item.sync_status || "")}">${escapeHtml(health.current ? statusLabel[item.sync_status] || "일정 확인" : "직전 일정 · 갱신 필요")}</span>
         </div>
         <div class="event-card-name">${escapeHtml(item.name || item.id || "공식 발표")}</div>
         <div class="event-card-time">${escapeHtml(formatEventKst(item))} KST</div>
@@ -3004,6 +2998,7 @@ button {
     }
 
     function nextEventForTicker(code) {
+      if (!eventFeedState(latestData).current) return null;
       const events = latestData?.event_calendar?.events;
       if (!Array.isArray(events)) return null;
       return events.find((item) =>

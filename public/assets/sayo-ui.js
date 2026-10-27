@@ -138,6 +138,33 @@ function readingHtml(id,metric) {
 
 function safeLink(url) { try { return new URL(url).protocol==="https:" ? url : null; } catch { return null; } }
 function sourceHtml(metric) { const url=safeLink(metric?.source_url);return url ? `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(metric.source || "자료 출처")} ↗</a>` : ""; }
+export function policyDisplay(signal, now=Date.now()) {
+  const expiry=Date.parse(signal?.expires_at || "");
+  const observed=signal?.source_published_at;
+  const checked=signal?.last_checked_at || signal?.retrieved_at;
+  const failed=signal?.verification_status==="failed" || signal?.last_attempt_status==="failed";
+  const verified=signal?.quality_status==="passed" && Number.isFinite(expiry) && expiry>now;
+  const source=safeLink(signal?.source_url);
+  if(!verified) return {
+    verified:false,tone:"warn",label:"미국 정책금리 · 확인 지연",
+    meta:checked?`재조회 필요 · 확인 시도 ${dateText(checked)}`:"공식 결정 재확인 필요",
+    description:"최신 공식 결정의 검증을 마치지 못했습니다. 정상·중립 판단을 뜻하지 않습니다.",source,
+  };
+  const range=[number(signal.target_range_lower),number(signal.target_range_upper)];
+  const label=range.every(value=>value!==null)?`미국 정책금리 ${range[0].toLocaleString("ko-KR")}–${range[1].toLocaleString("ko-KR")}%`:signal.display_label || "미국 공식 금리정책";
+  const direction={hike:"인상",hold:"유지",cut:"인하",mixed:"공식 결정"}[signal.direction] || "공식 결정";
+  const date=observed?String(observed).slice(0,10):"발표일 확인 필요";
+  return {verified:true,tone:failed?"warn":"neutral",label,meta:`${direction} · 발표(KST) ${date}${checked?` · 확인 ${dateText(checked)}`:""}${failed?" · 재확인 지연":""}`,description:[signal.summary,checked?`공식자료 확인 ${dateText(checked)}`:"",failed?"직전 검증된 결정입니다. 최근 재조회에 실패했습니다.":"",signal.next_decision_date?`다음 결정 예정 ${signal.next_decision_date} (미국 현지일)`:""].filter(Boolean).join(" "),source};
+}
+export function eventFeedState(data, now=Date.now()) {
+  const feed=data?.event_calendar;
+  const expiry=Date.parse(feed?.expires_at || "");
+  if(!feed) return {current:false,label:"공식 일정 확인 중",reason:"검증된 일정을 아직 받지 못했습니다."};
+  const current=Number.isFinite(expiry)&&expiry>now&&["success","fresh","complete"].includes(data.event_sync_status);
+  const date=feed.generated_at?String(feed.generated_at).slice(0,10):"기준일 미확인";
+  return {current,label:current?`공식 일정 · ${date}`:`직전 자료 · ${date} · 갱신 지연`,reason:current?"공식 발표 자료입니다.":"일정 자료가 만료됐거나 최근 동기화에 실패했습니다. 아래 날짜를 최신 일정으로 판단하지 마세요."};
+}
+
 function openDialog(dialog, opener) {
   dialog._opener=opener || document.activeElement;
   if (!dialog.open) dialog.showModal();

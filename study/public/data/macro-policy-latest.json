@@ -1,53 +1,54 @@
 {
-  "schema_version": "1.0",
-  "logic_version": "macro-policy-v1-2026-08-29",
-  "generated_at": "2026-09-05T16:10:05+09:00",
-  "expires_at": "2026-09-17T06:00:00+09:00",
-  "content_sha256": "79769bb24e89da1f0175a9b516c163fea493e48c8c00f84276523bc7ef384fde",
+  "signal_id": "official-decision-2026-09-16",
+  "generated_at": "2026-10-28T08:33:22+09:00",
+  "expires_at": "2026-10-29T13:00:00+09:00",
   "quality_gate": {
     "status": "passed",
-    "mode": "official-speech-plus-market-pricing",
-    "evidence_count": 2,
-    "message": "공식 발언과 독립 시장 반응 근거가 함께 확인된 거시정책 신호만 표시합니다."
+    "mode": "official-policy-decision",
+    "evidence_count": 1,
+    "message": "공식 결정 사실이며 미래 정책 확률을 뜻하지 않습니다."
   },
-  "signal_id": "us-rate-policy-warsh-jackson-hole-2026-08-28",
+  "data_status": "current",
+  "verification_status": "success",
+  "last_checked_at": "2026-10-28T08:33:22+09:00",
+  "last_success_at": "2026-10-28T08:33:22+09:00",
+  "next_check_at": "2026-10-28T14:33:22+09:00",
+  "next_decision_date": "2026-10-28",
+  "observation_precision": "time",
+  "calendar_source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
   "sector": {
     "id": "us_rate_policy",
     "label": "미국 금리정책",
-    "status": "hike_watch",
+    "status": "neutral",
     "direction": "hike",
-    "probability_level": "elevated",
-    "probability_pct": 58,
-    "confidence": 72,
-    "display_label": "금리인상 경계",
-    "chip_tone": "warn",
-    "horizon": "2026-09 FOMC",
-    "summary": "Warsh 의장은 물가 안정과 단기금리의 정책 수단성을 강조했고, 연설 뒤 9월 인상 기대가 높아졌다. 다만 명시적 인상 약속은 아니므로 데이터 의존 경계 신호로만 표시한다.",
+    "probability_level": "low",
+    "probability_pct": null,
+    "confidence": 85,
+    "display_label": "공식 정책금리 3.75–4%",
+    "chip_tone": "neutral",
+    "horizon": "최근 공식 결정",
+    "summary": "공식 목표금리 범위는 3.75–4%입니다. 다음 결정 전까지 유지되는 최근 결정이며 미래 인상·인하 확률은 표시하지 않습니다.",
     "primary_source_name": "Federal Reserve",
-    "primary_source_url": "https://www.federalreserve.gov/newsevents/speech/warsh20260828a.htm",
-    "source_published_at": "2026-08-28",
+    "primary_source_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm",
+    "source_published_at": "2026-09-17T03:00:00+09:00",
     "review_status": "verified",
     "evidence_ids": [
-      "warsh-speech-policy-20260828",
-      "warsh-market-pricing-20260828"
-    ]
+      "fomc-decision-2026-09-16"
+    ],
+    "target_range_lower": 3.75,
+    "target_range_upper": 4.0
   },
   "evidence": [
     {
-      "id": "warsh-speech-policy-20260828",
-      "source_family": "fed_speech",
+      "id": "fomc-decision-2026-09-16",
       "source_name": "Federal Reserve",
-      "source_url": "https://www.federalreserve.gov/newsevents/speech/warsh20260828a.htm",
-      "published_at": "2026-08-28",
-      "fact": "Warsh 의장은 PCE 기준 2% 물가 목표를 고정 목표로 제시하고, 단기금리를 이중책무 달성의 주된 도구로 설명했다."
-    },
-    {
-      "id": "warsh-market-pricing-20260828",
-      "source_family": "market_pricing_newswire",
-      "source_name": "Reuters via Investing.com",
-      "source_url": "https://www.investing.com/news/economy-news/ratehike-expectations-rise-on-warsh-speech-at-jackson-hole-4881579",
-      "published_at": "2026-08-28",
-      "fact": "Reuters는 Warsh 연설 이후 다음 달 금리인상 기대가 높아졌고 단기 국채금리가 상승했다고 보도했다."
+      "source_family": "federal_reserve_policy_decision",
+      "source_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm",
+      "published_at": "2026-09-17T03:00:00+09:00",
+      "fact": "공식 목표금리 범위 3.75–4%"
     }
-  ]
+  ],
+  "schema_version": "1.0",
+  "logic_version": "official-policy-v1-2026-10-28",
+  "content_sha256": "4c23520111de6a228bf77bf73f3097e330bc5e6b48be312b42f8781a3b35a080"
 }

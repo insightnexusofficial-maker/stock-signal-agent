@@ -20,6 +20,7 @@ from macro_context import (
     annotate_market_value, build_market_environment, collect_reference_series,
     compact_history, market_value_usable, observation_time,
 )
+from study.scripts.official_policy import refresh_official_policy
 
 if os.getenv("SAYO_SKIP_FIREBASE_INIT") != "1":
     load_dotenv()
@@ -374,78 +375,113 @@ def fetch_event_feed(url=None, now=None):
         return None
 
 
-def fetch_macro_policy_signal(url=None, now=None):
-    """Study의 거시정책 신호를 표시용으로만 읽는다. 매수 판정에는 사용하지 않는다."""
-    now = now or datetime.now(KST)
-    fallback = {
-        "schema_version": "1.0",
-        "signal_id": None,
-        "quality_status": "unavailable",
-        "status": "unavailable",
+def _validated_macro_policy_signal(signal, now):
+    expires_at = datetime.fromisoformat(str(signal.get("expires_at") or ""))
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=KST)
+    sector = signal.get("sector") or {}
+    evidence = signal.get("evidence") or []
+    policy_mode = signal.get("quality_gate", {}).get("mode")
+    minimum_evidence = 1 if policy_mode == "official-policy-decision" else 2
+    evidence_ids = {item.get("id") for item in evidence}
+    if (
+        signal.get("schema_version") != "1.0"
+        or signal.get("quality_gate", {}).get("status") != "passed"
+        or policy_mode not in {"official-speech-plus-market-pricing", "official-policy-decision"}
+        or expires_at <= now
+        or not re.fullmatch(r"[0-9a-f]{64}", str(signal.get("content_sha256") or ""))
+        or sector.get("id") != "us_rate_policy"
+        or sector.get("status") not in {"hike_watch", "hike_likely", "hold_watch", "cut_watch", "neutral"}
+        or sector.get("probability_level") not in {"low", "watch", "elevated", "high"}
+        or sector.get("chip_tone") not in {"good", "warn", "bad", "neutral"}
+        or sector.get("review_status") != "verified"
+        or int(sector.get("confidence", -1)) < 0
+        or int(sector.get("confidence", -1)) > 85
+        or len(evidence) < minimum_evidence
+        or set(sector.get("evidence_ids") or []) - evidence_ids
+    ):
+        raise ValueError("검증 또는 만료 조건을 통과하지 못한 거시정책 신호")
+    probability = sector.get("probability_pct")
+    if probability is not None and not 0 <= float(probability) <= 100:
+        raise ValueError("거시정책 가능성 수치 오류")
+    result = {
+        "schema_version": signal.get("schema_version"),
+        "signal_id": signal.get("signal_id"),
+        "generated_at": signal.get("generated_at"),
+        "expires_at": signal.get("expires_at"),
+        "quality_status": signal.get("quality_gate", {}).get("status"),
+        "sector_id": sector.get("id"),
+        "label": sector.get("label"),
+        "status": sector.get("status"),
+        "direction": sector.get("direction"),
+        "probability_level": sector.get("probability_level"),
+        "probability_pct": probability,
+        "confidence": sector.get("confidence"),
+        "display_label": sector.get("display_label"),
+        "chip_tone": sector.get("chip_tone"),
+        "horizon": sector.get("horizon"),
+        "summary": sector.get("summary"),
+        "source_name": sector.get("primary_source_name"),
+        "source_url": sector.get("primary_source_url"),
+        "source_published_at": sector.get("source_published_at"),
+        "mode": policy_mode,
+        "target_range_lower": sector.get("target_range_lower"),
+        "target_range_upper": sector.get("target_range_upper"),
     }
+    for key in ("data_status", "verification_status", "verification_error", "last_checked_at", "last_success_at", "next_check_at", "next_decision_date", "observation_precision", "calendar_source_url"):
+        result[key] = signal.get(key)
+    if policy_mode == "official-policy-decision":
+        lower, upper = sector.get("target_range_lower"), sector.get("target_range_upper")
+        # A published decision is an observed fact, not a probability forecast.
+        if probability is not None:
+            raise ValueError("official decision cannot contain future probability")
+        source = str(sector.get("primary_source_url") or "")
+        if not re.fullmatch(r"https://www\.federalreserve\.gov/newsevents/pressreleases/monetary\d{8}a\.htm", source):
+            raise ValueError("official policy source invalid")
+        published = datetime.fromisoformat(str(sector.get("source_published_at") or ""))
+        if published.tzinfo is None or published > now or not any(item.get("source_url") == source for item in evidence):
+            raise ValueError("official policy publication unverified")
+        if isinstance(lower, bool) or isinstance(upper, bool) or not 0 <= float(lower) <= float(upper) <= 25:
+            raise ValueError("official policy target range invalid")
+        result["data_status"] = signal.get("data_status") or "current"
+    return result
+
+
+def fetch_macro_policy_signal(url=None, now=None):
+    """Read Study context, independently recovering actual policy from the Fed."""
+    now = now or datetime.now(KST)
+    fallback = {"schema_version": "1.0", "signal_id": None, "quality_status": "unavailable", "status": "unavailable", "data_status": "unavailable", "mode": "official-policy-decision"}
+    study_error = None
+    study_candidate = None
     try:
         response = requests.get(url or MACRO_POLICY_URL, timeout=12)
         response.raise_for_status()
         signal = response.json()
-        expires_at = datetime.fromisoformat(str(signal.get("expires_at") or ""))
-        if expires_at.tzinfo is None:
-            expires_at = expires_at.replace(tzinfo=KST)
-        sector = signal.get("sector") or {}
-        evidence = signal.get("evidence") or []
-        policy_mode = signal.get("quality_gate", {}).get("mode")
-        minimum_evidence = 1 if policy_mode == "official-policy-decision" else 2
-        evidence_ids = {item.get("id") for item in evidence}
-        if (
-            signal.get("schema_version") != "1.0"
-            or signal.get("quality_gate", {}).get("status") != "passed"
-            or policy_mode not in {"official-speech-plus-market-pricing", "official-policy-decision"}
-            or expires_at <= now
-            or not re.fullmatch(r"[0-9a-f]{64}", str(signal.get("content_sha256") or ""))
-            or sector.get("id") != "us_rate_policy"
-            or sector.get("status") not in {"hike_watch", "hike_likely", "hold_watch", "cut_watch", "neutral"}
-            or sector.get("probability_level") not in {"low", "watch", "elevated", "high"}
-            or sector.get("chip_tone") not in {"good", "warn", "bad", "neutral"}
-            or sector.get("review_status") != "verified"
-            or int(sector.get("confidence", -1)) < 0
-            or int(sector.get("confidence", -1)) > 85
-            or len(evidence) < minimum_evidence
-            or set(sector.get("evidence_ids") or []) - evidence_ids
-        ):
-            raise ValueError("검증 또는 만료 조건을 통과하지 못한 거시정책 신호")
-        probability = sector.get("probability_pct")
-        if probability is not None and not 0 <= float(probability) <= 100:
-            raise ValueError("거시정책 가능성 수치 오류")
-        return {
-            "schema_version": signal.get("schema_version"),
-            "signal_id": signal.get("signal_id"),
-            "generated_at": signal.get("generated_at"),
-            "expires_at": signal.get("expires_at"),
-            "quality_status": signal.get("quality_gate", {}).get("status"),
-            "sector_id": sector.get("id"),
-            "label": sector.get("label"),
-            "status": sector.get("status"),
-            "direction": sector.get("direction"),
-            "probability_level": sector.get("probability_level"),
-            "probability_pct": probability,
-            "confidence": sector.get("confidence"),
-            "display_label": sector.get("display_label"),
-            "chip_tone": sector.get("chip_tone"),
-            "horizon": sector.get("horizon"),
-            "summary": sector.get("summary"),
-            "source_name": sector.get("primary_source_name"),
-            "source_url": sector.get("primary_source_url"),
-            "source_published_at": sector.get("source_published_at"),
-            "mode": policy_mode,
-            "target_range_lower": sector.get("target_range_lower"),
-            "target_range_upper": sector.get("target_range_upper"),
-        }
+        result = _validated_macro_policy_signal(signal, now)
+        if result.get("mode") != "official-policy-decision":
+            return result
+        study_candidate = result
     except Exception as error:
-        _record_collection_error(
-            "stock_sayo_study",
-            "macro_policy_signal",
-            _classify_request_error(error),
-        )
-        print(f"   거시정책 신호 비활성 ({_classify_request_error(error)})")
+        study_error = _classify_request_error(error)
+    try:
+        previous = (_get_published_payload() or {}).get("macro_policy_signal") or {}
+    except Exception:
+        previous = {}
+    if study_candidate and (not previous or str(study_candidate.get("last_success_at") or "") > str(previous.get("last_success_at") or "")):
+        previous = study_candidate
+    observed = refresh_official_policy(previous, now)
+    try:
+        result = _validated_macro_policy_signal(observed, now)
+        result["delivery_source"] = "official_fed_fallback"
+        result["study_sync_status"] = "success" if study_candidate else "unavailable"
+        if result.get("verification_status") == "failed":
+            _record_collection_error("federal_reserve", "macro_policy_signal", observed.get("verification_error") or "source_unavailable")
+        return result
+    except Exception:
+        fallback.update({key: observed.get(key) for key in ("verification_status", "verification_error", "last_checked_at", "last_success_at", "next_check_at")})
+        fallback["study_sync_status"] = "unavailable"
+        _record_collection_error("stock_sayo_study", "macro_policy_signal", study_error or "invalid_response")
+        print("   거시정책 원천 확인 대기 (official_source_unavailable)")
         return fallback
 
 
@@ -1055,7 +1091,27 @@ def get_snapshot_history(code, days=35):
 
 
 def _is_missing_value(value):
-    return value is None or value == ""
+    if value is None or value == "":
+        return True
+    try:
+        from math import isfinite
+        return not isfinite(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def _positive_price(value):
+    """시세는 유한한 양수만 허용한다. 다른 지표의 0/음수 의미는 바꾸지 않는다."""
+    if isinstance(value, bool):
+        return None
+    parsed = _to_float(value)
+    if parsed is None or _is_missing_value(parsed) or parsed <= 0:
+        return None
+    return parsed
+
+
+def _snapshot_field_missing(field, value):
+    return _is_missing_value(value) or (field == "price" and _positive_price(value) is None)
 
 
 def get_latest_valid_snapshot(code, days=35, required_fields=("price",)):
@@ -1064,7 +1120,7 @@ def get_latest_valid_snapshot(code, days=35, required_fields=("price",)):
     snapshots.sort(key=lambda x: x["date"], reverse=True)
     
     for snapshot in snapshots:
-        if any(not _is_missing_value(snapshot.get(field)) for field in required_fields):
+        if any(not _snapshot_field_missing(field, snapshot.get(field)) for field in required_fields):
             return snapshot
     return None
 
@@ -1079,10 +1135,10 @@ def merge_missing_from_snapshot(code, data, fields, required_fields=("price",)):
     filled = []
     field_sources = {}
     for field in fields:
-        if not _is_missing_value(data.get(field)):
+        if not _snapshot_field_missing(field, data.get(field)):
             continue
         for snapshot in snapshots:
-            if _is_missing_value(snapshot.get(field)):
+            if _snapshot_field_missing(field, snapshot.get(field)):
                 continue
             data[field] = snapshot.get(field)
             filled.append(field)
@@ -1962,10 +2018,13 @@ def get_naver_etf_metrics(code):
         deal_infos = payload.get("dealTrendInfos") or []
         if deal_infos:
             latest = deal_infos[0]
-            price = _to_float(latest.get("closePrice"))
+            price = _positive_price(latest.get("closePrice"))
             volume = _to_float(latest.get("accumulatedTradingVolume"))
             if price is not None:
                 result["price"] = price
+                result["price_source"] = "naver_mobile_daily"
+                if latest.get("bizdate"):
+                    result["price_as_of"] = market_date_str(latest["bizdate"])
             if volume is not None and result.get("volume") is None:
                 result["volume"] = int(volume)
 
@@ -2132,9 +2191,12 @@ def get_etf_data(etf):
         stock = yf.Ticker(ticker)
         hist = stock.history(period="3mo")
         if not hist.empty:
-            result["price"] = round(float(hist["Close"].iloc[-1]), 0)
+            close = _positive_price(hist["Close"].iloc[-1])
+            result["price"] = round(close, 0) if close is not None else None
             result["volume"] = int(hist["Volume"].iloc[-1])
-            result["price_as_of"] = market_date_str(hist.index[-1])
+            if result["price"] is not None:
+                result["price_as_of"] = market_date_str(hist.index[-1])
+                result["price_source"] = "yahoo_history"
             if len(hist) >= 15:
                 result["rsi"] = calculate_rsi(hist["Close"].tolist())
 
@@ -2147,14 +2209,23 @@ def get_etf_data(etf):
             info = stock.info
             low52 = info.get("fiftyTwoWeekLow")
             high52 = info.get("fiftyTwoWeekHigh")
-            if low52 and high52 and high52 > low52:
+            if result.get("price") is not None and low52 and high52 and high52 > low52:
                 result["band_pct"] = round((result["price"] - low52) / (high52 - low52) * 100, 1)
         
     except Exception as e:
         _record_collection_error("yahoo", "etf_market_data", _classify_request_error(e))
-        print(f"   ETF 에러 ({etf['name']}): {e}")
+        print(f"   ETF 시세 오류 ({etf['name']}): {_classify_request_error(e)}")
 
+    if _positive_price(result.get("price")) is None:
+        price = _positive_price(naver_metrics.get("price"))
+        if price is not None:
+            result["price"] = price
+            for key in ("price_source", "price_as_of", "price_traded_at"):
+                if naver_metrics.get(key) is not None:
+                    result[key] = naver_metrics[key]
     for key, value in naver_metrics.items():
+        if key in {"price", "price_source", "price_as_of", "price_traded_at"}:
+            continue
         if value is not None and (
             result.get(key) is None
             or key in (
@@ -2186,7 +2257,8 @@ def get_etf_data(etf):
             if td_values:
                 nav = float(td_values[0].replace(",", ""))
                 result["nav"] = nav
-                result["nav_discount"] = round((result["price"] - nav) / nav * 100, 2)
+                if result.get("price") is not None and nav > 0:
+                    result["nav_discount"] = round((result["price"] - nav) / nav * 100, 2)
     except Exception as e:
         _record_collection_error("naver", "etf_nav", _classify_request_error(e))
     
@@ -2199,6 +2271,15 @@ def get_etf_data(etf):
         result["nav_discount"] = round((result["price"] - result["nav"]) / result["nav"] * 100, 2)
 
     return result
+
+
+def _validate_etf_price(data):
+    """Fallback 이후 시세 품질을 집계한다. 행 수만으로 완전 성공을 표시하지 않는다."""
+    data["price"] = _positive_price(data.get("price"))
+    if data["price"] is None:
+        _record_collection_error("collection", "etf_price", "missing_price", critical=True)
+        return False
+    return True
 
 # ============================================================
 # 매수 시그널 판정 (3단계: candidate / strong / now)
@@ -2738,7 +2819,7 @@ def _run_upload_data(report, started_at):
             "macro_policy_signal": macro_policy_signal,
             "macro_policy_last_attempt_at": _iso_kst(started_at),
             "macro_policy_sync_status": (
-                "success" if macro_policy_signal.get("quality_status") == "passed" else "unavailable"
+                "stale" if macro_policy_signal.get("verification_status") == "failed" and macro_policy_signal.get("quality_status") == "passed" else "success" if macro_policy_signal.get("quality_status") == "passed" else "unavailable"
             ),
             "event_last_attempt_at": _iso_kst(started_at),
             "event_sync_status": "success" if event_feed else "unavailable",
@@ -2854,6 +2935,7 @@ def _run_upload_data(report, started_at):
             if not data:
                 fallback = get_latest_valid_snapshot(etf["ticker_krx"], required_fields=("price",))
                 if not fallback:
+                    _validate_etf_price({})
                     continue
                 data = {field: fallback.get(field) for field in KR_ETF_SNAPSHOT_FIELDS}
                 data["is_stale"] = True
@@ -2863,6 +2945,8 @@ def _run_upload_data(report, started_at):
                 data["code"] = etf["ticker_krx"]
             else:
                 data = merge_missing_from_snapshot(etf["ticker_krx"], data, KR_ETF_SNAPSHOT_FIELDS)
+
+            _validate_etf_price(data)
             
             step1, step2, reason = check_etf_signal(data, macro)
             data["step1"] = step1
@@ -2989,7 +3073,7 @@ def _run_upload_data(report, started_at):
         "macro_policy_signal": macro_policy_signal,
         "macro_policy_last_attempt_at": _iso_kst(started_at),
         "macro_policy_sync_status": (
-            "success" if macro_policy_signal.get("quality_status") == "passed" else "unavailable"
+            "stale" if macro_policy_signal.get("verification_status") == "failed" and macro_policy_signal.get("quality_status") == "passed" else "success" if macro_policy_signal.get("quality_status") == "passed" else "unavailable"
         ),
         "event_last_attempt_at": _iso_kst(started_at),
         "event_sync_status": "success" if event_feed else "unavailable",

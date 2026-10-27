@@ -914,8 +914,10 @@ class UploaderRegressionTests(unittest.TestCase):
         self.assertEqual(signal["probability_pct"], 58)
         self.assertEqual(signal["source_name"], "Federal Reserve")
 
+    @patch("uploader.refresh_official_policy", return_value={})
+    @patch("uploader._get_published_payload", return_value={})
     @patch("uploader.requests.get")
-    def test_expired_macro_policy_signal_disables_chip(self, requests_get):
+    def test_expired_macro_policy_signal_disables_chip(self, requests_get, _published, _official):
         requests_get.return_value = FakeResponse({
             "schema_version": "1.0",
             "signal_id": "us-rate-policy-old",

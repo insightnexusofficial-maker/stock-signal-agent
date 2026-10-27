@@ -13,8 +13,13 @@
   --trend-down:#8a4e23; --trend-down-strong:#a33f3a;
   --dialog-backdrop:rgb(32 27 21 / .45);
 }
-/* Keep header controls stacked in the original right column. */
-.settings-open { font:inherit; font-size:12px; font-weight:400; color:var(--fg-2); background:var(--bg-2); border:1px solid var(--border-2); border-radius:6px; padding:6px 10px; cursor:pointer; }
+/* Footer tools share a row without changing the stock dashboard layout. */
+.bottom-tools { display:grid; grid-template-columns:minmax(0,1fr) 44px; align-items:center; gap:10px; margin:32px 0 8px; }
+.bottom-tools .guide-bottom-entry { min-width:0; margin:0; padding:14px 12px; gap:8px; }
+.bottom-tools .guide-bottom-entry span:first-child { min-width:0; word-break:keep-all; overflow-wrap:break-word; }
+.bottom-tools .guide-bottom-entry span:last-child { flex-shrink:0; }
+.settings-open { display:grid; place-items:center; width:44px; height:44px; padding:0; font:inherit; color:var(--fg-2); background:var(--bg-2); border:1px solid var(--border-2); border-radius:8px; cursor:pointer; }
+.settings-open:hover { color:var(--accent); border-color:var(--accent); }
 .settings-open:focus-visible,.sayo-dialog :focus-visible,.market-overview :focus-visible,.macro-card[role="button"]:focus-visible,.stock-row-header:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
 .macro-card[role="button"] { cursor:pointer; }
 .macro-freshness { margin-top:8px; color:var(--fg-3); font-size:11px; line-height:1.5; word-break:keep-all; overflow-wrap:break-word; }
@@ -86,7 +91,7 @@
 :root[data-theme="light"] .gate-state-title { color:var(--fg-1); }
 :root[data-theme="light"] .guide-card,:root[data-theme="light"] .guide-summary,:root[data-theme="light"] .guide-list { background:var(--bg-2); color:var(--fg-1); border-color:var(--border-2); }
 :root[data-theme="light"] .guide-text,:root[data-theme="light"] .guide-intro,:root[data-theme="light"] .guide-quiet { color:var(--fg-2); }
-@media(max-width:640px) { .environment-series { grid-template-columns:minmax(0,1fr); } .sayo-dialog { padding:14px; } }
+@media(max-width:640px) { .environment-series { grid-template-columns:minmax(0,1fr); } .sayo-dialog { padding:14px; } .guide-float { display:none; } }
 @media(prefers-reduced-motion:reduce) { .settings-row input::before { transition:none; } }
 
 /* The new light theme also covers inherited surfaces with fixed dark colors. */
@@ -100,3 +105,12 @@
 .gate-cta:hover { box-shadow:0 6px 24px rgba(var(--brand-rgb), .28); }
 .gate-desc strong { font-weight:500; }
 .gate-desc,.gate-note,.gate-state-desc,.gate-pending-desc { word-break:keep-all; overflow-wrap:break-word; }
+
+/* Policy facts stay legible; a collection problem is separate from a market view. */
+.macro-policy-chip { display:flex; flex-wrap:wrap; gap:4px 10px; align-items:center; width:100%; min-width:0; padding:9px 10px; }
+.macro-policy-chip .label { font-weight:500; white-space:normal; }
+.macro-policy-chip .meta { white-space:normal; overflow:visible; overflow-wrap:break-word; font-size:11px; }
+.event-panel-meta.needs-review { color:var(--signal-warn); }
+.event-panel-toggle { color:var(--fg-2); }
+/* Reserve title space for the state badge, including narrow 320px cards. */
+.macro-card .macro-label { max-width:calc(100% - 44px); min-height:28px; line-height:1.4; word-break:keep-all; }

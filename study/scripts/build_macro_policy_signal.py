@@ -9,6 +9,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
+from official_policy import refresh_official_policy
+
 
 ROOT = Path(__file__).resolve().parents[1]
 KST = timezone(timedelta(hours=9))
@@ -125,7 +127,7 @@ def official_policy_context(results: dict, calendar: dict, now: datetime) -> dic
             "generated_at": now.isoformat(timespec="seconds"),
             "expires_at": expiry.isoformat(timespec="seconds"),
             "quality_gate": {"status": "passed", "mode": "official-policy-decision", "evidence_count": 1, "message": "공식 결정 사실입니다. 미래 정책 확률을 추정하지 않습니다."},
-            "sector": {"id": "us_rate_policy", "label": "미국 금리정책", "status": "neutral", "direction": direction, "probability_level": "low", "probability_pct": None, "confidence": 85, "display_label": f"공식 정책금리 {float(lower):g}–{float(upper):g}%", "chip_tone": "neutral", "horizon": "최근 공식 결정", "summary": f"최근 공식 목표금리 범위는 {float(lower):g}–{float(upper):g}%입니다. 미래 인상·인하 가능성은 별도 관측 전까지 표시하지 않습니다.", "primary_source_name": "Federal Reserve", "primary_source_url": urls[0], "source_published_at": published.isoformat(timespec="seconds"), "review_status": "verified", "evidence_ids": [item["event_id"]]},
+            "sector": {"id": "us_rate_policy", "label": "미국 금리정책", "status": "neutral", "direction": direction, "probability_level": "low", "probability_pct": None, "confidence": 85, "display_label": f"공식 정책금리 {float(lower):g}–{float(upper):g}%", "chip_tone": "neutral", "horizon": "최근 공식 결정", "summary": f"최근 공식 목표금리 범위는 {float(lower):g}–{float(upper):g}%입니다. 미래 인상·인하 가능성은 별도 관측 전까지 표시하지 않습니다.", "primary_source_name": "Federal Reserve", "primary_source_url": urls[0], "source_published_at": published.isoformat(timespec="seconds"), "review_status": "verified", "evidence_ids": [item["event_id"]], "target_range_lower": lower, "target_range_upper": upper},
             "evidence": [{"id": item["event_id"], "source_family": "federal_reserve_policy_decision", "source_name": "Federal Reserve", "source_url": urls[0], "published_at": published.isoformat(timespec="seconds"), "fact": f"공식 목표금리 범위 {float(lower):g}–{float(upper):g}%"}],
         }
     return None
@@ -147,7 +149,7 @@ def _finish(core: dict) -> dict:
     return {"schema_version": "1.0", "logic_version": "macro-policy-v2-2026-10-24", "content_sha256": _canonical_sha256(content), **core}
 
 
-def build(now: datetime | None = None) -> dict:
+def build(now: datetime | None = None, *, refresh_official=False, fetcher=None, previous=None) -> dict:
     now = now or datetime.now(KST)
     source = json.loads(INPUT.read_text(encoding="utf-8"))
     signals = source.get("signals") or []
@@ -161,9 +163,16 @@ def build(now: datetime | None = None) -> dict:
     )
     selected = next((candidate for candidate in candidates if not _validate_signal(candidate, now)), None)
     if selected is None:
+        if refresh_official:
+            observed = refresh_official_policy(previous, now, fetcher)
+            if observed.get("quality_gate", {}).get("status") == "passed":
+                return _finish(observed)
         results = json.loads(RESULTS.read_text()) if RESULTS.exists() else {}
         calendar = json.loads(CALENDAR.read_text()) if CALENDAR.exists() else {}
-        return _finish(official_policy_context(results, calendar, now) or unavailable_context(now))
+        fallback = official_policy_context(results, calendar, now)
+        if refresh_official and not fallback:
+            return _finish(observed)
+        return _finish(fallback or unavailable_context(now))
 
     # A probability without the underlying pricing observation is not a number
     # the service can substantiate. Keep the qualitative reviewed context only.
@@ -210,8 +219,8 @@ def build(now: datetime | None = None) -> dict:
 
 
 def main() -> None:
-    payload = build()
     previous = json.loads(OUTPUT.read_text()) if OUTPUT.exists() else {}
+    payload = build(refresh_official=True, previous=previous)
     changed = policy_changed(previous, payload)
     if changed:
         OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -223,6 +232,10 @@ def main() -> None:
 
 
 def policy_changed(previous: dict, payload: dict) -> bool:
+    # Verification lifecycle must reach consumers even when the decision stays
+    # unchanged. Never rewrite the decision's original publication timestamp.
+    if any(previous.get(key) != payload.get(key) for key in ("last_checked_at", "verification_status", "data_status", "next_check_at")):
+        return True
     if previous.get("content_sha256") != payload.get("content_sha256"):
         return True
     if payload.get("quality_gate", {}).get("status") == "unavailable":

@@ -73,3 +73,19 @@ assert.match(metricReading("core_pce",{...monthly,current:106,history:inflationM
 assert(!metricReading("core_pce",{...monthly,current:106,history:inflationMonths.filter((_,i)=>i!==2)}).comparison.includes("직전 3개월 연율"));
 
 assert.match(metricReading("nfci",{current:-.2,data_status:"fresh"}).meaning,/현재 해석을 보류/);
+
+const {policyDisplay,eventFeedState}=await import(`data:text/javascript;base64,${Buffer.from(source).toString("base64")}`);
+const checkNow=Date.parse('2026-10-28T00:00:00+09:00');
+const policy={quality_status:'passed',expires_at:'2026-11-01T00:00:00+09:00',target_range_lower:4,target_range_upper:4.25,direction:'hold',source_published_at:'2026-10-01',source_url:'https://www.federalreserve.gov/',last_checked_at:'2026-10-27T23:00:00+09:00'};
+assert.match(policyDisplay(policy,checkNow).label,/4–4.25%/);
+assert.equal(policyDisplay(policy,checkNow).verified,true);
+assert.equal(policyDisplay({...policy,expires_at:'2026-10-27T00:00:00+09:00'},checkNow).verified,false);
+assert.match(policyDisplay({...policy,verification_status:'failed'},checkNow).meta,/재확인 지연/);
+assert.match(policyDisplay(null,checkNow).description,/정상·중립 판단을 뜻하지/);
+assert.equal(policyDisplay({...policy,source_url:'javascript:alert(1)'},checkNow).source,null);
+const events={event_sync_status:'success',event_calendar:{generated_at:'2026-10-27T00:00:00+09:00',expires_at:'2026-11-01T00:00:00+09:00'}};
+assert.equal(eventFeedState(events,checkNow).current,true);
+assert.equal(eventFeedState({...events,event_sync_status:'unavailable'},checkNow).current,false);
+assert.match(eventFeedState({...events,event_calendar:{...events.event_calendar,expires_at:'2026-10-27T00:00:00+09:00'}},checkNow).label,/갱신 지연/);
+assert.equal(eventFeedState({},checkNow).current,false);
+console.log('SAYO display health: expired/unverified policy and stale event dates cannot appear current');

@@ -106,7 +106,7 @@ class FrontendEntryFlowTests(unittest.TestCase):
         self.assertIn("macro-policy-chip", parser.ids)
         self.assertIn("function renderMacroPolicy(signal)", self.source)
         self.assertIn("renderMacroPolicy(d.macro_policy_signal);", self.source)
-        self.assertIn('signal.quality_status === "passed"', self.source)
+        self.assertIn("const display = policyDisplay(signal);", self.source)
         signal_function = self.source[
             self.source.index("function check"):self.source.index("function renderMacro")
         ] if "function check" in self.source else ""

@@ -96,7 +96,8 @@ def parse_official_calendar(html: str, monitor: dict, now: datetime) -> list[dic
             section = re.search(rf"{year}\s+FOMC Meetings(.*?)(?=20\d{{2}}\s+FOMC Meetings|$)", text, re.S)
             if not section:
                 continue
-            for match in re.finditer(rf"(?P<month>{MONTH_PATTERN})\s+(?P<first>\d{{1,2}})(?:\s*[-–]\s*(?P<last>\d{{1,2}}))?\*?", section.group(1), re.I):
+            meeting_text = re.sub(rf"\(?Released\s+{MONTH_PATTERN}\s+\d{{1,2}},?\s+20\d{{2}}\)?", "", section.group(1), flags=re.I)
+            for match in re.finditer(rf"(?P<month>{MONTH_PATTERN})\s+(?P<first>\d{{1,2}})(?:\s*[-–]\s*(?P<last>\d{{1,2}}))?\*?", meeting_text, re.I):
                 scheduled = date(year, _month(match["month"]), int(match["last"] or match["first"]))
                 if today <= scheduled <= horizon:
                     found.append(_event(monitor, scheduled, now))
