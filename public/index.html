@@ -179,7 +179,8 @@ button {
 .macro-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  --macro-gap: 8px;
+  gap: var(--macro-gap);
   padding-bottom: 20px;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--border-1);
@@ -188,7 +189,7 @@ button {
 @media (max-width: 600px) {
   .macro-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: var(--macro-gap);
     padding-bottom: 20px;
     margin-bottom: 24px;
   }
@@ -288,7 +289,7 @@ button {
   display: flex;
   align-items: center;
   min-height: 28px;
-  margin-top: -6px;
+  margin-top: 0;
 }
 
 .macro-policy-row[hidden] {
@@ -1603,14 +1604,15 @@ button {
   display: block;
   padding: 0;
   background: var(--bg-2);
-  border: 1px solid var(--border-1);
-  border-radius: 12px;
-  margin-bottom: 10px;
+  border: 0;
+  border-bottom: 1px solid var(--border-1);
+  border-radius: 0;
+  margin-bottom: 0;
   overflow: hidden;
-  transition: border-color .2s, background .2s;
+  transition: background .2s;
 }
 
-.stock-row:last-child { border-bottom: 1px solid var(--border-1); }
+.stock-row:last-child { border-bottom: 0; }
 .stock-row::before {
   content: "";
   position: absolute;
@@ -1990,7 +1992,7 @@ button {
 }
 </style>
 
-<link rel="stylesheet" href="/assets/sayo-ui.css?v=20261028-layout-sync-1">
+<link rel="stylesheet" href="/assets/sayo-ui.css?v=20261028-compact-float-2">
 <script>try { document.documentElement.dataset.theme = localStorage.getItem("sayo:theme") === "light" ? "light" : "dark"; } catch (e) {}</script>
 </head>
 <body>
@@ -2540,16 +2542,12 @@ button {
         <!-- ============================================================
              푸터
              ============================================================ -->
-        <div class="bottom-tools">
-            <a class="guide-bottom-entry" href="/guide.html">
-                <span>SAYO 사용 가이드</span>
-                <span>열기</span>
-            </a>
-            <button class="settings-open" id="settings-open" type="button" aria-label="화면과 푸시 알림 설정" title="설정" aria-haspopup="dialog" aria-controls="settings-dialog"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.4 3.2h5.2l.5 2.1 1.5.9 2.1-.6 2.6 4.5-1.6 1.5v1.8l1.6 1.5-2.6 4.5-2.1-.6-1.5.9-.5 2.1H9.4l-.5-2.1-1.5-.9-2.1.6-2.6-4.5 1.6-1.5v-1.8L2.7 10l2.6-4.5 2.1.6 1.5-.9.5-2.1Z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
-        </div>
-        <div class="guide-float" id="guide-float">
+        <div class="floating-tools" aria-label="도움말과 설정">
+          <div class="guide-float" id="guide-float">
             <a href="/guide.html">SAYO 사용 가이드</a>
             <button type="button" id="guide-float-close" aria-label="가이드 닫기">×</button>
+          </div>
+          <button class="settings-open" id="settings-open" type="button" aria-label="화면과 푸시 알림 설정" title="설정" aria-haspopup="dialog" aria-controls="settings-dialog"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.4 3.2h5.2l.5 2.1 1.5.9 2.1-.6 2.6 4.5-1.6 1.5v1.8l1.6 1.5-2.6 4.5-2.1-.6-1.5.9-.5 2.1H9.4l-.5-2.1-1.5-.9-2.1.6-2.6-4.5 1.6-1.5v-1.8L2.7 10l2.6-4.5 2.1.6 1.5-.9.5-2.1Z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
         </div>
         <footer class="app-footer">
             <div class="mono">SAYO v5 · 30분 단위 시그널 감지</div>
@@ -2566,7 +2564,7 @@ button {
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
-    import { createSayoUI, cycleLabel, renderCycleContext, policyDisplay, eventFeedState } from "/assets/sayo-ui.js?v=20261028-layout-sync-1";
+    import { createSayoUI, cycleLabel, renderCycleContext, policyDisplay, eventFeedState } from "/assets/sayo-ui.js?v=20261028-compact-float-2";
 
     const firebaseConfig = {
         apiKey: "AIzaSyALQUtr9qGDdoqj-Jdwrkw3XQpxBuQ7joQ",
@@ -2580,7 +2578,7 @@ button {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const APP_VERSION = "20260825-approval-rest-fallback-1";
-    const UI_VERSION = "20261028-layout-sync-1";
+    const UI_VERSION = "20261028-compact-float-2";
     let sayoUi = null;
 
     function perfMark(name) {
